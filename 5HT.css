@@ -23,7 +23,7 @@ a:hover, a:active { outline: 0 }
 
 @font-face {
     font-family: 'local';
-    src: url('Geometria-Light.otf');
+    src: url('//n2o.space/Geometria-Light.otf');
     font-weight: normal;
     font-style: normal
 }
