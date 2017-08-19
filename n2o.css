@@ -259,9 +259,9 @@ footer {
     }
 
     main section {
-        padding: 20px 20px 80px;
+        padding-top: 20px;
     }
- 
+
     main h3 {
         font-size: 36px;
         margin: 40px auto;
