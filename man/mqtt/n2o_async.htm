@@ -1,0 +1,75 @@
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="" />
+    <meta name="author" content="Maxim Sokhatsky" />
+    <title>N2O ASYNC</title>
+    <link rel="stylesheet" href="../../n2o.css" />
+</head>
+
+<body>
+
+<header>
+    <a href="../../index.html"><img src="../../img/Synrc Neo.svg"></a>
+    <h1>N2O Async: Supervised Processes</h1>
+</header>
+
+<main>
+    <section>
+
+<h3>INTRO</h3>
+
+<p>The <b>n2o_async</b> module is a simplified way to create
+local protocols for Erlang/OTP <b>gen_server</b>. Each protocol
+then can be spawned under Erlang/OTP supervision.
+Such spawned protocol handlers can be selected by <b>n2o</b>.
+cache, which is ETS.</p>
+
+<h4>proc(Message,#handler{}) -> {ok,#handler{}}
+                              | {reply,Out,#handler{}}.</h4>
+
+<p>The <b>proc/2</b> is a callback that will be called on each
+<b>gen_server</b>'s calls: <b>handle_call</b>,
+<b>handle_cast</b> and <b>handle_info</b>, its <b>init</b>
+and <b>terminate</b>.</p>
+
+<h4> async(Proc) -> type gen_server:call/2.</h4>
+
+<p>Spawns <b>proc/2</b> function inside gen_server under supervision.</p>
+
+<h4> init(Pid,Class,Name) -> type gen_server:call/2.</h4>
+
+<p>Put Pid in <b>n2o</b> cache and also remember the caller
+Pid for <b>n2o</b> messages.</p>
+
+<h4>flush(Channel) -> type gen_server:call/2.</h4>
+
+<p>Send FLUSH message with current actions in process dictionary,
+then cleanup all actions.
+</p>
+
+<h4> send(Class,Name,Message) -> type gen_server:call/2. </h4>
+
+<p>Sends <b>gen_call</b> message to process by <b>Class,Name}</b>
+key, which was stored in cache during initialization.
+</p>
+
+<h3>OTHER</h3>
+
+<p>Also you may refer to:
+<b><a href="n2o.htm">n2o</a></b>,
+<a href="n2o_nitro.htm"><b>n2o_nitro</b></a>.
+</p>
+
+    </section>
+</main>
+
+<footer>
+    2017 &copy; Synrc Research Center
+</footer>
+
+</body>
+</html>
