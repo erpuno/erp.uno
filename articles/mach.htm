@@ -116,7 +116,7 @@ ans1(AnswerJSON,Acc) ->
    Сама программа обхода выглядит следующим образом:</p>
 
 <figure><pre>
-withdraw() -> {{?MODULE,pb:host(?MODULE)},
+withdraw() -> {{?MODULE,mach:host(?MODULE)},
               [{json,post,withdraw,{req7,ans7}, 2, "/withdraw"},
                {json,get, withdraw,{req8,ans8}, 3, "/withdrawCheck"},
                {xml,post, withdraw,{req9,ans9}, 3, "/notify"}]}.
@@ -134,16 +134,16 @@ withdraw() -> {{?MODULE,pb:host(?MODULE)},
    это работает на примере:</p>
 
 <figure><pre>
- > pb:services(withdraw(),[#customer{}], 1000, []).
+ > mach:services(withdraw(),[#customer{}], 1000, []).
 
     {ok,20,
      [{ans2,20},
-      {call,<<"{\"OpenResponse\":{\"bank\":\"PB\",\"state\":\"r\",\"list\":{\"contract\":20},\"r"...>>},
-      {req2,<<"{\"OpenRequest\":{\"ref\":\"undefined\",\"channel\":\"undefined\",\"bank\":\"PB\"}}">>},
+      {call,<<"{\"Response\":{\"bank\":\"mach\",\"state\":\"r\"...>>},
+      {req2,<<"{\"Request\":{\"bank\":\"mach\"}}">>},
       {ans1,[undefined,undefined,1,<<"00000001">>,site]},
-      {call,<<"{\"OpenResponse\":{\"bank\":\"PB\",\"state\":\"r\",\"list\":{\"cont"...>>},
-      {req1,<<"{\"OpenRequest\":{\"ref\":\"del2015100803502313492\",\"channel\":\"S"...>>},
-      {req,<<"{\"OpenRequest\":{\"ref\":\"del2015100803502313492\",\"channel"...>>},
+      {call,<<"{\"Response\":{\"bank\":\"mach\",\"state\":\"r\",\"list\":{\"cont"...>>},
+      {req1,<<"{\"Request\":{\"ref\":\"2015100803502313492\",\"channel\":\"S"...>>},
+      {req,<<"{\"Request\":{\"ref\":\"2015100803502313492\",\"channel"...>>},
       {id,<<"00000001">>},
       {sid,1},
       {channel,site}]}
@@ -157,8 +157,8 @@ withdraw() -> {{?MODULE,pb:host(?MODULE)},
 
 <figure><pre>
 headers(Acc) -> [{proplists:get_value(method,Acc), "HTTP/1.1"},
-                 {"content-type",   pb:type(proplists:get_value(type,Acc))},
-                 {"accept",         pb:type(proplists:get_value(type,Acc))},
+                 {"content-type",   mach:type(proplists:get_value(type,Acc))},
+                 {"accept",         mach:type(proplists:get_value(type,Acc))},
                  {"connection",     "keep-alive"},
                  {"content-Length", size(proplists:get_value(req,Acc))},
                  {"sid",          proplists:get_value(sid,Acc)}].
@@ -174,7 +174,7 @@ host(_)    -> "http://bank.com:8888/";
 <figure><pre>
 test() ->
   lists:flatten([[ begin erlang:put(mock,Mock),
-      pb:service(?MODULE:Fun(),Args,1000,Acc) end || Mock <- Mocks ]
+      mach:service(?MODULE:Fun(),Args,1000,Acc) end || Mock <- Mocks ]
           || {Fun,Mocks,Args,Acc} <-
           [{withdraw, [7,8], [#account{}],  []},
            {odb,      [5],   [#customer{}], []},
@@ -189,9 +189,9 @@ test() ->
 <figure><pre>mock(9,[Method,Address,Headers,Type,Data]) ->
     Request = [{i, [{'ibank',   [#xmlText{value="10"}] },
                     {'account', [#xmlText{value="20"}]},
-                    {'names',   [#xmlText{value="PB"}]},
+                    {'names',   [#xmlText{value="mach"}]},
                     {'phone',   [#xmlText{value="r"}]}]} ],
-    {ok,{{[],200,"OK"},[], pb:xml(Request) }}.</pre></figure>
+    {ok,{{[],200,"OK"},[], mach:xml(Request) }}.</pre></figure>
 
 <p>В сигнатура функции mock/2 второй параметр это список всего
    что нужно передать в httpc клиент. А вот собственно три функции
@@ -205,7 +205,7 @@ pack(_,{{P,RA},[{Type,Method,M,{F,G},Retry,Addr}|T]}=Stack,A,Time,Acc) ->
          {error,Reason,NewAcc} -> {error,Reason,NewAcc} end
        catch E:R -> fatal(E,R) end.
 
-call(Retry,{{_,RA},[{Type,Method,M,{F,G},A,Addr}|T]}=Stack,Req,Time,Acc) 
+call(Retry,{{_,RA},[{Type,Method,M,{F,G},A,Addr}|T]}=Stack,Req,Time,Acc)
        when Retry < 1 -> {error,{attempts,A},Acc};
 call(Retry,{{P,RA},[{Type,Method,M,{F,G},_,Addr}|T]}=Stack,Req,Time,Acc) ->
        try case req_ret(request(P,M,[ Method,
@@ -248,7 +248,7 @@ http_request(P,M,false,[Method,Address,Headers,Type,Data]) ->
    Проверить что все моки работают можно скопом:</p>
 
 <figure><pre>
-> pb:test().
+> mach:test().
    [{passed,26},{failed,0}].
 </pre></figure>
 
@@ -258,12 +258,12 @@ http_request(P,M,false,[Method,Address,Headers,Type,Data]) ->
   -module(service_edit).
   -compile(export_all).
 
-  req(List,Acc)   -> {ok, pb:xml([{}]), Acc}.
+  req(List,Acc)   -> {ok, mach:xml([{}]), Acc}.
   ans(Binary,Acc) -> {ok, "OK", Acc}.
 
   mock(1, [Method,Address,Headers,Type,Data]) ->
          {ok,{{[],200,"OK"},[],jsone:encode({[{<<"Response">>,
-                                            {[{'bank','PB'}]} }]}) }}.
+                                            {[{'bank','mach'}]} }]}) }}.
 
 </pre></figure>
 
