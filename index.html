@@ -23,17 +23,17 @@
         <a name=plugin><h3>Related Documents</h3></a>
         <div>
         <ul>
-           <li><a href="//mqtt.n2o.space">N2O: MQTT w/o WebSockets</a></li>
-           <li><a href="articles/n2o.htm">N2O: PROTOCOL</a></li>
-           <li><a href="articles/ftp.htm">N2O: FTP</a></li>
-           <li><a href="articles/gen_server.htm">STREAMS: 300MB/s GEN_SERVER</a></li>
-           <li><a href="articles/history.htm">N2O: HISTORY</a></li>
-           <li><a href="articles/bpe.htm">BPE: BUSINESS ENGINE</a></li>
+           <li><a href="//mqtt.n2o.space">N2O: MQTT w/o WebSockets</a> <font color=#00b8cf>26 APR 2017</font> </li>
+           <li><a href="articles/streams.htm">STREAMS: 300MB/s GEN_SERVER</a> <font color=#00b8cf>15 SEP 2016 </font></li>
+           <li><a href="articles/ftp.htm">N2O: FTP</a> <font color=#00b8cf>23 SEP 2015</font></li>
+           <li><a href="articles/web.htm">N2O: WEB APPLICATIONS</a> <font color=#00b8cf>3 MAR 2015</font></li>
+           <li><a href="articles/n2o.htm">N2O: PROTOCOL</a> <font color=#00b8cf>1 MAR 2015 </font></li>
+           <li><a href="articles/bpe.htm">BPE: BUSINESS ENGINE</a> <font color=#00b8cf>20 OCT 2014 </font></li>
+           <li><a href="articles/history.htm">N2O: HISTORY</a></font></li>
         </ul></div>
         <div><ul>
-           <li><a href="http://5ht.co/web.htm">N2O: SERVER</a></li>
-           <li><a href="http://synrc.com/apps/cr/doc/cr.htm">CR: DATABASE</a></li>
-           <li><a href="http://5ht.co/spawnproc.htm">N2O: PRIVATBANK</a></li>
+           <li><a href="http://synrc.com/apps/cr/doc/cr.htm">CR: DATABASE</a></font></li>
+           <li><a href="http://5ht.co/spawnproc.htm">N2O: PRIVATBANK</a></font></li>
         </ul></div>
     </section>
         <section>
@@ -47,13 +47,13 @@
             </div>
             <a name=plugin><h3>MANUAL</h3></a>
             <div><ul>
-           <li><a href="man/mqtt/n2o.htm">MQTT: N2O</a></li>
-           <li><a href="man/mqtt/n2o_async.htm">MQTT: N2O ASYNC</a></li>
-           <li><a href="man/mqtt/n2o_format.htm">MQTT: N2O FORMAT</a></li>
+           <li><a href="man/mqtt/n2o.htm">MQTT: N2O</a></font></li>
+           <li><a href="man/mqtt/n2o_async.htm">MQTT: N2O ASYNC</a></font></li>
+           <li><a href="man/mqtt/n2o_format.htm">MQTT: N2O FORMAT</a></font></li>
             </ul></div>
             <br>
             <div>
-                APRIL 26, 2017 &copy; <a href="http://5ht.co/license.htm">DHARMA LICENSE</a>
+                20 AUG 2017 &copy; <a href="http://5ht.co/license.htm">DHARMA LICENSE</a>
             </div>
         </section>
     </article>
@@ -62,11 +62,21 @@
     <section>
         <a name=modules><h3>N2O Applications</h3></a>
 
+        <p>N2O Applications is the family of services that
+           rely on N2O as a core router and processing loop.
+           We've built banks, games and messaging apps
+           in a form of protocols of N2O.</p>
+
+        <p>N2O itself provides robust infrastructure for sessions,
+           cookies, auth, message queue, controls, rest services,
+           javascript compiler and many more. Limited in size to 1K LOC.</p>
+
         <p>The packages are available through Github and Hex repositories
            and are compatible with <b>mad</b> and <b>rebar</b> package managers.
-           We have manpages manuals, PDF/HTML generated with LaTeX and HeVeA
+           We have manpage manuals, PDF/HTML generated with LaTeX and HeVeA
            and number of turtorials, just search "n2o erlang web". N2O is 4 y.o. has
            20 releases and 40 contributors.</p>
+
         <ul>
             <li><b><a href="http://review.n2o.space">review</a></b> &mdash; N2O Review Sample Application</li>
             <li><b><a href="//mqtt.n2o.space">mqtt</a></b> &mdash; N2O Server 4.5 MQTT</li>
@@ -82,41 +92,16 @@
             <li><b><a href="//synrc.com/apps/bpe">bpe</a></b> &mdash; BPE Process Engine</li>
             <li><b><a href="//synrc.com/apps/forms">forms</a></b> &mdash; FORMS NITRO Generation</li>
         </ul>
-
-    <p>To bundle binary BEAM or LING along with synrc applications MAD can use global
-       repository statically avaliable at Github Pages</P>
-        <figure>
-            <figcaption>Listing 1. N2O APPS</figcaption>
-        <pre style="width:700px">
-
-$ curl -X GET https://n2o.space/index.txt
-  [
-      {bin,[beam],     ["7.0.3"]},
-      {lib,[kernel],   ["4.0"]},
-      {lib,[stdlib],   ["2.5"]},
-      {lib,[mnesia],   ["4.13"]},
-      {lib,[syntax_tools], ["1.7"]},
-      {lib,[compiler], ["6.0"]},
-      {lib,[crypto],   ["3.6"]},
-      {lib,[cowboy],   ["1.0.1"]},
-      {lib,[cowlib],   ["1.0.0"]},
-      {lib,[ranch],    ["1.0.0"]},
-      {lib,[erlydtl],  ["0.8.0"]},
-      {lib,[gproc],    ["0.3"]},
-      {lib,[jsone],    ["v0.3.3"]},
-      {lib,[kvs],      ["2.9"]},
-      {lib,[mad],      ["2.9"]},
-      {lib,[n2o],      ["2.9"]},
-      {lib,[rest],     ["2.9"]},
-      {lib,[active],   ["1.9"]},
-      {lib,[fs],       ["1.9"]},
-      {lib,[sh],       ["1.9"]},
-      {lib,[nitro],    ["0.9"]}
-    ].
-    </pre>
-
     </section>
+
     <section>
+        <p>N2O Protocols are sets (or sums) of messages that could
+           be handled within single module. You can plug as many unintersected
+           protocols to application as you want. N2O performs
+           calls to servers started from protocol code. The worker
+           pool is an adjustable hash ring. In MQTT version workers
+           are regular MQTT clients.</p>
+
         <a name=modules><h3>N2O Protocols</h3></a>
             <figure>
             <img src="img/mqtt.svg">
