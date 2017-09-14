@@ -75,15 +75,21 @@
             for service development, cache, session and logging facilities. The core
             features is limited to 25KB.
         </p>
-        <p>
-            The main two usages of N2O:
-            1) live in client connection processes of server; 2) live in server workers
-            and handle all requests from client processes.
-        </p>
         <figure>
             <img src="https://mqtt.n2o.space/man/WebSocket + MQTT.svg">
             <figcaption>Schema. Live in Client processes or in Server Ring</figcaption>
         </figure>
+        <p>
+            The main two usages of N2O:
+            1) live in client connection processes of server; 2) live in server workers
+            and handle all requests from client processes. You can add you own feature-set
+            versions of N2O with different Github repositories. N2O is distributed by modules
+            not as monolith application, so you can pick and pack different fiature combinations.
+        </p>
+        <figure><code>
+ 1. {n2o, ".*", {git, "git://github.com/synrc/n2o",  []}},
+ 2. {n2o, ".*", {git, "git://github.com/synrc/mqtt", []}},
+        </code></figure>
     </section>
     <section>
         <h3>N2O Applications</h3>
@@ -118,7 +124,6 @@ in <a href="articles/web.htm">articles/web</a>.</p>
             <p>You can read N2O Book: No Bullshit Web Framework for Wild Web
             &nbsp; <a style="margin-bottom:30px;" href="http://synrc.com/apps/n2o/doc/book.pdf">N2O.PDF</a><br><br>
         <img src="https://n2o.space/img/pdf.jpg" width=50>
-        
         </p>
 
     </section>
