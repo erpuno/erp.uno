@@ -63,16 +63,46 @@
 </aside>
 <main>
     <section>
-        <a name=modules><h3>N2O Applications</h3></a>
-
-        <p>N2O Applications is the family of services that
-           rely on N2O as a core router and processing loop.
-           We've built banks, games and messaging apps
-           in a form of N2O protocols.</p>
-
-        <p>N2O itself provides robust infrastructure for sessions,
-           cookies, auth, message queue, controls, rest services,
-           javascript compiler and many more. Limited in size to 1K LOC.</p>
+        <a name=intro></a>
+        <h3>N2O as Communication Framework</h3>
+        <p>
+            N2O is an abstract processing loop of function with signature: Protocol -> IO,
+            where Protocol is a set of messages accepted by this function and result status IO
+            that could be continuation, JavaScript rendered code or binary data sent from server to client.
+            As being abstract it could be embedded into any netwotk server code, thus
+            is claiming to be communication framework. As communication framework
+            N2O supports different formatters (BERT/XML/JSON/TEXT), provides mechanism
+            for service development, cache, session and logging facilities. The core
+            features is limited to 25KB.
+        </p>
+        <p>
+            The main two usages of N2O:
+            1) live in client connection processes of server; 2) live in server workers
+            and handle all requests from client processes.
+        </p>
+        <figure>
+            <img src="https://mqtt.n2o.space/man/WebSocket + MQTT.svg">
+            <figcaption>Schema. Live in Client processes or in Server Ring</figcaption>
+        </figure>
+    </section>
+    <section>
+        <h3>N2O Applications</h3>
+         <p>Writing applications for N2O means writing protocol implementation
+            modules and plug them to protocol loop. Luckily, N2O shipped with set of protocol
+            implementations, resembling all the best parts from other federations: XMPP/WS/CORBA.
+            If you need small, binary, compact and production-ready protocol
+            along with existed infrastructure and community &mdash; N2O is right page you are looking for.</p>
+        <figure>
+            <img src="https://n2o.space/img/mqtt.svg">
+            <figcaption>Picture 1. Protocol Modules</figcaption>
+        </figure>
+        <figure>
+            <img src="https://n2o.space/img/n2o-mq.png">
+            <figcaption>Picture 2. Protocol Messages</figcaption>
+        </figure>
+    </section>
+    <section>
+        <a name=modules><h3>N2O Open Source</h3></a>
 
         <p>The packages are available through Github and Hex repositories
            and are compatible with <b>mad</b> and <b>rebar</b> package managers.
@@ -95,28 +125,8 @@
             <li><b><a href="//synrc.com/apps/bpe">bpe</a></b> &mdash; BPE Process Engine</li>
             <li><b><a href="//synrc.com/apps/forms">forms</a></b> &mdash; NITRO Generation</li>
         </ul>
+        <br><br>
     </section>
-
-    <section>
-        <p>N2O Protocols are sets (or sums) of messages that could
-           be handled within single module. You can plug as many unintersected
-           protocols to application as you want. N2O performs
-           calls to servers started from protocol code. The worker
-           pool is an adjustable hash ring. In MQTT version workers
-           are regular MQTT clients.</p>
-
-        <a name=modules><h3>N2O Protocols</h3></a>
-            <figure>
-            <img src="img/mqtt.svg">
-            <figcaption>Picture 1. Protocol Modules</figcaption>
-        </figure>
-
-        <figure>
-            <img src="img/n2o-mq.png">
-            <figcaption>Picture 2. Protocol Messages</figcaption>
-        </figure>
-    </section>
-
 
 </main>
 
