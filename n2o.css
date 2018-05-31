@@ -248,10 +248,15 @@ footer {
     color: red;
 }
 
+  li { list-style-position: inside; }
+  .desk { display: none; }
+
 @media(min-width: 768px) {
     body {
         font-size: 20px;
     }
+
+    li { list-style-position: inside; }
 
     header h1 {
         font-size: 50px;
@@ -275,7 +280,7 @@ footer {
 
 
     main p {
-        margin: 20px auto;    
+        margin: 20px auto;
     }
 
     main ul {
@@ -293,6 +298,10 @@ footer {
 }
 
 @media(min-width: 1280px) {
+
+    .desk { display: inline-block; }
+    li { list-style-position: outside; }
+
     header h1 {
         font-size: 70px;
         margin: 100px 0 150px;
@@ -309,6 +318,7 @@ footer {
         text-align: left;
         font-size: 20px;
     }
+
 
     aside section:first-child {
         max-width: 650px;

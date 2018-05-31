@@ -7,7 +7,7 @@
     <meta name="description" content="" />
     <meta name="author" content="Maxim Sokhatsky" />
     <title>N2O</title>
-    <link rel="stylesheet" href="n2o.css" />
+    <link rel="stylesheet" href="n2o.css?v=2" />
 </head>
 
 <body>
@@ -23,13 +23,13 @@
         <a name=plugin><h3>Related Documents</h3></a>
         <div>
         <ul>
-           <li><a href="//mqtt.n2o.space">N2O: MQTT w/o WebSockets</a> <font color=#00b8cf>26 APR 2017</font> </li>
-           <li><a href="articles/streams.htm">STREAMS: 300MB/s GEN_SERVER</a> <font color=#00b8cf>15 SEP 2016 </font></li>
-           <li><a href="articles/mach.htm">MACH: SERVICE WALKER</a> <font color=#00b8cf>15 OCT 2015 </font></li>
-           <li><a href="articles/ftp.htm">N2O: 25MB/s FILE UPLOAD</a> <font color=#00b8cf>23 SEP 2015</font></li>
-           <li><a href="articles/web.htm">N2O: WEB APPLICATIONS</a> <font color=#00b8cf>3 MAR 2015</font></li>
-           <li><a href="articles/n2o.htm">N2O: PROTOCOL</a> <font color=#00b8cf>1 MAR 2015 </font></li>
-           <li><a href="articles/bpe.htm">BPE: BUSINESS ENGINE</a> <font color=#00b8cf>20 OCT 2014 </font></li>
+           <li><a href="//mqtt.n2o.space">N2O: MQTT w/o WebSockets</a> <font class=desk color=#00b8cf>26 APR 2017</font> </li>
+           <li><a href="articles/streams.htm">STREAMS: 300MB/s LOGGER</a> <font class=desk color=#00b8cf>15 SEP 2016 </font></li>
+           <li><a href="articles/mach.htm">MACH: SERVICE WALKER</a> <font class=desk color=#00b8cf>15 OCT 2015 </font></li>
+           <li><a href="articles/ftp.htm">N2O: 25MB/s FILE UPLOAD</a> <font class=desk color=#00b8cf>23 SEP 2015</font></li>
+           <li><a href="articles/web.htm">N2O: WEB APPLICATIONS</a> <font class=desk color=#00b8cf>3 MAR 2015</font></li>
+           <li><a href="articles/n2o.htm">N2O: PROTOCOL</a> <font  class=desk color=#00b8cf>1 MAR 2015 </font></li>
+           <li><a href="articles/bpe.htm">BPE: BUSINESS ENGINE</a> <font class=desk color=#00b8cf>20 OCT 2014 </font></li>
            <li><a href="articles/history.htm">N2O: HISTORY</a></font></li>
         </ul></div>
         <div><ul>
@@ -46,31 +46,89 @@
                 low-latency IoT, MQTT, and WebSocket applications. You can embed
                 it into <b>cowboy</b>, <b>emqttd</b> or any message processing loop.
             </div>
-            <a name=plugin><h3>MANUAL</h3></a>
-            <div><ul>
-           <li><a href="https://mqtt.n2o.space/man/n2o.htm">MQTT: N2O</a></font></li>
-           <li><a href="https://mqtt.n2o.space/man/n2o_async.htm">MQTT: N2O ASYNC</a></font></li>
-           <li><a href="https://mqtt.n2o.space/man/n2o_format.htm">MQTT: N2O FORMAT</a></font></li>
-            </ul></div>
+
+            <h3>Manuals and Books</h3>
+
+            <ul style="color:white">
+                <li><a href="//mqtt.n2o.space">synrc/mqtt</a> &mdash; N2O 4.9.3 MQTT</li>
+                <li><a href="//book.n2o.space">synrc/n2o</a> &mdash; N2O 4.4 Cowboy</li>
+            </ul>
             <br>
             <div>
                 20 AUG 2017 &copy; <a href="http://5ht.co/license.htm">DHARMA LICENSE</a>
             </div>
+
         </section>
     </article>
 </aside>
 <main>
     <section>
-        <a name=modules><h3>N2O Applications</h3></a>
+        <a name=intro></a>
+        <h3>N2O as Communication Framework</h3>
+        <p>
+            N2O is an abstract processing loop of function with signature: Protocol -> IO,
+            where Protocol is a set of messages accepted by this function and result status IO
+            that could be continuation, JavaScript rendered code or binary data sent from server to client.
+            As being abstract it could be embedded into any netwotk server code, thus
+            is claiming to be communication framework. As communication framework
+            N2O supports different formatters (BERT/XML/JSON), provides mechanism
+            for service development, cache, session and logging facilities. The core
+            features is limited to 25KB.
+        </p>
+        <figure>
+            <img src="https://mqtt.n2o.space/man/WebSocket + MQTT.svg">
+            <figcaption>Schema. Live in Client processes or in Server Ring</figcaption>
+        </figure>
+        <p>
+            The main two usages of N2O:
+            1) live in client connection processes of server; 2) live in server workers
+            and handle all requests from client processes. You can add you own feature-set
+            versions of N2O with different Github repositories. N2O is distributed by modules
+            not as monolith application, so you can pick and pack different fiature combinations.
+        </p>
+        <figure><code>
+ 1. {n2o, ".*", {git, "git://github.com/synrc/n2o",  []}},
+ 2. {n2o, ".*", {git, "git://github.com/synrc/mqtt", []}},
+        </code></figure>
+    </section>
+    <section>
+        <h3>N2O Applications</h3>
+         <p>Writing applications for N2O means writing protocol implementation
+            modules and plug them to protocol loop. Luckily, N2O shipped with set of protocol
+            implementations, resembling all the best parts from other federations: XMPP/WS/CORBA.
+            If you need small, binary, compact and production-ready protocol
+            along with existed infrastructure and community &mdash; N2O is right page you are looking for.</p>
+        <figure>
+            <img src="https://n2o.space/img/mqtt.svg">
+            <figcaption>Picture 1. Protocol Modules</figcaption>
+        </figure>
+        <figure>
+            <img src="https://n2o.space/img/n2o-mq.png">
+            <figcaption>Picture 2. Protocol Messages</figcaption>
+        </figure>
+    </section>
+    <section>
+        <h3>N2O as Web Framework</h3>
 
-        <p>N2O Applications is the family of services that
-           rely on N2O as a core router and processing loop.
-           We've built banks, games and messaging apps
-           in a form of protocols of N2O.</p>
+<p>Web logic shoud be as much declarative as possible
+at the same time the web logic language should be readable by Java, .NET engineers.
+NITRO protocol is what we called Web Framework inside N2O ecosystem. If you plug NITRO module, you 
+automatically enables web framework for all devices. It resembles Nitrogen API,
+well known Erlang Web Framework.</p>
 
-        <p>N2O itself provides robust infrastructure for sessions,
-           cookies, auth, message queue, controls, rest services,
-           javascript compiler and many more. Limited in size to 1K LOC.</p>
+<p>Here is example of Application powered by N2O Application Server. You may read more
+in <a href="articles/web.htm">articles/web</a>.</p>
+
+<figure><img src="img/web1.png" width=800 style="padding:20px;"></figure>
+
+            <p>You can read N2O Book: No Bullshit Web Framework for Wild Web
+            &nbsp; <a style="margin-bottom:30px;" href="http://synrc.com/apps/n2o/doc/book.pdf">N2O.PDF</a><br><br>
+        <img src="https://n2o.space/img/pdf.jpg" width=50>
+        </p>
+
+    </section>
+    <section>
+        <a name=modules><h3>N2O Open Source</h3></a>
 
         <p>The packages are available through Github and Hex repositories
            and are compatible with <b>mad</b> and <b>rebar</b> package managers.
@@ -79,14 +137,14 @@
            20 releases and 40 contributors.</p>
 
         <ul>
-            <li><b><a href="http://review.n2o.space">review</a></b> &mdash; N2O Review Sample Application</li>
-            <li><b><a href="//mqtt.n2o.space">mqtt</a></b> &mdash; N2O Server 4.5 MQTT</li>
-            <li><b><a href="http://book.n2o.space">n2o</a></b> &mdash; N2O Server 4.4</li>
+            <li><b><a href="http://review.n2o.space">review</a></b> &mdash; N2O Sample App</li>
+            <li><b><a href="//mqtt.n2o.space">mqtt</a></b> &mdash; N2O Server 4.9.3 MQTT</li>
+            <li><b><a href="http://book.n2o.space">n2o</a></b> &mdash; N2O Server 4.4 COWBOY</li>
             <li><b><a href="//synrc.github.io/kvs">kvs</a></b> &mdash; KVS Abstract Database</li>
-            <li><b><a href="http://mad.n2o.space">mad</a></b> &mdash; MAD Manage Dependencies</li>
+            <li><b><a href="http://mad.n2o.space">mad</a></b> &mdash; MAD Manage Deps</li>
             <li><b><a href="//synrc.github.io/cps">cps</a></b> &mdash; CPS Server</li>
             <li><b><a href="//synrc.github.io/nitro">nitro</a></b> &mdash; NITRO Nitrogen Elements</li>
-            <li><b><a href="//synrc.github.io/roster">roster</a></b> &mdash; ROSTER Presence and Messaging</li>
+            <li><b><a href="//synrc.github.io/roster">roster</a></b> &mdash; ROSTER Messaging</li>
             <li><b><a href="//synrc.github.io/active">active</a></b> &mdash; ACTIVE File Reloader</li>
             <li><b><a href="//synrc.github.io/fs">fs</a></b> &mdash; FS Listener</li>
             <li><b><a href="//synrc.github.io/rest">rest</a></b> &mdash; REST JSON Parse Transform</li>
@@ -94,27 +152,25 @@
             <li><b><a href="//synrc.space/apps/forms">forms</a></b> &mdash; FORMS NITRO Generation</li>
         </ul>
     </section>
-
     <section>
-        <p>N2O Protocols are sets (or sums) of messages that could
-           be handled within single module. You can plug as many unintersected
-           protocols to application as you want. N2O performs
-           calls to servers started from protocol code. The worker
-           pool is an adjustable hash ring. In MQTT version workers
-           are regular MQTT clients.</p>
-
-        <a name=modules><h3>N2O Protocols</h3></a>
-            <figure>
-            <img src="img/mqtt.svg">
-            <figcaption>Picture 1. Protocol Modules</figcaption>
-        </figure>
-
-        <figure>
-            <img src="img/n2o-mq.png">
-            <figcaption>Picture 2. Protocol Messages</figcaption>
-        </figure>
+        <a name=modules><h3>N2O Contributors</h3></a>
+        <ul>
+            <li><b><a href="https://github.com/5HT">5HT</a></b> &mdash; Maxim Sokhatsky <div class=desk>&mdash; N2O, KVS, MAD, BPE, MQTT, ROSTER</div></li>
+            <li><b><a href="https://github.com/doxtop">doxtop</a></b> &mdash; Andrii Zadorozhnii <div class=desk>&mdash; N2O, KVS</div></li>
+            <li><b><a href="https://github.com/proger">proger</a></b> &mdash; Vladimir Kirillov <div class=desk>&mdash; ACTIVE, FS</div></li>
+            <li><b><a href="https://github.com/meatmachine">meatmachine</a></b> &mdash; Dmitry Bushmelev <div class=desk>&mdash; REST</div></li>
+            <li><b><a href="https://github.com/m-2k">m-2k</a></b> &mdash; Andrey Martemyanov <div class=desk>&mdash; N2O, NITRO, KVS</div></li>
+            <li><b><a href="https://github.com/romanshestakov">romanshestakov</a></b> &mdash; Roman Shestakov <div class=desk>&mdash; NITRO</div></li>
+            <li><b><a href="https://github.com/d1ffuz0r">d1ffuz0r</a></b> &mdash; Roman Gladkov <div class=desk>&mdash; LOG</div></li>
+            <li><b><a href="https://github.com/vsov">vsov</a></b> &mdash; Viktor Sovietov <div class=desk>&mdash; BOOK</div></li>
+            <li><b><a href="https://github.com/wizzard0">wizzard0</a></b> &mdash; Oleksandr Nikitin <div class=desk>&mdash; SEC</div></li>
+            <li><b><a href="https://github.com/sokal32">sokal32</a></b> &mdash; Vitaly Shutko <div class=desk>&mdash; KVS, MAD</div></li>
+            <li><b><a href="https://github.com/cystbear">cystbear</a></b> &mdash; Oleg Zinchenko <div class=desk>&mdash; N2O, KVS</div></li>
+            <li><b><a href="https://github.com/bushyn">bushyn</a></b> &mdash; Arseniy Bushyn <div class=desk>&mdash; CSS</div></li>
+            <li><b><a href="https://github.com/motorbit">motorbit</a></b> &mdash; Anton Makarov  <div class=desk>&mdash; SWIFT</div></li>
+        </ul>
+        <br><br>
     </section>
-
 
 </main>
 
