@@ -14,10 +14,9 @@
 
 <nav>
     <a href='https://synrc.space/'>SYNRC</a>
-    <a href='https://mqtt.n2o.space'>N2O</a>
-    <a href='https://kvx.n2o.space'>KVX</a>
-    <a href='https://mad.n2o.space'>MAD</a>
-    <a href='https://bpe.n2o.space'>BPE</a>
+    <a href='http://o1.network'>O1</a>
+    <a href='https://o3.click'>O3</a>
+    <a href='http://o7.network'>O7</a>
 </nav>
 
 <header>
@@ -27,52 +26,12 @@
 
 <aside>
     <article>
-    <section>
-        <a name=plugin><h3>NOTES</h3></a>
-        <div>
-        <ul>
-           <li><a href="articles/mq.htm">EMQ: N2O OVER MQTT</a> <font class=desk color=#00b8cf>26 APR 2017</font> </li>
-           <li><a href="articles/streams.htm">STREAMS: 300MB/s LOGGER</a> <font class=desk color=#00b8cf>15 SEP 2016 </font></li>
-           <li><a href="articles/mach.htm">MACH: SERVICE WALKER</a> <font class=desk color=#00b8cf>15 OCT 2015 </font></li>
-           <li><a href="articles/ftp.htm">N2O: 25MB/s FILE UPLOAD</a> <font class=desk color=#00b8cf>23 SEP 2015</font></li>
-           <li><a href="articles/web.htm">N2O: WEB APPLICATIONS</a> <font class=desk color=#00b8cf>3 MAR 2015</font></li>
-           <li><a href="articles/n2o.htm">N2O: PROTOCOL</a> <font  class=desk color=#00b8cf>1 MAR 2015 </font></li>
-           <li><a href="articles/bpe.htm">BPE: BUSINESS ENGINE</a> <font class=desk color=#00b8cf>20 OCT 2014 </font></li>
-           <li><a href="articles/history.htm">N2O: HISTORY</a></font></li>
-        </ul></div>
-        <div><ul>
-           <li><a href="http://synrc.com/apps/cr/doc/cr.htm">CR: DATABASE</a></font></li>
-           <li><a href="http://5ht.co/spawnproc.htm">N2O: PRIVATBANK</a></font></li>
-        </ul></div>
-    </section>
         <section>
             <h3>SYNOPSIS</h3>
             <div>
-                N2O defines a way to scale applications from protocols to modules,
-                events persistence and schema. It replaces CORBA/SOAP/XMPP in
-                small and compact binary manner, yet it's ready for high-speed,
-                low-latency IoT, MQTT, and WebSocket applications. You can embed
-                it into <b>cowboy</b>, <b>emqttd</b> or any message processing loop.
+                N2O ECO defines a full stack specifation along
+                with reference implementations for functional languages.
             </div>
-
-            <h3>Stack</h3>
-
-            <ul style="color:white">
-                <li><a href="https://ws.n2o.space">synrc/n2o</a> &mdash; N2O 5.11.1 MQTT WS</li>
-                <li><a href="https://kvx.n2o.space">synrc/kvx</a> &mdash; KVX 5.11</li>
-                <li><a href="https://mad.n2o.space">synrc/mad</a> &mdash; MAD 4.11</li>
-                <li><a href="https://bpe.n2o.space">synrc/bpe</a> &mdash; BPE 3.11</li>
-                <li><a href="https://synrc.github.io/nitro">synrc/nitro</a> &mdash; NITRO 3.10</li>
-                <li><a href="https://synrc.github.io/rest">synrc/rest</a> &mdash; REST 5.10</li>
-                <li><a href="https://synrc.github.io/active">synrc/active</a> &mdash; ACTIVE 4.11</li>
-                <li><a href="https://synrc.github.io/fs">synrc/fs</a> &mdash; FS 4.10</li>
-                <li><a href="https://synrc.github.io/sh">synrc/sh</a> &mdash; SH 2.11</li>
-                <li><a href="https://synrc.github.io/bert">synrc/bert</a> &mdash; BERT 1.11.1</li>
-                <li><a href="https://review.n2o.space">synrc/review</a> &mdash; REVIEW 1.11 TT</li>
-                <li><a href="https://sample.n2o.space">synrc/sample</a> &mdash; REVIEW 1.11 WS</li>
-                <li><a href="https://mqtt.n2o.space">synrc/mqtt</a> &mdash; N2O 5.11.1 TT</li>
-                <li><a href="https://n2o.o3.click">o3/n2o</a> &mdash; N2O 0.11 HS</li>
-            </ul>
             <br>
             <div>
                 25 OCT 2018 &copy; <a href="http://5ht.co/license.htm">DHARMA LICENSE</a>
@@ -84,88 +43,45 @@
 <main>
     <section>
         <a name=intro></a>
-        <h3>N2O as Communication Framework</h3>
-        <p>
-            N2O is an abstract processing loop of function with signature: Protocol -> IO,
-            where Protocol is a set of messages accepted by this function and result status IO
-            that could be continuation, JavaScript rendered code or binary data sent from server to client.
-            As being abstract it could be embedded into any netwotk server code, thus
-            is claiming to be communication framework. As communication framework
-            N2O supports different formatters (BERT/XML/JSON), provides mechanism
-            for service development, cache, session and logging facilities. The core
-            features is limited to 25KB.
+        <h3><a href="http://o1.network">O1 ECO</a></h3>
+        <p> O1 ECO is a <a href="http://sml-family.org">Standard ML</a> N2O implementation. Standard ML
+            is a certified language with well defined operational semantics.
+            Having N2O in this language is a matter of formality.
         </p>
-        <figure>
-            <img src="https://mqtt.n2o.space/man/WebSocket + MQTT.svg">
-            <figcaption>Schema. Live in Client processes or in Server Ring</figcaption>
-        </figure>
-        <p>
-            The main two usages of N2O:
-            1) live in client connection processes of server; 2) live in server workers
-            and handle all requests from client processes. You can add you own feature-set
-            versions of N2O with different Github repositories. N2O is distributed by modules
-            not as monolith application, so you can pick and pack different fiature combinations.
-        </p>
-        <figure><code>
- 1. {n2o, ".*", {git, "git://github.com/synrc/n2o",  []}},
- 2. {n2o, ".*", {git, "git://github.com/synrc/mqtt", []}},
-        </code></figure>
     </section>
     <section>
-        <h3>N2O as Distributed Application Server</h3>
-         <p>Writing applications for N2O means writing protocol implementation
-            modules and plug them to protocol loop. Luckily, N2O shipped with set of protocol
-            implementations, resembling all the best parts SOA federations: XMPP/WS/CORBA.</p>
-        <figure>
-            <img src="https://n2o.space/img/mqtt.svg">
-            <figcaption>Picture 1. Protocol Modules</figcaption>
-        </figure>
-        <figure>
-            <img src="https://n2o.space/img/n2o-mq.png">
-            <figcaption>Picture 2. Protocol Messages</figcaption>
-        </figure>
-    </section>
-    <section>
-        <h3>N2O as Web Framework</h3>
-
-<p>Web logic shoud be as much declarative as possible
-at the same time the web logic language should be readable by Java, .NET engineers.
-NITRO protocol is what we called Web Framework inside N2O ecosystem. If you plug NITRO module, you 
-automatically enables web framework for all devices. It resembles Nitrogen API,
-well known Erlang Web Framework.</p>
-
-<p>Here is example of Application powered by N2O Application Server. You may read more
-in <a href="articles/web.htm">articles/web</a>.</p>
-
-<figure><img src="img/web1.png" width=800 style="padding:20px;"></figure>
-
-            <p>You can read N2O Book: No Bullshit Web Framework for Wild Web
-            &nbsp; <a style="margin-bottom:30px;" href="http://synrc.com/apps/n2o/doc/book.pdf">N2O.PDF</a><br><br>
-        <img src="https://n2o.space/img/pdf.jpg" width=50>
-        </p>
-
-    </section>
-    <section>
-        <a name=modules></a><h3>N2O as Community</h3>
+        <h3><a href="http://o3.click">O3 ECO</a></h3>
+         <p>O3 ECO introduces N2O protocols for <a href="http://haskell.org">Haskell</a> programming language.
+            The aim is to be compatible at transport level with Erlang version of N2O.</p>
         <ul>
-            <li><b><a href="https://github.com/5HT">5HT</a></b> &mdash; Maxim Sokhatsky <div class=desk>&mdash; N2O, KVS, MAD, BPE, MQTT, ROSTER</div></li>
-            <li><b><a href="https://github.com/doxtop">doxtop</a></b> &mdash; Andrii Zadorozhnii <div class=desk>&mdash; N2O, KVS</div></li>
-            <li><b><a href="https://github.com/proger">proger</a></b> &mdash; Vladimir Kirillov <div class=desk>&mdash; ACTIVE, FS</div></li>
-            <li><b><a href="https://github.com/dimathemachine">dimathemachine</a></b> &mdash; Dmitry Bushmelev <div class=desk>&mdash; REST</div></li>
-            <li><b><a href="https://github.com/romanshestakov">romanshestakov</a></b> &mdash; Roman Shestakov <div class=desk>&mdash; NITRO</div></li>
-            <li><b><a href="https://github.com/d1ffuz0r">d1ffuz0r</a></b> &mdash; Roman Gladkov <div class=desk>&mdash; LOG</div></li>
-            <li><b><a href="https://github.com/vsov">vsov</a></b> &mdash; Viktor Sovietov <div class=desk>&mdash; BOOK</div></li>
-            <li><b><a href="https://github.com/wizzard0">wizzard0</a></b> &mdash; Oleksandr Nikitin <div class=desk>&mdash; SEC</div></li>
-            <li><b><a href="https://github.com/sokal32">sokal32</a></b> &mdash; Vitaly Shutko <div class=desk>&mdash; KVS, MAD</div></li>
-            <li><b><a href="https://github.com/cystbear">cystbear</a></b> &mdash; Oleg Zinchenko <div class=desk>&mdash; N2O, KVS</div></li>
-            <li><b><a href="https://github.com/bushyn">bushyn</a></b> &mdash; Arseniy Bushyn <div class=desk>&mdash; CSS</div></li>
-            <li><b><a href="https://github.com/cryoflamer">cryoflamer</a></b> &mdash; Yuri Maslovsky <div class=desk>&mdash; MQTT</div></li>
-            <li><b><a href="https://github.com/qomputer">qomputer</a></b> &mdash; Igor Kharin <div class=desk>&mdash; K8S</div></li>
-            <li><b><a href="https://github.com/motorbit">motorbit</a></b> &mdash; Anton Makarov <div class=desk>&mdash; SWIFT</div></li>
-            <li><b><a href="https://github.com/xafizoff">xafizoff</a></b> &mdash; Marat Khafizov <div class=desk>&mdash; HASKELL </div></li>
-            <li><b><a href="https://github.com/YvgenTroshchiy">YvgenTroshchiy</a></b> &mdash; Yvgen Troshchiy <div class=desk>&mdash; KOTLIN </div></li>
+            <li><a href="https://n2o.o3.click">o3/n2o</a> &mdash; N2O 0.11 HS</li>
+            <li><a href="https://nitro.o3.click">o3/nitro</a> &mdash; NITRO 0.11</li>
+            <li><a href="https://sample.o3.click">o3/sample</a> &mdash; SAMPLE 0.11</li>
         </ul>
-        <br><br>
+    </section>
+    <section>
+        <a name=intro></a>
+        <h3><a href="http://o7.network">O7 ECO</a></h3>
+        <p> O7 ECO defines a way to scale <a href="http://erlang.org">Erlang</a> applications from protocols to modules,
+            events persistence and schema. It replaces CORBA/SOAP/XMPP in
+            small and compact binary manner, yet it's ready for high-speed,
+            low-latency IoT, MQTT, and WebSocket applications.
+        </p>
+            <ul>
+                <li><a href="https://ws.n2o.space">o7/n2o</a> &mdash; N2O 5.11.1 MQTT WS</li>
+                <li><a href="https://kvx.n2o.space">o7/kvx</a> &mdash; KVX 5.11</li>
+                <li><a href="https://mad.n2o.space">o7/mad</a> &mdash; MAD 4.11</li>
+                <li><a href="https://bpe.n2o.space">o7/bpe</a> &mdash; BPE 3.11</li>
+                <li><a href="https://synrc.github.io/nitro">o7/nitro</a> &mdash; NITRO 3.10</li>
+                <li><a href="https://synrc.github.io/rest">o7/rest</a> &mdash; REST 5.10</li>
+                <li><a href="https://synrc.github.io/active">o7/active</a> &mdash; ACTIVE 4.11</li>
+                <li><a href="https://synrc.github.io/fs">o7/fs</a> &mdash; FS 4.10</li>
+                <li><a href="https://synrc.github.io/sh">o7/sh</a> &mdash; SH 2.11</li>
+                <li><a href="https://synrc.github.io/bert">o7/bert</a> &mdash; BERT 1.11.1</li>
+                <li><a href="https://review.n2o.space">o7/review</a> &mdash; REVIEW 1.11 TT</li>
+                <li><a href="https://sample.n2o.space">o7/sample</a> &mdash; REVIEW 1.11 WS</li>
+                <li><a href="https://mqtt.n2o.space">o7/mqtt</a> &mdash; N2O 5.11.1 TT</li>
+            </ul>
     </section>
 
 </main>
