@@ -82,20 +82,21 @@
     <section>
          <h3>HOW TO N2O?</h3>
          <figure><figcaption>NITRO ERLANG:</figcaption><code>
-  event(init) -> wf:reg(room);
-  event(chat) -> wf:send(room,{client,{peer(),message()}});
-  event({client,{P,M}}) -> wf:insert_bottom(history,
-                           #panel{id=history,body=[P,": ",M,#br{}]}).
+  event(init) ->
+      wf:reg(room);
+  event(chat) ->
+      wf:send(room,{client,{peer(),message()}});
+  event({client,{P,M}}) ->
+      wf:insert_bottom(history,
+         #panel{id=history,body=[P,": ",M,#br{}]}).
          </code></figure>
         <figure><figcaption>NITRO Haskell:</figcaption><code>
   index Init = do
       updateText "system" "What is your name?"
-      wireEl button{id="send", postback=Just Greet, source=["name"]}
-
+      wireEl button{id="send", postback=Just Greet, source=["name"]
   index (Message Greet) = do
       Just name &lt;- get "name"
       updateText "system" ("Hello, " <> jsEscape name <> "!")
-
   about Init =
       updateText "app" "This is the N2O Hello World App"
         </code></figure>
