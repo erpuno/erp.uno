@@ -157,12 +157,16 @@
          <h3>FORMAL SPEC</h3>
          <h4>N2O</h4>
          <p>Core, Protocols and Services.</p>
+         <p>N2O provides cache and session tables along with basic RPC protocol.</p>
          <figure><figcaption>N2O:</figcaption><code>
   -type n2o()       :: #bert{} | #json{} | #binary{} | #default{}.
   -type cx()        :: #cx{}.
   -type formatter() :: binary | json | bert | text | default | atom().
   -type response()  :: { formatter(), binary() }.
   -type memtable()  :: atom().
+
+  -spec info(term(),term(),#cx{}) -> #reply{}
+                                   | #unknown{}.
 
   -record(ok,      { data     :: term() }).
   -record(error    { data     :: term() }.
@@ -179,7 +183,6 @@
                      pid       = [] :: [] | pid(),
                      vsn       = [] :: [] | integer() }).
 
-  -spec info(term(),term(),#cx{}) -> #reply{} | #unknown{}.
   -spec encode(record()) -> binary().
   -spec decode(binary()) -> record().
   -spec session(term(),term()) -> term().
@@ -189,6 +192,10 @@
          </code></figure>
          <h4>NITRO</h4>
          <p>Web Framework.</p>
+         <p>NITRO supports streaming of
+            prerendered forms over WebSocket and MQTT
+            and provides tiny JavaScript library to work with document model.
+            This library is compatible across implementations.</p>
          <figure><figcaption>NITRO:</figcaption><code>
   -spec render(list(#element{})) -> binary().
   -spec wire(list(#action{})) -> [].
@@ -206,6 +213,8 @@
          </code></figure>
          <h4>KVX</h4>
          <p>Persistent Streams (Database).</p>
+         <p>KVX and KVS provides unified API for key-value storage along with native
+            backend implementations for each language.</p>
          <figure><figcaption>KVX:</figcaption><code>
   -spec top(#reader{}) -> #reader{}.
   -spec bot(#reader{}) -> #reader{}.
@@ -223,6 +232,7 @@
          </code></figure>
          <h4>ROSTER</h4>
          <p>Public and Private Enterprise Messaging.</p>
+         <p>ROSTER provides lightweight address book access and file sharing.</p>
          <figure><figcaption>ROSTER:</figcaption><code>
   -type container()     :: chain | cur.
   -type messageType()   :: sys | reply | forward | read | edited | cursor.
@@ -276,6 +286,7 @@
          </code></figure>
          <h4>BPE</h4>
          <p>Business Process Engine.</p>
+         <p>BPE maps directly Erlang processes to formal BPMN business processes.</p>
          <figure><figcaption>BPE:</figcaption><code>
   -type tasks()  :: #task{} | #serviceTask{} | #userTask{} | #receiveTask{}.
   -type events() :: #messageEvent{} | #boundaryEvent{} | #timeoutEvent{}.
