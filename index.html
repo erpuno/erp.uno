@@ -100,6 +100,16 @@
   about Init =
       updateText "app" "This is the N2O Hello World App"
         </code></figure>
+        <figure><figcaption>NITRO JAVASCRIPT:</figcaption><code>
+  var index = match({
+    'init' : function () {
+        wf.reg('room'); },
+    '["client",[sid,msg]]' : function (sid,msg) {
+        wf.insert_bottom("history","<span>"+sid+": "+msg+"</span>"); },
+    '["chat",msg]' : function (msg) {
+        wf.send('room',tuple(atom('client'),tuple(bin(this.sid),bin(msg))))); }
+  });
+         </code></figure>
          <figure><figcaption>KVX ERLANG:</figcaption><code>
   #reader{id=R} = kvs:save(kvs:reader(Id)),
   [ kvs:save(kvs:add((kvs:load_writer(Id))
