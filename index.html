@@ -133,6 +133,17 @@
          true  -> {reply,'Process',Proc};
          false -> {reply,'Signatory',Proc} end;
          </code></figure>
+         <figure><figcaption>REST ERLANG:</figcaption><code>
+  init() -> ets:new(users, [public, named_table, {keypos, #user.id}]).
+  populate(Users) -> ets:insert(users, Users).
+  exists(Id) -> ets:member(users, wf:to_list(Id)).
+  get() -> ets:tab2list(users).
+  get(Id) -> [User] = ets:lookup(users, wf:to_list(Id)), User.
+  delete(Id) -> ets:delete(users, wf:to_list(Id)).
+  post(#user{} = User) -> ets:insert(users, User);
+  post(Data) -> post(from_json(Data, #user{})).
+         </code></figure>
+
     </section>
     <section>
         <h3><a href="https://o3.click">O3 ECO</a></h3>
