@@ -107,8 +107,7 @@
     '["client",[sid,msg]]' : function (sid,msg) {
         wf.insert_bottom("history","<span>"+sid+": "+msg+"</span>"); },
     '["chat",msg]' : function (msg) {
-        wf.send('room',tuple(atom('client'),tuple(bin(this.sid),bin(msg))))); }
-  });
+        wf.send('room',tuple(atom('client'),tuple(bin(this.sid),bin(msg))))); }});
          </code></figure>
          <figure><figcaption>KVX ERLANG:</figcaption><code>
   #reader{id=R} = kvs:save(kvs:reader(Id)),
