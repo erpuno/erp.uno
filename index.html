@@ -129,8 +129,135 @@
          </code></figure>
     </section>
     <section>
-         <h3>N2O PROTOCOLS</h3>
-         <figure><figcaption></figcaption><code>
+         <h3>PROTOCOLS</h3>
+         <h4>N2O</h4>
+         <p>Core, Messaging and Services.</p>
+         <figure><figcaption>N2O:</figcaption><code>
+  -spec session(term(),term()) -> term().
+  -spec session(term()) -> term().
+  -spec cache(term(),term(),term()) -> term().
+  -spec cache(term(),term()) -> term().
+         </code></figure>
+         <h4>NITRO</h4>
+         <p>Web Framework.</p>
+         <figure><figcaption>NITRO:</figcaption><code>
+  -spec render(list(#element{})) -> binary().
+  -spec wire(list(#action{})) -> [].
+  -spec insert_top(atom(), list(#element{})) -> [].
+  -spec insert_bottom(atom(), list(#element{})) -> [].
+  -spec update(atom(), list(#element{})) -> [].
+  -spec clear(atom()) -> [].
+  -spec remove(atom()) -> [].
+
+  -record(init,    { token=[] }).
+  -record(pickle,  { source=[], pickled=[], args=[] }).
+  -record(flush,   { data=[] }).
+  -record(direct,  { data=[] }).
+  -record(ev,      { module=[], msg=[], trigger=[], name=[] }).
+         </code></figure>
+         <h4>KVX</h4>
+         <p>Persistent Streams (Database).</p>
+         <figure><figcaption>KVX:</figcaption><code>
+  -spec top(#reader{}) -> #reader{}.
+  -spec bot(#reader{}) -> #reader{}.
+  -spec next(#reader{}) -> #reader{}.
+  -spec prev(#reader{}) -> #reader{}.
+  -spec drop(#reader{}) -> #reader{}.
+  -spec take(#reader{}) -> #reader{}.
+  -spec load_writer (term()) -> {ok,term()} | {error,term()}.
+  -spec load_reader (integer()) -> {ok,term()} | {error,term()}.
+  -spec writer (term()) -> #writer{}.
+  -spec reader (term()) -> #reader{}.
+  -spec save (#reader{} | #writer{}) -> #reader{} | #writer{}.
+  -spec up   (#reader{}) -> #reader{}.
+  -spec add(#writer{}) -> #writer{}.
+         </code></figure>
+         <h4>ROSTER</h4>
+         <p>Public and Private Enterprise Messaging.</p>
+         <figure><figcaption>ROSTER:</figcaption><code>
+
+  -type container()     :: chain | cur.
+  -type messageType()   :: sys | reply | forward | read | edited | cursor.
+  -type messageStatus() :: masync | mdelete | mclear| mupdate | medit.
+  -type historyType()   :: updated | get | update | last_msg | greply.
+  -type jobType()       :: init | update | delete | pending | stop | complete.
+
+  -record(muc,       { name = [] :: [] | binary() }).
+  -record(p2p,       { from = [] :: [] | binary(),
+                       to   = [] :: [] | binary() }).
+
+  -record('File',    { id       = [] :: binary(),
+                       mime     = <<"text">> :: binary(),
+                       payload  = [] :: binary(),
+                       parentid = [] :: binary(),
+                       data     = [] :: binary() }).
+
+  -record('Message', { id        = [] :: [] | integer(),
+                       container = chain :: container(),
+                       feed_id   = [] :: #muc{} | #p2p{},
+                       prev      = [] :: [] | integer(),
+                       next      = [] :: [] | integer(),
+                       msg_id    = [] :: [] | binary(),
+                       from      = [] :: [] | binary(),
+                       to        = [] :: [] | binary(),
+                       files     = [] :: list(#'Desc'{}),
+                       type      = [] :: messageType(),
+                       link      = [] :: [] | integer() | #'Message'{},
+                       mstatus   = [] :: messageStatus()}).
+
+  -record('History', { roster_id = [] :: [] | binary(),
+                       feed      = [] :: [] | #p2p{} | #muc{},
+                       size      = 0  :: [] | integer(),
+                       entity_id = 0  :: [] | integer(),
+                       data      = [] :: integer(),
+                       status    = [] :: historyType()}).
+
+  -record('Contact', { user_id = [] :: [] | binary(),
+                       avatar   = [] :: list(integer()),
+                       names    = [] :: [] | binary(),
+                       reader   = [] :: [] | list(integer()),
+                       presence = offline :: presence(),
+                       status   = [] :: contactStatus()}).
+
+  -record('Roster',  { id       = [] :: [] | integer(),
+                       names    = [] :: [] | binary(),
+                       nick     = [] :: [] | binary(),
+                       userlist = [] :: list(#'Contact'{}),
+                       roomlist = [] :: list(integer()),
+                       phone    = [] :: [] | binary(),
+                       rosterStatus   = [] :: rosterStatus() }).
+         </code></figure>
+         <h4>BPE</h4>
+         <p>Business Process Engine.</p>
+         <figure><figcaption>BPE:</figcaption><code>
+
+  -type tasks()  :: #task{} | #serviceTask{} | #userTask{} | #receiveTask{}.
+  -type events() :: #messageEvent{} | #boundaryEvent{} | #timeoutEvent{}.
+
+  -record(process,   { ?ITERATOR(feed), name=[] :: [] | binary(),
+                       roles   =[] :: list(),
+                       tasks   =[] :: list(tasks()),
+                       events  =[] :: list(events()),
+                       ist     =[] :: [],
+                       flows   =[] :: list(#sequenceFlow{}),
+                       rules   =[] :: [],
+                       docs    =[] :: list(tuple()),
+                       options =[] :: term(),
+                       task    =[] :: [] | atom(),
+                       timer   =[] :: [] | binary(),
+                       notifications=[] :: [] | term(),
+                       result  =[] :: [] | binary(),
+                       started =[] :: [] | binary(),
+                       beginEvent=[] :: [] | atom(),
+                       endEvent=[] :: [] | atom()}).
+
+  -record(complete,  { id=[] :: [] | integer() }).
+  -record(proc,      { id=[] :: [] | integer() }).
+  -record(histo,     { id=[] :: [] | integer() }).
+  -record(create,    { proc=[] :: [] | #process{} | binary(),
+                       docs=[] :: [] | list(record()) }).
+  -record(amend,     { id=[] :: [] | integer(),
+                       docs=[] :: [] | list(record()) }).
          </code></figure>
     </section>
     <section>
@@ -154,6 +281,7 @@
                 <li><a href="https://kvx.n2o.space">o7/kvx</a> &mdash; KVX 5.11</li>
                 <li><a href="https://mad.n2o.space">o7/mad</a> &mdash; MAD 4.11</li>
                 <li><a href="https://bpe.n2o.space">o7/bpe</a> &mdash; BPE 3.11</li>
+                <li><a href="https://synrc.github.io/roster">o7/roster</a> &mdash; ROSTER 3.11</li>
                 <li><a href="https://synrc.github.io/nitro">o7/nitro</a> &mdash; NITRO 3.10</li>
                 <li><a href="https://synrc.github.io/rest">o7/rest</a> &mdash; REST 5.10</li>
                 <li><a href="https://synrc.github.io/active">o7/active</a> &mdash; ACTIVE 4.11</li>
