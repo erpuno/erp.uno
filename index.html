@@ -205,7 +205,6 @@
   -type messageType()   :: sys | reply | forward | read | edited | cursor.
   -type messageStatus() :: masync | mdelete | mclear| mupdate | medit.
   -type historyType()   :: updated | get | update | last_msg | greply.
-  -type jobType()       :: init | update | delete | pending | stop | complete.
 
   -record(muc,       { name = [] :: [] | binary() }).
   -record(p2p,       { from = [] :: [] | binary(),
