@@ -43,22 +43,6 @@
             </center></div>
         </section>
         <section>
-            <h3>ADVICE TO AUTHOR</h3>
-            <div>
-                 Each language, N2O is implemented in, should
-                 embed N2O most naturally and compact. If some layer between
-                 the base library of a language is needed, it
-                 could be provided, but it should be reduced
-                 to zero if possible. In some cases, some parts
-                 of a base library could be replaced with better replacement.
-                 N2O should provide client companion library usually
-                 implemented in a different set
-                 of client languages: JavaScript, Swift, and Kotlin.
-                 If you did everything right, N2O should not
-                 be more than 500 LOC in any language.
-                 The correct way is to implement WebSocket and
-                 static HTTP server using the same codebase.<br><br>
-            </div>
             <div>
                 2013&mdash;2019 &copy; <a href="https://5ht.co/license.htm">DHARMA LICENSE</a>
             </div>
@@ -66,6 +50,27 @@
     </article>
 </aside>
 <main>
+    <section>
+        <h3>WHAT IS N2O ECO?</h3>
+        <p>Imagine enterprise protocol stacks you are already familiar with.
+           It could be legacy standards, such as:
+           CORBA, DCOM, WSDL, SOAP, XMPP; as well as some latests restricted
+           implementations: JVM [Spring, Apache], CLR [WCF, WWF, WPF].
+           Imagine telecom protocol stacks there are being used as
+           complimentary and more underlying layers of protocols defined with ASN.1
+           [BT, WIFI, LDAP, DNS, SS7, GSM, UMTS, SMPP, BGP, AMQP, RTP].</p>
+        <p>Modern protocol stack tend to use lightweight versions of
+           descriptive languages: MessagePack, Thrift, GRPC/Protobuf and
+           different protocols: HTTP/2, QUIC, WebSocket, MQTT as well as legacy TCP and UDP.</p>
+        <p>N2O ECO is applicable to all of it, but also provide it's own
+           application protocol stack, defined in Erlang that can be authomatically
+           generated into ASN.1, Protobuf V3, JSON/REST and exposed as API for
+           different tires of server programming languages:
+           Tire 0 [Coq, Agda, Lean],
+           Tire 1 [Erlang, Haskell, Standard ML, Rust],
+           Tire 2 [Scala/Java, F#/C#, Python, Clojure, Elixir] compatible with
+           different client languages: JavaScript, Swift, Kotlin.</p>
+    </section>
     <section>
         <a name=intro></a>
         <h3><a href="https://o1.network">O1 ECO</a></h3>
@@ -122,6 +127,25 @@
                 <li><a href="https://mqtt.n2o.space">o7/mqtt</a> &mdash; N2O 5.11.1 TT</li>
             </ul>
         <br><br>
+    </section>
+
+    <section>
+            <h3>ADVICE TO AUTHOR</h3>
+            <p>
+                 Each language, N2O is implemented in, should
+                 embed N2O most naturally and compact. If some layer between
+                 the base library of a language is needed, it
+                 could be provided, but it should be reduced
+                 to zero if possible. In some cases, some parts
+                 of a base library could be replaced with better replacement.
+                 N2O should provide client companion library usually
+                 implemented in a different set
+                 of client languages: JavaScript, Swift, and Kotlin.
+                 If you did everything right, N2O should not
+                 be more than 500 LOC in any language.
+                 The correct way is to implement WebSocket and
+                 static HTTP server using the same codebase.<br><br>
+            </p>
     </section>
 
 </main>
