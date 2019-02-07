@@ -110,7 +110,29 @@
                 <li><a href="https://sample.n2o.space">o7/sample</a> &mdash; REVIEW 1.11 WS</li>
                 <li><a href="https://mqtt.n2o.space">o7/mqtt</a> &mdash; N2O 5.11.1 TT</li>
             </ul>
-        <br><br>
+         <figure><figcaption>NITRO ERLANG:</figcaption><code>
+  event(init) -> wf:reg(room);
+  event(chat) -> wf:send(room,{client,{peer(),message()}});
+  event({client,{P,M}}) -> wf:insert_bottom(history,
+                           #panel{id=history,body=[P,": ",M,#br{}]}).
+         </code></figure>
+         <figure><figcaption>KVX ERLANG:</figcaption><code>
+  #reader{id=R} = kvs:save(kvs:reader(Id)),
+  [ kvs:save(kvs:add((kvs:load_writer(Id))
+    #writer{args=#emails{}})) || _ <- lists:seq(1,X) ],
+  Bot = kvs:bot(kvs:load_reader(R)),
+  #reader{args=F} = kvs:take(Bot#reader{args=20,dir=0}),
+         </code></figure>
+         <figure><figcaption>BPE ERLANG:</figcaption><code>
+  action({request,'Init'}, Proc) ->
+    {reply,Proc};
+
+  action({request,'Payment'}, Proc) ->
+    Payment = bpe:doc({payment_notification},Proc),
+    case is_tuple(Payment) of
+         true  -> {reply,'Process',Proc};
+         false -> {reply,'Signatory',Proc} end;
+         </code></figure>
     </section>
     <section>
         <h3><a href="https://o3.click">O3 ECO</a></h3>
@@ -123,6 +145,18 @@
             <li><a href="https://nitro.o3.click">o3/nitro</a> &mdash; NITRO 0.11</li>
             <li><a href="https://sample.o3.click">o3/sample</a> &mdash; SAMPLE 0.11</li>
         </ul>
+        <figure><figcaption>N2O Haskell:</figcaption><code>
+  index Init = do
+      updateText "system" "What is your name?"
+      wireEl button{id="send", postback=Just Greet, source=["name"]}
+
+  index (Message Greet) = do
+      Just name &lt;- get "name"
+      updateText "system" ("Hello, " <> jsEscape name <> "!")
+
+  about Init =
+      updateText "app" "This is the N2O Hello World App"
+        </code></figure>
     </section>
     <section>
         <a name=intro></a>
