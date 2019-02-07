@@ -80,7 +80,7 @@
             startups around America, Europe and Asia.</p>
     </section>
     <section>
-         <h3>HOW TO N2O?</h3>
+         <h3>LANGUAGE AGNOSTIC</h3>
          <figure><figcaption>NITRO ERLANG:</figcaption><code>
   event(init) ->
       wf:reg(room);
@@ -108,6 +108,22 @@
         wf.insert_bottom("history","<span>"+sid+": "+msg+"</span>"); },
     '["chat",msg]' : function (msg) {
         wf.send('room',tuple(atom('client'),tuple(bin(this.sid),bin(msg))))); }});
+         </code></figure>
+        <figure><figcaption>NITRO ELIXIR:</figcaption><code>
+  def event(:init) do :wf.reg(:room) end
+  def event({:chat,pid}) do pid |> send {:message, :wf.q(:message)} end
+  def body() do { :ok, pid } = :wf.async(fn() -> loop() end)
+                [ :div.new(id: :history),
+                  :textbox.new(id: :message),
+                  :button.new(id: :send, body: "Chat",
+                       postback: {:chat,pid}, source: [:message]) ] end
+  def loop() do
+      receive do
+         { :message, message } ->
+           :wf.insert_bottom(:history, [ :span.new(body: message), :br.new() ])
+           :wf.flush(:room)
+         unknown -> :wf.info('Unknown Looper Message ~p',[unknown]) end
+      loop() end
          </code></figure>
          <figure><figcaption>KVX ERLANG:</figcaption><code>
   #reader{id=R} = kvs:save(kvs:reader(Id)),
@@ -138,7 +154,7 @@
          </code></figure>
     </section>
     <section>
-         <h3>PROTO SPEC</h3>
+         <h3>FORMAL SPEC</h3>
          <h4>N2O</h4>
          <p>Core, Protocols and Services.</p>
          <figure><figcaption>N2O:</figcaption><code>
