@@ -165,13 +165,24 @@
   -type response()  :: { formatter(), binary() }.
   -type memtable()  :: atom().
 
-  -spec info(term(),term(),#cx{}) -> #reply{}
-                                   | #unknown{}.
-
   -record(ok,      { data     :: term() }).
   -record(error    { data     :: term() }.
   -record(reply,   { msg      :: n2o(), req :: term(), ctx :: cx() } ).
   -record(unknown, { msg      :: n2o(), req :: term(), ctx :: cx() } ).
+
+  -spec start(#handler{}) -> {pid(),term()} | #error{}.
+  -spec stop(term(),atom()) -> #handler{} | #error{}.
+  -spec proc(atom(),#handler{}) -> term().
+  -spec info(term(),term()(),#cx{}) -> #reply{} | #unknown{}.
+
+  -record(handler, { name     :: atom(),
+                     module   :: atom(),
+                     class    :: term(),
+                     group    :: atom(),
+                     config   :: term(),
+                     state    :: term(),
+                     seq      :: term()}).
+
   -record(cx,      { session   = [] :: [] | binary(),
                      formatter = bert :: bert | json,
                      actions   = [] :: list(tuple()),
