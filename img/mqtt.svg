@@ -7,7 +7,7 @@
     <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
         <g id="4.-N2O-over-MQTT" sketch:type="MSLayerGroup">
             <rect id="Rectangle-1" stroke="#979797" sketch:type="MSShapeGroup" x="0" y="0" width="1500" height="750"></rect>
-            <text id="N2O-Protocols" sketch:type="MSTextLayer" font-family="Geometria" font-size="48" font-weight="260" fill="#000000">
+            <text id="N2O-Protocols" sketch:type="MSTextLayer" style="font-face: Geometria;" font-family="Geometria" font-size="48" font-weight="260" fill="#000000">
                 <tspan x="75" y="123">N2O Protocols</tspan>
             </text>
             <g id="Rectangle-4-Copy-29-+-N2O-Copy" transform="translate(412.000000, 197.000000)">
