@@ -241,6 +241,7 @@
             management, distributed data storage, application framework,
             publish/subscribe broker, messaging and chat services, etc.</p>
             </p>
+
     </section>
     <section>
         <a name=intro></a>
@@ -261,6 +262,34 @@
             versions of N2O with different Github repositories. N2O is distributed by modules
             not as monolith application, so you can pick and pack different fiature combinations.
         </p>
+
+<figure>
+    <figcaption>Lightweight BPMN</figcaption>
+<pre>
+> :supervisor.which_children :n2o
+[
+  {{:ws, 4}, #PID<0.282.0>, :worker, [:n2o_wsnode]},
+  {{:ws, 3}, #PID<0.281.0>, :worker, [:n2o_wsnode]},
+  {{:ws, 2}, #PID<0.280.0>, :worker, [:n2o_wsnode]},
+  {{:ws, 1}, #PID<0.279.0>, :worker, [:n2o_wsnode]},
+  {{:mqtt, 4}, #PID<0.249.0>, :worker, [:n2o_vnode]},
+  {{:mqtt, 3}, #PID<0.248.0>, :worker, [:n2o_vnode]},
+  {{:mqtt, 2}, #PID<0.247.0>, :worker, [:n2o_vnode]},
+  {{:mqtt, 1}, #PID<0.246.0>, :worker, [:n2o_vnode]},
+  {{:caching, 'timer'}, #PID<0.245.0>, :worker, [:n2o]}
+]
+
+> :kvs.all :writer
+[
+  {:writer, '/bpe/proc', 2, [], [], []},
+  {:writer, '/erp/group', 1, [], [], []},
+  {:writer, '/erp/partners', 7, [], [], []},
+  {:writer, '/acc/synrc/Kyiv', 3, [], [], []},
+  {:writer, '/bpe/hist/1562187187807717000', 16, [], [], []},
+  {:writer, '/bpe/hist/1562192587632329000', 1, [], [], []}
+]
+</pre></figure>
+
     </section>
     <section>
         <h3>N2O as a Web Framework</h3>
