@@ -30,7 +30,7 @@
                  а її віртуальна машина досі вважається однією з найкращих в галузі.
                  ERP/1 на її базі також уже не один рік використовується у банківській сфері, процесінгу транзакцій,
                  розподілених системах повідомлень, в IoT секторі. Ви можете переглянути
-                 демо модулі системи УНО в нашому захищеному середовищі <a href="https://n2o.cloud">n2o.cloud</a>
+                 демо модулі системи ERP/1 в нашому захищеному середовищі <a href="https://n2o.cloud">n2o.cloud</a>
                  зі своїм центром випуску ECC X.509 сертифікатів.
                  На цій сторінці ви знайдете перелік модулів системи та основні сутності схеми.
             </div>
@@ -212,38 +212,32 @@
 </aside>
 <main>
     <section>
-        <h3>N2O as a Platform</h3>
-         <p>As a platform N2O provides a set of techniques applicable and useful
-            for ML languages and Erlang, but it seems that N2O discipline is helpful
-            in other programming languages too. As an enterprise protocol federation
-            N2O provides solid XMPP/WS/CORBA replacement, defining the following
-            services that could run in a distributed environment: business process
-            management, distributed data storage, application framework,
-            publish/subscribe broker, messaging and chat services, etc.</p>
-
+        <h3>ПЛАТФОРМА</h3>
+         <p>Перелік стандартів на яких побудована система ERP/1:<br/>
+            — RFC 768 UDP,<br/>
+            — RFC 7414 TCP,<br/>
+            — RFC 3629 UTF-8,<br/>
+            — RFC 6455 The WebSocket Protocol,<br/>
+            — RFC 2251-2256 LDAP v3,<br/>
+            — RFC 5246 TLS v1.2,<br/>
+            — RFC 8446 TLS v1.3,<br/>
+            — RFC 6960 OCSP,<br/>
+            — RFC 5280 X.509,<br/>
+            — RFC 4033-4035 DNSSEC,<br/>
+            — ISO 20922 MQTT 3.1.1,<br/>
+            — ISO 8601 Date and Time on the Internet,<br/>
+            — ISO 8824-8825 ASN.1,<br/>
+            — ISO 19510 BPMN 2.0,<br/>
+          </p>
     </section>
     <section>
         <a name="intro"></a>
-        <h3>N2O as an Application Server</h3>
-         <p>O7 ECO is an Erlang N2O implementation of application services
-            run inside Erlang virtual machine. Each service implemented as
-            protocol module that can be injected to N2O accept looper.
-            Developing application for N2O means writing your application
-            protocol modules that handle pure logic.</p>
-        <p> As Erlang/OTP application N2O is an embeddable message protocol
-            loop library for WebSocket, MQTT, and TCP servers, it provides
-            basic features, such as process management; virtual nodes ring
-            for request processing; session, encoding, MQ, cache and log services.</p>
-        <p>
-            The main two usages of N2O:
-            1) live in client connection processes of server; 2) live in server workers
-            and handle all requests from client processes. You can add you own feature-set
-            versions of N2O with different Github repositories. N2O is distributed by modules
-            not as monolith application, so you can pick and pack different feature combinations.
-        </p>
+        <h3>СЕРВІСИ та ШИНА</h3>
+         <p>ERP/1 побудована на гетерогенній шині, де сервіси можуть оброблюватися
+            по MQTT та WebSocket захищених каналах.</p>
 
 <figure>
-    <figcaption>realtime DHT processes and rest storage chains</figcaption>
+    <figcaption>Сервіси та сховище</figcaption>
     <code>
 > :supervisor.which_children(:n2o)
 [
@@ -276,7 +270,7 @@
 
     </section>
     <section>
-        <h3>N2O as a Web Framework</h3>
+        <h3>ВЕБ ТЕХНОЛОГІЇ</h3>
 
 <p>Web logic should be as much declarative as possible at the same time the
    language should be readable by Java, .NET engineers.
@@ -293,7 +287,7 @@ in <a href="https://n2o.dev/articles/web.htm">articles/web</a>.</p>
 </figure>
     </section>
     <section>
-        <a name="modules"></a><h3>TOP</h3>
+        <a name="modules"></a><h3>ЛЮДИ</h3>
         <ul>
         <li><b><a href="https://github.com/5HT">5HT</a></b> — Maxim Sokhatsky <div class="desk">— N2O, KVS, MAD, BPE, MQTT, CHAT</div></li>
         <li><b><a href="https://github.com/doxtop">doxtop</a></b> — Andrii Zadorozhnii <div class="desk">— N2O, KVS, ERP, CRM, SCM</div></li>
@@ -334,7 +328,7 @@ in <a href="https://n2o.dev/articles/web.htm">articles/web</a>.</p>
             </ul>
     </section>
    <section>
-            <h3>ERP UNO</h3>
+            <h3>ERP/1</h3>
             <ul style="color:white">
               <li><a href="https://review.n2o.space">synrc/review</a> — REVIEW 1.11 MQTT</li>
               <li><a href="https://sample.n2o.space">synrc/sample</a> — REVIEW 1.11 WS</li>
@@ -346,23 +340,23 @@ in <a href="https://n2o.dev/articles/web.htm">articles/web</a>.</p>
               <li><a href="https://n2o.live">o7/bench</a> — BENCH 0.7</li>
               <li><a href="https://plm.n2o.space">o7/plm</a> — PLM 0.7</li>
               <li><a href="https://sample.o7.network">o7/sample</a> — SAMPLE 0.7 WS</li>
-              <li><a href="https://tms.n2o.space">enterprizing/tms</a> — TMS 0.6</li>
-              <li><a href="https://wms.n2o.space">enterprizing/wms</a> — WMS 0.6</li>
-              <li><a href="https://pay.n2o.space">enterprizing/pay</a> — PAY 0.6</li>
-              <li><a href="https://acc.n2o.space">enterprizing/acc</a> — ACC 0.6</li>
-              <li><a href="https://crm.n2o.space">enterprizing/crm</a> — CRM 0.6</li>
-              <li><a href="https://erp.n2o.space">enterprizing/erp</a> — ERP 0.6</li>
-              <li><a href="https://scm.n2o.space">enterprizing/scm</a> — SCM 0.6</li>
-              <li><a href="https://fin.n2o.space">enterprizing/fin</a> — FIN 4.4</li>
-              <li><a href="https://iot.n2o.space">enterprizing/iot</a> — IOT 4.4</li>
-              <li><a href="https://fix.n2o.space">enterprizing/fix</a> — FIX 4.6</li>
-              <li><a href="https://tic.n2o.space">enterprizing/tic</a> — TIC 0.6</li>
-              <li><a href="https://plm.n2o.space">enterprizing/plm</a> — PLM 0.6</li>
-              <li><a href="https://pm.n2o.space">enterprizing/pm</a> — PM 0.6</li>
-              <li><a href="https://db.n2o.space">enterprizing/db</a> — DB 4.6</li>
-              <li><a href="https://ldap.n2o.space">enterprizing/ldap</a> — LDAP 8.6</li>
-              <li><a href="https://xio.n2o.space">enterprizing/xio</a> — EMQ X 3.0</li>
-              <li><a href="https://mq.n2o.space">enterprizing/mq</a> — EMQ 2.1.2</li>
+              <li><a href="https://tms.n2o.space">erpuno/tms</a> — TMS 0.6</li>
+              <li><a href="https://wms.n2o.space">erpuno/wms</a> — WMS 0.6</li>
+              <li><a href="https://pay.n2o.space">erpuno/pay</a> — PAY 0.6</li>
+              <li><a href="https://acc.n2o.space">erpuno/acc</a> — ACC 0.6</li>
+              <li><a href="https://crm.n2o.space">erpuno/crm</a> — CRM 0.6</li>
+              <li><a href="https://erp.n2o.space">erpuno/erp</a> — ERP 0.6</li>
+              <li><a href="https://scm.n2o.space">erpuno/scm</a> — SCM 0.6</li>
+              <li><a href="https://fin.n2o.space">erpuno/fin</a> — FIN 4.4</li>
+              <li><a href="https://iot.n2o.space">erpuno/iot</a> — IOT 4.4</li>
+              <li><a href="https://fix.n2o.space">erpuno/fix</a> — FIX 4.6</li>
+              <li><a href="https://tic.n2o.space">erpuno/tic</a> — TIC 0.6</li>
+              <li><a href="https://plm.n2o.space">erpuno/plm</a> — PLM 0.6</li>
+              <li><a href="https://pm.n2o.space">erpuno/pm</a> — PM 0.6</li>
+              <li><a href="https://db.n2o.space">erpuno/db</a> — DB 4.6</li>
+              <li><a href="https://ldap.n2o.space">erpuno/ldap</a> — LDAP 8.6</li>
+              <li><a href="https://xio.n2o.space">erpuno/xio</a> — EMQ X 3.0</li>
+              <li><a href="https://mq.n2o.space">erpuno/mq</a> — EMQ 2.1.2</li>
               </ul>
     </section></article>
     </aside><footer>
