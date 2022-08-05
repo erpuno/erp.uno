@@ -149,8 +149,8 @@
            банківські системи PCI DSS, складські системи, системи управління поставками та виробництвом,
            системи сервісних послуг, системи управління проектами, тощо.<br><br>
         
-           ISO: 9075.
-           RFC: 7363.
+           ISO: 9075, 27001.
+           RFC: 7363, 6350, 4180.
 
            </p>
        </section>
@@ -231,7 +231,18 @@
        <section>
         <p style="margin-top: 60px;margin-bottom:30px;"><b>Рівень зв'язності людей та пристроїв </b></p>
         
-        <p>  </p>
+        <p> Рівень зв'язності людей та пристроїв визначає комунікаційні протоколи та технології,
+            які об'єднують головні ресурси підприємства (пристрої та людей) у одну телекомунікаційну мережу.
+            Як правило виробництво складається з багатьох пристроїв що підключаються до промислових шин як MQTT,
+            та робочих місць користувачів. З точки зору продуктів цей рівень представляється зазвичай
+            корпоративними комунікаторами та дашбордами де здійнюється моніторинг роботизованого обладнання:
+            пристрої, датчики, тощо. Ресурси підприємства &mdash; люди та пристрої як правило
+            зберігаються в LDAP директорії підприємства.<br><br>
+
+           ISO: 19464, 20922, 21823, 27402, 30161, 30165.
+           RFC: 6455.
+
+          </p>
        </section>
     </article>
 
@@ -272,9 +283,62 @@
     </article>
 
 
+    <article>
+       <section>
+        <p style="margin-top: 60px;margin-bottom:30px;"><b>Рівень платформи </b></p>
+        
+        <p> Рівень платформи визначає засоби мастшабування пам'яті (персистентної та волатильної)
+            та обчислювальних ресурсів (за допомогою процесінгових брокерів доставки повідомлень).
+            Це рівень визначає реляційні бази даних та бази даних з єдиним простором ключів,
+            а також стандарти та протоколи передачі інформації у промислових ERP системах,
+            такі як CSV, JSON, SOAP, BERT, ASN.1, тощо.
+
+        </p>
+       </section>
+    </article>
+
 
   <article>
-        <p style="margin-top: 60px;"><b>Рівень схеми даних</b></p>
+        <section>
+            <h3><a href="https://mq.erp.uno">MQ</a></h3>
+            <div>
+                 <ul><li>CSV/CSM</li>
+                     <li>SOAP/XSD/XML</li>
+                     <li>JSON/JTD</li>
+                     <li>GRPC/MQTT</li>
+                     <li>WS/BERT</li>
+                     <li>MQTT/BERT</li>
+                     <li>TCP/ASN.1</li>
+             </div>
+        </section>
+
+        <section>
+            <h3>DB</h3>
+            <div>
+                 <ul><li>Mnesia</li>
+                     <li>RocksDB</li>
+                     <li>Cassandra</li>
+                     <li>Oracle</li>
+                 </ul>
+             </div>
+        </section>
+  </article>
+
+     <article>
+       <section>
+        <p style="margin-top: 60px;margin-bottom:30px;"><b>Рівень схеми даних </b></p>
+        
+        <p> Рівень схеми даних визначає модель зберігання даних як з точки зору
+            об'єктів-сутностей та і з точки зору технологій та протоколів, які
+            необхідні для їх опису. Головним чином це Фреймворк Закмана та
+            сімейство стандартів які описують UML.<br><br>
+
+            ISO: 20452, 42010, 19501, 19505.
+        </p>
+       </section>
+    </article>
+
+  <article>
     <section>
       <h3><a href="https://github.com/erpuno/world">COUNTRIES</a></h3>
       <div><ul><li>ISO 3166</li>
@@ -305,34 +369,6 @@
              </div>
         </section>
 
-  </article>
-
-
-  <article>
-        <p style="margin-top: 60px;"><b>Рівень платформи</b></p>
-        <section>
-            <h3><a href="https://mq.erp.uno">MQ</a></h3>
-            <div>
-                 <ul><li>CSV/CSM</li>
-                     <li>SOAP/XSD/XML</li>
-                     <li>JSON/JTD</li>
-                     <li>GRPC/MQTT</li>
-                     <li>WS/BERT</li>
-                     <li>MQTT/BERT</li>
-                     <li>TCP/ASN.1</li>
-             </div>
-        </section>
-
-        <section>
-            <h3>DB</h3>
-            <div>
-                 <ul><li>Mnesia</li>
-                     <li>RocksDB</li>
-                     <li>Cassandra</li>
-                     <li>Oracle</li>
-                 </ul>
-             </div>
-        </section>
   </article>
 
     <article>
@@ -375,8 +411,8 @@
 </aside>
 <main>
     <section>
-        <h3>ПЛАТФОРМА</h3>
-         <p>Перелік стандартів на яких побудована система ERP.UNO:<br/>
+        <h3>СТАНДАРТИ</h3>
+         <p>Перелік стандартів на яких побудована система ERP.UNO:<br><br>
             — RFC 768 UDP,<br/>
             — RFC 7414 TCP,<br/>
             — RFC 3629 UTF-8,<br/>
@@ -413,11 +449,11 @@
     </section>
     <section>
         <a name="intro"></a>
-        <h3>СЕРВІСИ та ШИНА</h3>
+        <h3>ПРОЦЕСОРИ ТА СХОВИЩА</h3>
          <p>ERP побудована на гетерогенній шині, де сервіси можуть оброблюватися
             по MQTT та WebSocket захищених каналах.</p>
 	<figure>
-	<figcaption>Сервіси</figcaption>
+	<figcaption>Процесори</figcaption>
 	<code>
 > :n2o |> :supervisor.which_children
 [
@@ -437,7 +473,7 @@
 ]
     </code></figure>
     <figure>
-    <figcaption>Cховище</figcaption>
+    <figcaption>Cховища</figcaption>
     <code>
 > :writer |> :kvs.all
 [
@@ -450,13 +486,6 @@
   {:writer, '/bpe/hist/1562192587632329000', 1, [], [], []}
 ]
     </code></figure>
-    </section>
-    <section>
-        <h3>ВЕБ ТЕХНОЛОГІЇ</h3>
-	<p>Декларативна веб-логіка та оркестрація бізнес процесів за допомогою віртуальної машини Erlang.</p>
-	<figure><img src="https://n2o.dev/img/web1.png" width="800"/>
-        <figcaption>Код 1. Управління Бізнес-процесом за допомогою веб-фреймворка NITRO</figcaption>
-	</figure>
     </section>
 </main>
 <footer>Made with <span class="heart">❤</span> to N2O</footer>
