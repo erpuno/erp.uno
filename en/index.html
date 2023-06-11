@@ -159,12 +159,12 @@
     </article>
     <article>
         <section>
-            <h3><a href="https://chat.erp.uno">CHAT</a></h3>
+            <h3><a href="https://mail.erp.uno">MAIL</a></h3>
             <div>
-                 <ul><li><a href="https://chat.erp.uno/man/chat.htm">CHAT</a></li>
-                 <li><a href="https://chat.erp.uno/man/chat_server.htm">CHAT_SERVER</a></li>
-                 <li><a href="https://chat.erp.uno/man/chat_txt.htm">CHAT_TXT</a></li>
-                 <li><a href="https://chat.erp.uno/man/csr.htm">CSR</a></li></ul>
+                 <ul><li><a href="https://mail.erp.uno/man/mail.htm">MAIL</a></li>
+                 <li><a href="https://mail.erp.uno/man/mail_server.htm">MAIL_SERVER</a></li>
+                 <li><a href="https://mail.erp.uno/man/mail_txt.htm">MAIL_TXT</a></li>
+                 <li><a href="https://mail.erp.uno/man/csr.htm">CSR</a></li></ul>
              </div>
         </section>
         <section>
@@ -293,7 +293,7 @@
             N2O provides solid XMPP/WS/CORBA replacement, defining the following
             services that could run in a distributed environment: business process
             management, distributed data storage, application framework,
-            publish/subscribe broker, messaging and chat services, etc.</p>
+            publish/subscribe broker, messaging and mail services, etc.</p>
 
     </section>
     <section>
@@ -321,10 +321,10 @@
     <code>
 > :supervisor.which_children(:n2o)
 [
-  {{:ws, '/chat/ws/4'}, #PID&#60;0.985.0&#62;, :worker, [:n2o_ws]},
-  {{:ws, '/chat/ws/3'}, #PID&#60;0.984.0&#62;, :worker, [:n2o_ws]},
-  {{:ws, '/chat/ws/2'}, #PID&#60;0.983.0&#62;, :worker, [:n2o_ws]},
-  {{:ws, '/chat/ws/1'}, #PID&#60;0.982.0&#62;, :worker, [:n2o_ws]},
+  {{:ws, '/mail/ws/4'}, #PID&#60;0.985.0&#62;, :worker, [:n2o_ws]},
+  {{:ws, '/mail/ws/3'}, #PID&#60;0.984.0&#62;, :worker, [:n2o_ws]},
+  {{:ws, '/mail/ws/2'}, #PID&#60;0.983.0&#62;, :worker, [:n2o_ws]},
+  {{:ws, '/mail/ws/1'}, #PID&#60;0.982.0&#62;, :worker, [:n2o_ws]},
   {{:mqtt, '/erp/mqtt/4'}, #PID&#60;0.977.0&#62;, :worker, [:n2o_mqtt]},
   {{:mqtt, '/erp/mqtt/3'}, #PID&#60;0.976.0&#62;, :worker, [:n2o_mqtt]},
   {{:mqtt, '/erp/mqtt/2'}, #PID&#60;0.975.0&#62;, :worker, [:n2o_mqtt]},
@@ -342,7 +342,7 @@
   {:writer, '/erp/group', 1, [], [], []},
   {:writer, '/erp/partners', 7, [], [], []},
   {:writer, '/acc/synrc/Kyiv', 3, [], [], []},
-  {:writer, '/chat/5HT', 1, [], [], []},
+  {:writer, '/mail/5HT', 1, [], [], []},
   {:writer, '/bpe/hist/1562187187807717000', 16, [], [], []},
   {:writer, '/bpe/hist/1562192587632329000', 1, [], [], []}
 ]
