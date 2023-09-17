@@ -21,19 +21,19 @@
   </div>
 </nav><header>
     <a href="https://github.com/erpuno"><img style="min-width:200px;" src="https://tonpa.guru/stream/2023/ERP.svg" /></a>
-    <h1>EDGE</h1>
+    <h1>18.0</h1>
 </header><aside>
     <article>
         <section>
             <h3>ADVERTISEMENT</h3>
 
-            <div>ERP/1 EDGE defines formal
+            <div>ERP/1 defines formal
                  specification and its open source implementation for modern
                  optimized enterprises which strive stability and completeness
                  with trusted relying on proven and solid standards.</div>
             <br />
             <div align="left">
-                 2013-2023 © <a href="http://5ht.co/license/">DHARMA</a> LICENSE
+                 2005-2023 © <a href="http://5ht.co/license/">DHARMA</a> LICENSE
             </div>
 
         </section>
@@ -357,6 +357,15 @@
            19514 (SysML), 42010 (Systems and software engineering), 20922 (MQTT),
            27036 (Information security for supplier relationships).</p>
 
+        </section>
+    <section>
+        <h3>QUALITY</h3>
+
+        <p><b>ISO:</b> 1012, 9001, 25010, 8807, 9126, 12207, 13568.</p>
+
+    </section>
+    <section>
+        <h3>SECURITY</h3>
 
         <h4>NIST</h4>
 
@@ -370,94 +379,13 @@
 
         <p><b>Накази:</b> #112 14.05.2010, #1236/5/453 20.08.2012, #687 27.10.2020.</p>
 
+        <h4>ТЗІ</h4>
+
+        <p><b>Нормативні документи</b>: НД 2.7-010-09.</p>
+
        <br><center>&dot;</center>
 
     </section>
-    <!--section>
-        <h3>N2O as a Platform</h3>
-         <p>As a platform N2O provides a set of techniques applicable and useful
-            for ML languages and Erlang, but it seems that N2O discipline is helpful
-            in other programming languages too. As an enterprise protocol federation
-            N2O provides solid XMPP/WS/CORBA replacement, defining the following
-            services that could run in a distributed environment: business process
-            management, distributed data storage, application framework,
-            publish/subscribe broker, messaging and mail services, etc.</p>
-
-    </section>
-    <section>
-        <a name="intro"></a>
-        <h3>N2O as an Application Server</h3>
-
-         <p>N2O.DEV is an Erlang N2O implementation of application services
-            run inside Erlang virtual machine. Each service implemented as
-            protocol module that can be injected to N2O accept looper.
-            Developing application for N2O means writing your application
-            protocol modules that handle pure logic.</p>
-
-        <p> As Erlang/OTP application N2O is an embeddable message protocol
-            loop library for WebSocket, MQTT, and TCP servers, it provides
-            basic features, such as process management; virtual nodes ring
-            for request processing; session, encoding, MQ, cache and log services.</p>
-        <p>
-            The main two usages of N2O:
-            1) live in client connection processes of server; 2) live in server workers
-            and handle all requests from client processes. You can add you own feature-set
-            versions of N2O with different Github repositories. N2O is distributed by modules
-            not as monolith application, so you can pick and pack different feature combinations.
-        </p>
-
-<figure>
-    <figcaption>realtime DHT processes and rest storage chains</figcaption>
-    <code>
-> :supervisor.which_children(:n2o)
-[
-  {{:ws, '/mail/ws/4'}, #PID&#60;0.985.0&#62;, :worker, [:n2o_ws]},
-  {{:ws, '/mail/ws/3'}, #PID&#60;0.984.0&#62;, :worker, [:n2o_ws]},
-  {{:ws, '/mail/ws/2'}, #PID&#60;0.983.0&#62;, :worker, [:n2o_ws]},
-  {{:ws, '/mail/ws/1'}, #PID&#60;0.982.0&#62;, :worker, [:n2o_ws]},
-  {{:mqtt, '/erp/mqtt/4'}, #PID&#60;0.977.0&#62;, :worker, [:n2o_mqtt]},
-  {{:mqtt, '/erp/mqtt/3'}, #PID&#60;0.976.0&#62;, :worker, [:n2o_mqtt]},
-  {{:mqtt, '/erp/mqtt/2'}, #PID&#60;0.975.0&#62;, :worker, [:n2o_mqtt]},
-  {{:mqtt, '/erp/mqtt/1'}, #PID&#60;0.974.0&#62;, :worker, [:n2o_mqtt]},
-  {{:mqtt, '/bpe/mqtt/4'}, #PID&#60;0.977.0&#62;, :worker, [:n2o_mqtt]},
-  {{:mqtt, '/bpe/mqtt/3'}, #PID&#60;0.976.0&#62;, :worker, [:n2o_mqtt]},
-  {{:mqtt, '/bpe/mqtt/2'}, #PID&#60;0.975.0&#62;, :worker, [:n2o_mqtt]},
-  {{:mqtt, '/bpe/mqtt/1'}, #PID&#60;0.974.0&#62;, :worker, [:n2o_mqtt]},
-  {{:caching, 'timer'}, #PID&#60;0.969.0&#62;, :worker, [:n2o]}
-]
-
-> :kvs.all :writer
-[
-  {:writer, '/bpe/proc', 2, [], [], []},
-  {:writer, '/erp/group', 1, [], [], []},
-  {:writer, '/erp/partners', 7, [], [], []},
-  {:writer, '/acc/synrc/Kyiv', 3, [], [], []},
-  {:writer, '/mail/5HT', 1, [], [], []},
-  {:writer, '/bpe/hist/1562187187807717000', 16, [], [], []},
-  {:writer, '/bpe/hist/1562192587632329000', 1, [], [], []}
-]
-    </code></figure>
-
-    </section>
-    <section>
-        <h3>N2O as a Web Framework</h3>
-
-<p>Web logic should be as much declarative as possible.
-   The language should be readable by Java, .NET engineers.
-   NITRO protocol is what we called Web Framework inside N2O ecosystem.
-   If you plug the NITRO module, you automatically enable web framework for all devices.
-   It resembles Nitrogen API, well known Erlang Web Framework.
-</p>
-
-<p>Here is example of Application powered by N2O Application Server. You may read more
-in <a href="https://n2o.dev/articles/web.htm">articles/web</a>.</p>
-
-<figure><img src="https://n2o.dev/img/web1.png" width="800"/>
-        <figcaption>Picture 3. NITRO sample application</figcaption>
-</figure>
-   <br><center>&dot;</center>
-
-    </section-->
 </main>
 <footer>
    <br><center>&dot;</center>
