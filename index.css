@@ -93,7 +93,7 @@ html.dark .sticky.scrolled {
     width: 100%;
     height: var(--nav-height);
     display: flex;
-    margin-bottom:10px;
+    margin-bottom:-0px;
     align-items: center;
     justify-content: space-between;
     padding: 0 24px;
