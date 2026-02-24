@@ -275,7 +275,7 @@ html.dark .cta-banner {
 footer {
     background: var(--surface);
     border-top: 1px solid var(--border);
-    padding: 80px 24px 60px;
+    padding: 25px 24px 60px;
     color: var(--text-sec);
     font-size: 15px;
 }
