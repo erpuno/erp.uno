@@ -338,7 +338,7 @@ footer a:not(.footer-columns a) {
 
 @media (max-width: 480px) {
     nav, .sticky { padding: 0 16px; }
-    h1 { font-size: 56px; }
+    h1 { font-size: 50px; }
     footer { padding-left: 16px; padding-right: 16px; }
 }
 
