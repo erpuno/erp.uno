@@ -392,3 +392,40 @@ html.dark .lang-switcher {
 .lang-btn:hover:not(.active) {
     color: var(--text);
 }
+
+/* =============================================================
+   HEADER TOP MENU MOBILE FIX — Pure Typesetting Only (2026)
+   ============================================================= */
+@media (max-width: 768px) {
+    .nav-container {
+        padding: 0 14px;
+        gap: 12px;
+    }
+    .logo {
+        font-size: 18px;
+    }
+    .nav-links {
+        gap: 13px;
+    }
+    .nav-links a {
+        font-size: 14.5px;
+        letter-spacing: -0.015em;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-container {
+        padding: 0 8px;
+        gap: 8px;
+    }
+    .logo {
+        font-size: 16.8px;
+    }
+    .nav-links {
+        gap: 10px;
+    }
+    .nav-links a {
+        font-size: 13.8px;
+        letter-spacing: -0.02em;
+    }
+}
