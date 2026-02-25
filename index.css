@@ -165,21 +165,22 @@ header::before {
 
 /* On hover – continuous shimmering rainbow ("current state is drawn") */
 .hero-content h1:hover {
-/*    animation: rainbowShimmer 7s linear infinite; */
+    animation: rainbowBeam 3.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+//    animation: rainbowShimmer 7s linear infinite;
     text-shadow: 0 0 40px rgba(0, 245, 196, 0.65);
 }
 
 @keyframes rainbowBeam {
-    0%   { background-position: -180% 50%; }
-    100% { background-position: 380% 50%; }
+    0%   { background-position: -90% 90%; }
+    50%   { background-position: 0% -90%; }
+//    100%   { background-position: -90% 90%; }
 }
 
-/*
 @keyframes rainbowShimmer {
     0%, 100% { background-position: 0% 50%; }
     50%      { background-position: 520% 50%; }
 }
-*/
+
 
 .hero-subtitle {
     font-size: 1.35rem;
