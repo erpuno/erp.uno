@@ -1,7 +1,7 @@
-/* index.css - Lido.fi inspired dark premium theme + Rainbow Beam Animation on H1 */
-/* Deep navy, electric teal accent, glassmorphism, now with sweeping rainbow light beam */
+/* index.css - Modern dark premium tech style inspired by lido.fi */
+/* Deep navy/black bg, vibrant teal-green accents (#00f5c4), glassmorphic cards, Inter typography, smooth hovers, responsive grid */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
 
 :root {
     --bg: #0a0b0f;
@@ -21,6 +21,10 @@
     box-sizing: border-box;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--bg);
@@ -30,7 +34,7 @@ body {
     overflow-x: hidden;
 }
 
-/* NAV (works for both UA & EN versions) */
+/* NAV */
 nav.sticky {
     position: sticky;
     top: 0;
@@ -109,7 +113,7 @@ nav.sticky {
     box-shadow: 0 0 20px rgba(0, 245, 196, 0.3);
 }
 
-/* HERO – Rainbow Beam Animation */
+/* HERO */
 header {
     min-height: 100vh;
     display: flex;
@@ -136,47 +140,14 @@ header::before {
 }
 
 .hero-content h1 {
-    font-size: clamp(3.5rem, 8vw, 6.5rem);
+    font-size: clamp(3.5rem, 8vw, 6rem);
     font-weight: 700;
     line-height: 1.05;
     letter-spacing: -0.04em;
     margin-bottom: 1.5rem;
-    
-    /* Vibrant rainbow gradient */
-    background: linear-gradient(90deg,
-        #ffffff 0%,
-        #67e8f9 15%,
-        #22d3ee 28%,
-        #00f5c4 42%,
-        #4ade80 55%,
-        #a78bfa 68%,
-        #f472b6 80%,
-        #fb7185 92%,
-        #ffffff 100%
-    );
-    background-size: 520% 100%;
+    background: linear-gradient(90deg, #fff, var(--accent));
     -webkit-background-clip: text;
-    background-clip: text;
     -webkit-text-fill-color: transparent;
-    
-    /* Rainbow beam sweeps left → right ONCE on page load */
-    animation: rainbowBeam 3.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
-}
-
-/* On hover – continuous shimmering rainbow ("current state is drawn") */
-.hero-content h1:hover {
-    animation: rainbowShimmer 7s linear infinite;
-    text-shadow: 0 0 40px rgba(0, 245, 196, 0.65);
-}
-
-@keyframes rainbowBeam {
-    0%   { background-position: -180% 50%; }
-    100% { background-position: 380% 50%; }
-}
-
-@keyframes rainbowShimmer {
-    0%, 100% { background-position: 0% 50%; }
-    50%      { background-position: 520% 50%; }
 }
 
 .hero-subtitle {
@@ -206,7 +177,7 @@ h2 {
     color: white;
 }
 
-/* PRODUCT GRID */
+/* PRODUCT GRID (both sites) */
 .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
@@ -276,7 +247,7 @@ h2 {
     border-color: var(--accent);
 }
 
-/* DESCRIPTION & STANDARDS */
+/* STANDARDS / DESCRIPTION */
 .section-standards ul,
 .section-products > div {
     max-width: 760px;
@@ -304,7 +275,7 @@ h2 {
     font-size: 1.5rem;
 }
 
-/* MAIL IMAGES */
+/* IMAGES in Mail X.420 */
 figure {
     margin: 3rem auto;
     max-width: 920px;
@@ -369,6 +340,11 @@ footer {
     color: var(--text-secondary);
 }
 
+/* BUTTONS & LINKS (global) */
+a {
+    transition: all 0.3s;
+}
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
     .nav-container {
@@ -376,7 +352,7 @@ footer {
     }
     
     .nav-links {
-        display: none;
+        display: none; /* simple mobile - can be extended with JS menu */
     }
     
     main {
@@ -394,6 +370,6 @@ footer {
 
 @media (min-width: 1280px) {
     .hero-content h1 {
-        font-size: 6.8rem;
+        font-size: 6.5rem;
     }
 }
