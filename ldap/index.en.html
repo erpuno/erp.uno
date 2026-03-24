@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="ERP/1: LDAP — High-performant IETF compliant LDAP directory server." />
+    <meta name="author" content="Maxim Sokhatsky" />
+    <title>ERP/1: Directory</title>
+    <link rel="stylesheet" href="../index.css"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
+    <link rel="manifest" href="img/site.webmanifest">
+</head>
+<body>
+
+<nav class="sticky">
+    <div class="nav-container">
+        <a href="https://erp.uno/" class="logo">ERP/1</a>
+        <div class="lang-group">
+            <div class="lang-switcher">
+                <a href="index.html" class="lang-btn">UA</a>
+                <a href="index.en.html" class="lang-btn active">EN</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<header>
+    <div class="hero-content">
+        <h1>Directory</h1>
+        <p class="hero-subtitle">
+            SYNRC LDAP is a high-performant IETF 2849 3296 3671-3673 3866 4510-4518 4522 4525 4526 4929 5480
+            compliant LDAP directory server with SQLITE backend in 300 LOC of Elixir.
+        </p>
+    </div>
+</header>
+
+<main>
+    <section class="section-products">
+        <h2>Intro</h2>
+        <div>
+            SYNRC LDAP is designed for extreme performance and simplicity. At just 300 lines of Elixir code, 
+            it provides a full-featured LDAPv3 server capable of handling large-scale directory services with various backends. 
+            The server leverages Erlang/OTP for concurrency and reliability, making it robust for mission-critical applications.
+        </div>
+        <figure><center><img width="100%" src="https://ldap.n2o.dev/priv/design/ldap-shaders.png"></center></figure>
+    </section>
+
+    <section class="section-solutions">
+        <h2>Key Capabilities</h2>
+        <div class="solutions-grid">
+            <div>
+                <h4>Backends</h4>
+                <ul>
+                    <li>SQLITE (Exqlite)</li>
+                    <li>LMDB, MONGODB</li>
+                    <li>ROCKSDB NVME</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Compliance</h4>
+                <ul>
+                    <li>IETF LDAPv3</li>
+                    <li>RFC 4510—4518</li>
+                    <li>RFC 5480, 4929</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Protocol</h4>
+                <ul>
+                    <li>ASN.1 (Erlang certified)</li>
+                    <li>Simple Bind, Search</li>
+                    <li>Add, Delete, Modify</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Performance</h4>
+                <ul>
+                    <li>300 Lines of Elixir</li>
+                    <li>Optimized for NVME</li>
+                    <li>High Throughput</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-standards">
+        <h2>Services & Protocols</h2>
+        <ul class="standards-list">
+            <li><strong>LDAPv3 (RFC 4511)</strong> — core protocol support for directory access.</li>
+            <li><strong>LDIF (RFC 2849)</strong> — standard data interchange format for LDAP.</li>
+            <li><strong>CONF</strong> — flexible configuration management for server instances.</li>
+            <li><strong>SCHEMA</strong> — robust support for standard and custom LDAP schemas.</li>
+            <li><strong>ARCH</strong> — scalable storage architecture for distributed environments.</li>
+        </ul>
+    </section>
+
+    <section class="section-products">
+        <h2>MESIA Architecture</h2>
+        <div>
+            MESIA is the high-performance storage engine architecture used in SYNRC LDAP, designed for efficient prefix-searchable data access.
+        </div>
+        <div class="solutions-grid" style="margin-top: 2rem;">
+            <div><strong>Directory Table</strong> — Prefix-searchable DN paths with MD5 hashing for rapid lookups.</div>
+            <div><strong>Attributes Table</strong> — Selectable attribute information per RDN with optimized sub-indexing.</div>
+            <div><strong>Subschema Subentry</strong> — Integration with <code>ou=schema</code> for persistent metadata.</div>
+        </div>
+        <div style="margin-top: 2rem;">
+            Unlike traditional monolithic LDAP databases, MESIA provides a distributed framework where attributes are stored 
+            efficiently across various backends like RocksDB, ensuring minimal overhead and maximum scalability for NVME storage.
+        </div>
+    </section>
+
+    <section class="section-standards">
+        <h2>Development History</h2>
+        <ul class="standards-list">
+            <li>2010—2018: LDAP original implementation in Erlang.</li>
+            <li>2023: LDAP Compliance, Release 13.7.24 (Dharma 2.0).</li>
+            <li>2024: release 15.1.1, ASN1.EX X.680 integration.</li>
+        </ul>
+    </section>
+
+    <section class="section-standards">
+        <h2>Open Source</h2>
+        <center>
+        <a href="https://github.com/synrc/ldap">
+         <img style="width:150px;" src="https://n2o.dev/img/github.svg"/></a>
+        </center>
+    </section>
+</main>
+
+<footer>
+    <div class="footer-columns">
+        <div>
+            <h4>ERP/1</h4>
+            <p>LLC “Electronic Governance Systems”</p>
+        </div>
+        <div>
+            <h4>Products</h4>
+            <ul>
+                <li><a href="https://erp.uno/ca/index.en.html">Authority</a></li>
+                <li><a href="https://erp.uno/mail/index.en.html">Documents</a></li>
+                <li><a href="https://erp.uno/acc/index.en.html">Accounting</a></li>
+                <li><a href="https://erp.uno/warehouse/index.en.html">Warehouse</a></li>
+                <li><a href="https://erp.uno/health/index.en.html">Health</a></li>
+                <li><a href="https://erp.uno/edu/index.en.html">Education</a></li>
+                <li><a href="https://erp.uno/cart/index.en.html">Registers</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Documentation</h4>
+            <ul>
+                <li><a href="man/ldap.htm">LDAPv3 ASN.1</a></li>
+                <li><a href="man/arch.htm">Architecture</a></li>
+                <li><a href="man/schm.htm">Schema Management</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Contacts</h4>
+            <p><a href="mailto:maxim@synrc.com">maxim@synrc.com</a></p>
+            <p>2026 © Maxim Sokhatsky</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
