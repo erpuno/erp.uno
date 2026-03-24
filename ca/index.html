@@ -1,0 +1,156 @@
+<html><head><meta charset="utf-8" /><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="AUTHORITY — Сервер PKI X.509 та криптографічна бібліотека для інфраструктури відкритого ключа." />
+<meta name="author" content="Maxim Sokhatsky" />
+<title>ERP/1: Сертифікати</title>
+    <link rel="stylesheet" href="../index.css"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="../img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../img/favicon-16x16.png">
+    <link rel="manifest" href="../img/site.webmanifest">
+</head><body>
+
+<nav class="sticky">
+    <div class="nav-container">
+        <a href="https://erp.uno/" class="logo">ERP/1</a>
+        <div class="lang-group">
+            <div class="lang-switcher">
+              <a href="index.html" class="lang-btn active">UA</a>
+              <a href="index.en.html" class="lang-btn">EN</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<header>
+    <div class="hero-content">
+        <h1>Сертифікати</h1>
+        <p class="hero-subtitle">ERP/1: Сертифікати — це сервер PKI X.509 з інфраструктурою (CMP, OCSP, TSP, CMS, CSR)
+                                 та криптографічною бібліотекою, сумісною з ASN.1, X.509 та OpenSSL для сервісів SYNRC.</p>
+    </div>
+</header><main>
+    <section class="section-products">
+        <h2>Опис</h2>
+        <div>
+            ERP/1: Сертифікати забезпечує повний цикл керування цифровими сертифікатами та підписами. 
+            Система підтримує сучасні децентралізовані моделі EUDI, забезпечуючи сумісність з національними стандартами ДСТУ.
+            Криптографічне ядро реалізовано на Erlang/Elixir, що гарантує високу продуктивність та безпеку в високонавантажених середовищах.
+        </div>
+        <figure><center><img width=100% src="priv/design/ca-shaders.png"></center></figure>
+    </section>
+
+    <section class="section-solutions">
+        <h2>Криптографічні можливості</h2>
+        <div class="solutions-grid">
+            <div>
+                <h4>Підписання</h4>
+                <ul>
+                    <li>PBMAC1, ECDSA (Pure Elixir), RSA</li>
+                    <li>CAdES, ДСТУ 4145:2014, ДСТУ 7564:2014</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Шифрування</h4>
+                <ul>
+                    <li>AES, AES-KW, CMS</li>
+                    <li>ДСТУ 7624:2014 (Калина)</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Деривація</h4>
+                <ul>
+                    <li>KDF, HKDF, PBKDF2</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Криві</h4>
+                <ul>
+                    <li>SECP384R1, SECP256V1, SECP521R1</li>
+                    <li>CURVE25519, CURVE448</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-standards">
+        <h2>Сервіси та протоколи</h2>
+        <ul class="standards-list">
+            <li><strong>EST (Enrollment over Secure Transport)</strong> — автоматизація видачі сертифікатів.</li>
+            <li><strong>CMP (Certificate Management Protocol)</strong> — повний життєвий цикл сертифікатів.</li>
+            <li><strong>OCSP (Online Certificate Status Protocol)</strong> — онлайн-перевірка статусу.</li>
+            <li><strong>TSP (Time Stamping Protocol)</strong> — мітки часу.</li>
+            <li><strong>LDAP</strong> — інтеграція з директоріями для публікації сертифікатів та CRL.</li>
+        </ul>
+    </section>
+
+    <section class="section-products">
+        <h2>Архітектура EUDI</h2>
+        <div>
+            EUDI — це децентралізований PKIX з контролем атрибутів на рівні ABAC, що використовує JSON для кодування та HTTP як транспорт.
+        </div>
+        <div class="solutions-grid" style="margin-top: 2rem;">
+            <div><strong>Holder (Wallet)</strong> — iOS/Android додаток для зберігання та презентації облікових даних.</div>
+            <div><strong>Issuer (Provider)</strong> — OpenID для Verifiable Credentials (PID, QEAA).</div>
+            <div><strong>Verifier</strong> — перевірка статусу та презентацій облікових даних.</div>
+        </div>
+        <div style="margin-top: 2rem;">
+            На відміну від централізованої моделі PKIX, EUDI забезпечує розподілену модель без єдиного кореневого CA, де всі сторони пов'язані криптографічно, забезпечуючи приватність через участь Holder в процесі перевірки.
+        </div>
+    </section>
+
+    <section class="section-standards">
+        <h2>Історія розробки</h2>
+        <ul class="standards-list">
+            <li>2010—2018: LDAP</li>
+            <li>2020: Кваліфікований Електронний Підпис (КЕП)</li>
+            <li>2023: CMS Messenger, CHAT X.509, CMS S/MIME & S/MIME Compliance</li>
+            <li>2023: LDAP Compliance, CMP/CMC/EST, MLS ROOM CHAT</li>
+            <li>2023: CA CURVE, CHAT ASN.1, ASN.1 Компілятор, SWIFT X.509</li>
+            <li>2024: ASN1.EX X.680, EST сервер 7030, EUDI, CBOR COSE, MSO MDoc</li>
+        </ul>
+    </section>
+
+    <section class="section-standards">
+        <h2>Відкритий код</h2>
+        <center>
+        <a href="https://github.com/synrc/ca">
+         <img style="width:150px;" src="https://n2o.dev/img/github.svg"/></a>
+        </center>
+    </section>
+
+</main>
+<footer>
+    <div class="footer-columns">
+        <div>
+            <h4>ERP/1</h4>
+            <p>ТОВ «Системи Електронного Урядування»</p>
+        </div>
+        <div>
+            <h4>Продукти</h4>
+            <ul>
+                <li><a href="https://erp.uno/ca/index.html">Authority</a></li>
+                <li><a href="https://erp.uno/mail/index.html">Документи</a></li>
+                <li><a href="https://erp.uno/acc/index.html">Бухгалтерія</a></li>
+                <li><a href="https://erp.uno/warehouse/index.html">Склад</a></li>
+                <li><a href="https://erp.uno/health/index.html">Здоров'я</a></li>
+                <li><a href="https://erp.uno/edu/index.html">Освіта</a></li>
+                <li><a href="https://erp.uno/cart/index.html">Реєстри</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Документація</h4>
+            <ul>
+                <li><a href="https://hexdocs.pm/ca/api-reference.html">Hex Docs</a></li>
+                <li><a href="https://x509.chat/encryption.pdf">Архітектура шифрування</a></li>
+                <li><a href="https://tonpa.guru/stream/2023/pdf/Datasheet.pdf">Технічні характеристики</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Контакти</h4>
+            <p><a href="mailto:maxim@synrc.com">maxim@synrc.com</a></p>
+            <p>2026 © Максим Сохацький</p>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

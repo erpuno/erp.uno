@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="ERP/1: Authority" />
+    <meta name="author" content="Maxim Sokhatsky" />
+    <title>ERP/1: Authority</title>
+    <link rel="stylesheet" href="../index.css"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="../img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../img/favicon-16x16.png">
+    <link rel="manifest" href="../img/site.webmanifest">
+</head>
+<body>
+
+<nav class="sticky">
+    <div class="nav-container">
+        <a href="https://erp.uno/" class="logo">ERP/1</a>
+        <div class="lang-group">
+            <div class="lang-switcher">
+                <a href="index.html" class="lang-btn">UA</a>
+                <a href="index.en.html" class="lang-btn active">EN</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<header>
+    <div class="hero-content">
+        <h1>Authority</h1>
+        <p class="hero-subtitle">
+            ERP/1: Authority is a CA PKI X.509 server with its infrastructure (CMP, OCSP, TSP, CMS, CSR)
+            and a CA crypto library (HEX.PM) compatible with ASN.1, X.509 and OpenSSL for SYNRC services.
+        </p>
+    </div>
+</header>
+
+<main>
+    <section class="section-products">
+        <h2>Intro</h2>
+        <div>
+            ERP/1 AUTHORITY is designed for the high-performance delivery of digital certificates and signatures.
+            The system supports decentralised PKIX models like EUDI, ensuring seamless integration with existing PKI standards.
+            The cryptographic core is written in Erlang/Elixir, providing robustness for mission-critical applications.
+        </div>
+        <figure><center><img width="100%" src="priv/design/ca-shaders.png"></center></figure>
+    </section>
+
+    <section class="section-solutions">
+        <h2>Cryptographic Capabilities</h2>
+        <div class="solutions-grid">
+            <div>
+                <h4>Signing</h4>
+                <ul>
+                    <li>PBMAC1, ECDSA (Pure Elixir), RSA</li>
+                    <li>CAdES, ДСТУ 4145:2014, ДСТУ 7564:2014</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Encryption</h4>
+                <ul>
+                    <li>AES, AES-KW, CMS</li>
+                    <li>ДСТУ 7624:2014 (Kalyna)</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Derivation</h4>
+                <ul>
+                    <li>KDF, HKDF, PBKDF2</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Curves</h4>
+                <ul>
+                    <li>SECP384R1, SECP256V1, SECP521R1</li>
+                    <li>CURVE25519, CURVE448</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-standards">
+        <h2>Services & Protocols</h2>
+        <ul class="standards-list">
+            <li><strong>EST (Enrollment over Secure Transport)</strong> — automated certificate issuance and management.</li>
+            <li><strong>CMP (Certificate Management Protocol)</strong> — comprehensive certificate lifecycle operations.</li>
+            <li><strong>OCSP (Online Certificate Status Protocol)</strong> — real-time verification of certificate validity.</li>
+            <li><strong>TSP (Time Stamping Protocol)</strong> — RFC 3161 compliant time stamps.</li>
+            <li><strong>LDAP</strong> — integration for certificate and CRL publishing.</li>
+        </ul>
+    </section>
+
+    <section class="section-products">
+        <h2>EUDI Architecture</h2>
+        <div>
+            EUDI is decentralized PKIX with ABAC level control over attributes that is using JSON as encoding and HTTP as transport.
+        </div>
+        <div class="solutions-grid" style="margin-top: 2rem;">
+            <div><strong>EUID Wallet (Holder)</strong> — iOS/Android application for secure credential storage.</div>
+            <div><strong>EUDI Provider (Issuer)</strong> — OpenID for Verifiable Credentials (PID, QEAA).</div>
+            <div><strong>EUDI Verifier</strong> — status verification and presentation handling.</div>
+        </div>
+        <div style="margin-top: 2rem;">
+            Unlike centralized PKIX models, EUDI provides a distributed framework where all parties are cryptographically bound,
+            prioritizing user privacy by ensuring the Holder mediates all data sharing interactions.
+        </div>
+    </section>
+
+    <section class="section-standards">
+        <h2>Development History</h2>
+        <ul class="standards-list">
+            <li>2010—2018: LDAP</li>
+            <li>2020: Qualified Digital Signature (QES)</li>
+            <li>2023: CMS Messenger, CHAT X.509, CMS S/MIME & S/MIME Compliance</li>
+            <li>2023: LDAP Compliance, CMP/CMC/EST, MLS ROOM CHAT</li>
+            <li>2023: CA CURVE, CHAT ASN.1, ASN.1 Compiler, SWIFT X.509</li>
+            <li>2024: ASN1.EX X.680, EST server 7030, EUDI, CBOR COSE, MSO MDoc</li>
+        </ul>
+    </section>
+
+    <section class="section-standards">
+        <h2>Open Source</h2>
+        <center>
+        <a href="https://github.com/synrc/ca">
+         <img style="width:150px;" src="https://n2o.dev/img/github.svg"/></a>
+        </center>
+    </section>
+</main>
+
+<footer>
+    <div class="footer-columns">
+        <div>
+            <h4>ERP/1</h4>
+            <p>LLC “Electronic Governance Systems”</p>
+        </div>
+        <div>
+            <h4>Products</h4>
+            <ul>
+                <li><a href="https://erp.uno/ca/index.en.html">Authority</a></li>
+                <li><a href="https://erp.uno/mail/index.en.html">Documents</a></li>
+                <li><a href="https://erp.uno/acc/index.en.html">Accounting</a></li>
+                <li><a href="https://erp.uno/warehouse/index.en.html">Warehouse</a></li>
+                <li><a href="https://erp.uno/health/index.en.html">Health</a></li>
+                <li><a href="https://erp.uno/edu/index.en.html">Education</a></li>
+                <li><a href="https://erp.uno/cart/index.en.html">Registers</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Documentation</h4>
+            <ul>
+                <li><a href="https://hexdocs.pm/ca/api-reference.html">Hex Docs</a></li>
+                <li><a href="https://x509.chat/encryption.pdf">Encryption Architecture</a></li>
+                <li><a href="https://tonpa.guru/stream/2023/pdf/Datasheet.pdf">Technical Specifications</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Contacts</h4>
+            <p><a href="mailto:maxim@synrc.com">maxim@synrc.com</a></p>
+            <p>2026 © Maxim Sokhatsky</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
