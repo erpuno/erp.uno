@@ -298,7 +298,7 @@ h2 {
     border-top: 1px solid var(--border);
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 10px;
 }
 
 .standards-list li::before {
