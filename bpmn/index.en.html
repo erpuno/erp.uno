@@ -1,0 +1,167 @@
+<html><head><meta charset="utf-8" /><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="ERP/1: Processes — BPMN 2.0 and BPEL server with infrastructure (OTP, KVS, X.509, LDAP) for SYNRC business processes." />
+<meta name="author" content="Maxim Sokhatsky" />
+<title>ERP/1: Processes</title>
+    <link rel="stylesheet" href="../index.css"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="../img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../img/favicon-16x16.png">
+    <link rel="manifest" href="../img/site.webmanifest">
+</head><body>
+
+<nav class="sticky">
+    <div class="nav-container">
+        <a href="https://erp.uno/" class="logo">ERP/1</a>
+        <div class="lang-group">
+            <div class="lang-switcher">
+              <a href="index.html" class="lang-btn">UA</a>
+              <a href="index.en.html" class="lang-btn active">EN</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<header>
+    <div class="hero-content">
+        <h1>BPMN</h1>
+        <p class="hero-subtitle">ERP/1: BPMN 2.0 server with infrastructure (OTP, KVS, XML, X.509, LDAP)
+                                 and library for SYNRC business process services.</p>
+    </div>
+</header><main>
+    <section class="section-products">
+        <h2>Description</h2>
+        <div>
+            ERP/1: Processes provides the full cycle of modeling, execution and monitoring of business processes in accordance with the BPMN 2.0 standard.
+            The system supports dynamic models with roles, documents, gateways and events, ensuring compatibility with national DSTU standards.
+            The core is implemented in Erlang/OTP with Elixir, Swift and C99 support, guaranteeing high performance, fault tolerance 
+            and security in high-load environments.
+        </div>
+        <figure><center><img width="600px" src="https://bpe.n2o.dev/man/img/camunda.png"></center></figure>
+    </section>
+
+    <section class="section-solutions">
+        <h2>BPMN Capabilities</h2>
+        <div class="solutions-grid">
+            <div>
+                <h4>Tasks</h4>
+                <ul>
+                    <li>userTask, serviceTask, receiveTask, sendTask</li>
+                    <li>beginEvent, endEvent, boundaryEvent</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Gateways</h4>
+                <ul>
+                    <li>exclusive, parallel, inclusive, complex</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Events</h4>
+                <ul>
+                    <li>messageEvent, timeoutEvent, asyncEvent, broadcastEvent</li>
+                    <li>messageBeginEvent</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Documents &amp; Execution</h4>
+                <ul>
+                    <li>docs, roles, executors, hist, sched</li>
+                    <li>BPMN 2.0, BPEL, KVS, X.509</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-standards">
+        <h2>Services and Protocols</h2>
+        <ul class="standards-list">
+            <li><strong>BPMN 2.0</strong> — full support of notation and business process execution.</li>
+            <li><strong>BPEL</strong> — execution of orchestrated business processes.</li>
+            <li><strong>OTP Supervisor</strong> — reliable monitoring and process recovery.</li>
+            <li><strong>KVS</strong> — distributed storage of processes, history and documents.</li>
+            <li><strong>LDAP</strong> — directory integration for roles and publishing.</li>
+            <li><strong>X.509 / CMS</strong> — digital signature and document encryption.</li>
+            <li><strong>N2O / BERT</strong> — real-time and WebSocket API.</li>
+            <li><strong>REST / WebSocket</strong> — full API for process management.</li>
+        </ul>
+    </section>
+
+    <section class="section-products">
+        <h2>BPMN Architecture</h2>
+        <div>
+            BPMN is the standardized notation for business processes with control over task flow, events, data and roles at the ABAC level.
+            It uses XML/BPMN for modeling and Erlang OTP as the execution engine.
+        </div>
+        <div class="solutions-grid" style="margin-top: 2rem;">
+            <div><strong>Process Engine</strong> — Erlang/OTP server for dynamic process execution.</div>
+            <div><strong>Tasks &amp; Events</strong> — complete set of BPMN 2.0 elements.</div>
+            <div><strong>Gateways &amp; Flows</strong> — branching, parallelism and conditions.</div>
+        </div>
+        <div style="margin-top: 2rem;">
+            Unlike static systems, ERP/1: Processes provides a dynamic model with automatic execution, history, 
+            monitoring and document integration, ensuring flexibility, transparency and scalability of business processes.
+        </div>
+    </section>
+
+    <section class="section-standards">
+        <h2>Development History</h2>
+        <ul class="standards-list">
+            <li>2010—2018: KVS, N2O, LDAP Server.</li>
+            <li>2020: BPMN 1.0 (PrivatBank).</li>
+            <li>2023: BPMN 2.0, BPE API, CMS S/MIME &amp; MLS.</li>
+            <li>2023: OTP Supervisor, KVS Integration, X.509.</li>
+            <li>2024: ASN.1, EST, WebSocket API.</li>
+            <li>2025: EUDI Integration, CBOR COSE.</li>
+            <li>2026: copyright registration.</li>
+        </ul>
+    </section>
+
+    <section class="section-standards">
+        <h2>Open Source</h2>
+        <center>
+        <a href="https://github.com/synrc/bpe">
+         <img style="width:150px;" src="https://n2o.dev/img/github.svg"/></a>
+        </center>
+    </section>
+
+</main>
+<footer>
+    <div class="footer-columns">
+        <div>
+            <h4>ERP/1</h4>
+            <p>ТОВ «Системи Електронного Урядування»</p>
+            <p>ТОВ «Криптографічні Телесистеми»</p>
+        </div>
+        <div>
+            <h4>Products</h4>
+            <ul>
+                <li><a href="../ca/index.html">Certificates</a></li>
+                <li><a href="../ldap/index.html">Directory</a></li>
+                <li><a href="../mail/index.html">Documents</a></li>
+                <li><a href="../acc/index.html">Accounting</a></li>
+                <li><a href="../warehouse/index.html">Warehouse</a></li>
+                <li><a href="../health/index.html">Health</a></li>
+                <li><a href="../edu/index.html">Education</a></li>
+                <li><a href="../cart/index.html">Registers</a></li>
+                <li><a href="../bpmn/index.html">Processes</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Downloads</h4>
+            <ul>
+                <li><a href="https://zencrypted.github.io/x509.chat/bdfl.pdf">BDFL Cathedral</a></li>
+                <li><a href="https://zencrypted.github.io/x509.chat/encryption.pdf">Encryption Architecture</a></li>
+                <li><a href="https://protocol.zencrypted.uk">Buddha Protocol</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Contacts</h4>
+            <p><a href="mailto:synrc.inquery@gmail.com">synrc.inquery@gmail.com</a></p>
+            <p>2026 © ТОВ "СЕУ"</p>
+            <p>2026 © ТОВ "КТ"</p>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

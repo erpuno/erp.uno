@@ -1,0 +1,2249 @@
+% BPE API Type-Specification
+
+-spec load(term()) -> #process{}.
+-spec assign(term()) -> #process{}.
+-spec persist(term(), #process{}) -> #process{}.
+-spec start(#process{},list()) -> {ok,integer()} | {error,integer()}.
+-spec proc(term()) -> #process{}.
+-spec complete(term()) -> {complete,any()}.
+-spec next(term()) -> {complete,any()}.
+-spec complete(any(),term()) -> {complete,any()}.
+-spec amend(term(),any()) -> {complete,any()}.
+-spec discard(term(),any()) -> {complete,any()}.
+-spec modify(term(),any(),append|remove) -> {complete,any()}.
+-spec messageEvent(term(),any()) -> {complete,any()}.
+-spec hist(term()) -> list(#hist{}) | #hist{}.
+
+% find task or document in process
+
+-spec step(#process{},term()) -> [tuple()] | tuple().
+-spec tasks(#process{}) -> list().
+-spec docs(#process{}) -> list().
+-spec doc(tuple(),#process{}) -> list().
+-spec events(#process{}) -> list().
+
+-ifndef(BPE_HRL).
+-define(BPE_HRL, true).
+
+-include_lib("kvs/include/cursors.hrl").
+
+-define(DEFAULT_MODULE, application:get_env(bpe,default_module,bpe_xml)).
+
+-define(TASK,           id=[] :: list(),
+                        name=[] :: list() | binary(),
+                        input=[] :: list(),
+                        output=[] :: list(),
+                        prompt=[] :: list(tuple()),
+                        roles=[] :: list(atom()),
+                        etc=[] :: list({term(),term()}) ).
+
+-define(EVENT,          id=[] :: list() | atom(),
+                        name=[] :: list() | binary(),
+                        prompt=[] :: list(tuple()),
+                        etc=[] :: list({term(),term()}),
+                        payload=[] :: [] | binary(),
+                        timeout=[] :: [] | #timeout{} ).
+
+-define(CYCLIC,         timeDate=[] :: [] | binary(),
+                        timeDuration=[] :: [] | binary(),
+                        timeCycle=[] :: [] | binary() ).
+
+-define(CONDITION_TYPES, [service, compare]).
+
+-record(timeout,      { spec= [] :: term() }).
+
+-type condition() :: {compare,BpeDocParam :: {atom(),term()},Field :: integer(), ConstCheckAgainst :: term()}
+                   | {service,atom(),atom()}
+                   | {service,atom()}.
+
+-type callback() :: {callback,atom(),atom()} | {callback,atom()}.
+
+
+-record(sequenceFlow, { id=[] :: list(),
+                        name=[] :: list() | binary(),
+                        condition=[] :: [] | condition() | binary(),
+                        source=[] :: list(),
+                        target=[] :: list(integer()) | list(list()),
+                        callbacks = [] :: [] | list(callback()),
+                        expression = [] :: [] | list() }).
+
+-record(beginEvent ,  { ?TASK }).
+-record(endEvent,     { ?TASK }).
+-record(task,         { ?TASK }).
+-record(userTask,     { ?TASK }).
+-record(serviceTask,  { ?TASK }).
+-record(receiveTask,  { ?TASK, reader=[] :: #reader{} }).
+-record(sendTask,     { ?TASK, writer=[] :: #writer{} }).
+-record(gateway,      { ?TASK, type= parallel :: gate(), def=[] :: list() }).
+-record(messageBeginEvent, { ?EVENT }).
+-record(boundaryEvent,{ ?EVENT, ?CYCLIC }).
+-record(timeoutEvent, { ?EVENT, ?CYCLIC }).
+
+-record(messageEvent,   { id      = [] :: [] | list() | binary(),
+                          topic   = [] :: [] | list() | binary(),
+                          sender  = [] :: [] | term(),
+                          timeout = [] :: [] | #timeout{},
+                          name    = [] :: [] | term(),
+                          payload = [] :: [] | term() }).
+
+-record(asyncEvent,     { id      = [] :: [] | list() | binary(),
+                          sender  = [] :: [] | term(),
+                          topic   = [] :: [] | list() | binary(),
+                          name    = [] :: [] | term(),
+                          payload = [] :: [] | term() }).
+
+-record(broadcastEvent, { id      = [] :: [] | list() | binary(),
+                          sender  = [] :: [] | term(),
+                          topic   = [] :: [] | list() | binary(),
+                          type    = immediate :: delayed,
+                          name    = [] :: [] | term(),
+                          payload = [] :: [] | term() }).
+
+-record(subscription,   { id      = [] :: [] | list() | binary(),
+                          who     = [] :: [] | list() | binary(),
+                          topic   = [] :: [] | list() | binary() }).
+
+
+-type tasks()  :: #task{} | #serviceTask{} | #userTask{} | #receiveTask{} | #sendTask{} | #beginEvent{} | #endEvent{}.
+-type events() :: #messageEvent{} | #boundaryEvent{} | #timeoutEvent{}.
+-type procId() :: [] | string() | integer() | {atom(),any()}.
+-type gate()   :: exclusive | parallel | inclusive | complex | event.
+
+-record(ts,    { time= [] :: term() }).
+-record(step,  { id = 0 :: integer(), proc = "" :: list() }).
+-record(role,  { id = [] :: list(), name :: binary(), tasks = [] :: term() }).
+-record(sched, { id = [] :: [] | #step{},
+                 prev=[] :: [] | integer(),
+                 next=[] :: [] | integer(),
+                 pointer = -1 :: integer(),
+                 state = [] :: list(list()) }).
+
+-record(gw_block  , { id      = [] :: [] | atom(),
+                      pid     = [] :: [] | term(),
+                      gw      = [] :: [] | term(),
+                      subject = [] :: [] | term() }).
+
+-record(status  , { id    = [] :: [] | atom(),
+                    state = [] :: [] | term(),
+                    routing = [] :: [] | atom() }).
+
+-record(executor, { id       = [] :: [] | term(),
+                    object   = [] :: [] | tuple(),
+                    received = [] :: [] | #ts{},
+                    started  = [] :: [] | #ts{},
+                    executed = [] :: [] | #ts{},
+                    status   = [] :: [] | #status{},
+                    routing   = [] :: [] | list(),
+                    permanent = false :: false | boolean() }).
+
+-record(hist,         { id        = [] :: [] | #step{},
+                        prev      = [] :: [] | integer(),
+                        next      = [] :: [] | integer(),
+                        name      = [] :: [] | binary() | list(),
+                        task      = [] :: [] | atom() | list() | #task{} | #sequenceFlow{} | condition(),
+                        docs      = [] :: list(tuple()),
+                        time      = [] :: [] | #ts{},
+                        executors = [] :: [] | list(#executor{}) }).
+
+-record(process,      { id            = [] :: procId(),
+                        prev          = [] :: [] | integer(),
+                        next          = [] :: [] | integer(),
+                        name          = [] :: [] | binary() | string() | atom(),
+                        desc          = [] :: list() | binary(),
+                        vsn           = [] :: term(),
+                        feeds         = [] :: list(),
+                        module        = [] :: [] | atom(),
+                        roles         = [] :: term(),
+                        tasks         = [] :: list(tasks()),
+                        events        = [] :: list(events()),
+                        flows         = [] :: list(#sequenceFlow{}),
+                        docs          = [] :: list(tuple()),
+                        options       = [] :: term(),
+                        xml           = [] :: list(),
+                        svg           = [] :: list(),
+                        timer         = [] :: [] | reference(),
+                        notifications = [] :: [] | term(),
+                        result        = [] :: [] | binary(),
+                        started       = [] :: [] | #ts{},
+                        modified      = [] :: [] | #ts{},
+                        finished      = [] :: [] | #ts{},
+                        monitor       = [] :: [] | integer(),
+                        parentMonitor = [] :: [] | integer(),
+                        parent        = [] :: [] | procId(),
+                        children      = [] :: list(procId()),
+                        beginEvent    = [] :: list() | atom(),
+                        endEvent      = [] :: list() | atom(),
+                        status        = [] :: term(), % future reserved
+                        stage         = [] :: term(),
+                        rules         = [] :: term(),
+                        userStarted   = [] :: term(),
+                        userModified  = [] :: term(),
+                        userFinished  = [] :: term(),
+                        root          = [] :: term(),
+                        filters       = [] :: term(),
+                        etc           = [] :: term(),
+                        flags         = [] :: term(),
+                        executors     = [] :: list(#executor{})
+                         }).
+
+-record(subProcess,   { name=[] :: [] | atom(),
+                        diagram= #process{} :: #process{} }).
+
+-record(procRec,      { id = [] :: procId(),
+                        name = [] :: list(),
+                        roles = [] :: list(atom()),
+                        etc = [] :: term() }).
+
+-record(monitor,  {     id      = [] :: procId(),
+                        prev    = [] :: [] | integer(),
+                        next    = [] :: [] | integer(),
+                        creator = [] :: list(),
+                        roles   = [] :: list(#role{}),
+                        ogrName = [] :: list(),
+                        status  = [] :: term(),
+                        parent  = [] :: [] | integer(),
+                        children    = [] :: [] | list() }).
+
+-record(continue,  {    id = [] :: list() | binary(),
+                        fn = [] :: atom(),
+                        args = [] :: [] | list(),
+                        module = [] :: [] | atom(),
+                        type = bpe :: atom() }).
+
+-record(result,    {    type      = reply :: atom(),
+                        reply     = [] :: term(),
+                        state     = [] :: term(),
+                        reason    = normal :: term(),
+                        continue  = [] :: term(),
+                        opt       = [] :: term(),
+                        executed  = [] :: list(#executor{}) }).
+
+-record(terminateLock,  { id        = [] :: [] | binary(),
+                          pid       = [] :: [] | binary() }).
+
+-record('Next', { id=[]   :: [] | binary() }).
+-record('Proc', { id=[]   :: [] | binary() }).
+-record('Load', { id=[]   :: [] | binary() }).
+-record('Hist', { id=[]   :: [] | binary() }).
+-record('Make', { proc=[] :: [] | #process{} | binary(), docs=[] :: [] | list(tuple()) }).
+-record('Amen', { id=[]   :: [] | binary(), docs=[] :: [] | list(tuple()) }).
+
+-endif.
+-ifndef(CONSTRUCTOR_HRL).
+-define(CONSTRUCTOR_HRL, true).
+
+-record(bpeActivity, { id   = [] :: list(),
+                       name = [] :: binary(),
+                       type = [] :: list() % beginEvent, endEvent, task, gateway
+                     }).
+
+-record(bpeEvent, { id      = [] :: list(),
+                    name    = [] :: binary(),
+                    type    = [] :: list(),
+                    timeout = [] :: binary() | list() | tuple()}).
+
+-record(bpeFlow, { id,
+                   name,
+                   type, % beginEvent, endEvent, task, gateway
+                   source,
+                   target,
+                   condition % erlang code
+                }).
+
+-record(bpeProc, { id         = [] :: list(),
+                   name       = [] :: binary(),
+                   activities = [] :: list(),
+                   flows      = [] :: list(),
+                   events     = [] :: list(),
+                   roles      = [] :: list()
+                }).
+
+-record(bpeField, { id=[], name=[], pos=[], title=[], layout=[], visible=true, disabled=false,
+                      vector=false, index=[], bind=[], format="~w", desc=[], wide=normal,
+                      type=binary, labelClass=label, fieldClass=field, boxClass=box, multiple=false,
+                      required=false, module=[], access=[], tooltips=[], options=[], min=0, distinct=false,
+                      max=1000000, length=10, validation=[], hidden=false, default=[]}).
+
+-endif.
+-ifndef(BPE_DOCS_HRL).
+-define(BPE_DOCS_HRL, true).
+
+-record(max_tour, {count=10::integer(),joined=0::integer()}).
+-record(join_application, {id=[]::[]|integer(),name=[]::[]|atom()|term(),data=[]::[]|integer()|term()}).
+-record(tour_list, {users=[]::list(#join_application{})}).
+-record(approve, {}).
+-record(close_account, {}).
+-record(tx, {}).
+
+-endif.
+-module(bpe_env).
+
+-author('Maxim Sokhatsky').
+
+-include_lib("bpe/include/bpe.hrl").
+
+-export([append/3, find/2, find/3, remove/3]).
+
+append(kvs, Feed, Rec) -> kvs:append(Rec, Feed);
+append(env, P, []) -> P;
+append(env, P, [Rec | Tail]) ->
+    append(env, append(env, P, Rec), Tail);
+append(env, #process{id = _Proc, docs = _Docs} = P, Rec)
+    when is_tuple(Rec) ->
+    Feed = "/bpe/proc",
+    S = case find(env, P, Rec) of
+            {[], Rest} -> P#process{docs = [Rec | Rest]};
+            {Found, Rest} -> P#process{docs = [Rec | Found] ++ Rest}
+        end,
+    kvs:append(S, Feed),
+    X = S#process{modified =
+                      #ts{time = calendar:local_time()}},
+    kvs:put(X),
+    X.
+
+find(Rec, Feed) ->
+    lists:partition(fun (R) ->
+                            lists:foldl(fun ({P, X}, A) ->
+                                                A andalso element(P, R) == X
+                                        end,
+                                        true,
+                                        [{X, Y}
+                                         || {X, Y}
+                                                <- lists:zip(lists:seq(1, size(Rec)),
+                                                             tuple_to_list(Rec)),
+                                            Y /= []])
+                    end,
+                    Feed).
+
+find(kvs, Feed, Rec) -> find(Rec, kvs:all(Feed));
+find(env, Proc, Rec) -> find(Rec, Proc#process.docs).
+
+remove(env, P, []) -> P;
+remove(env, P, [Rec | Tail]) ->
+    remove(env, remove(env, P, Rec), Tail);
+remove(kvs, Feed, Rec) when is_tuple(Rec) ->
+    {X, _Y} = find(kvs, Feed, Rec),
+    lists:map(fun (I) -> kvs:delete(Feed, element(2, I))
+              end,
+              X);
+remove(env, Proc, Rec) when is_tuple(Rec) ->
+    {_X, Y} = find(env, Proc, Rec),
+    S = Proc#process{docs = Y,
+                     modified = #ts{time = calendar:local_time()}},
+    kvs:append(S, "/bpe/proc"),
+    kvs:put(S),
+    S.
+-module(bpe_event).
+
+-author('Maxim Sokhatsky').
+
+-export([event_action/5, handle_event/3]).
+
+-include("bpe.hrl").
+
+event_action(Module, _Name, Event, _Target, Proc) ->
+    bpe:constructResult(Module:action({event,
+                        Event#messageEvent.name,
+                        Event#messageEvent.payload},
+                       Proc)).
+
+handle_event(#beginEvent{}, Target, Proc) ->
+    {reply, {complete, Target}, Proc};
+handle_event(#endEvent{}, Target, Proc) ->
+    {stop, {normal, Target}, Proc};
+handle_event(#messageBeginEvent{}, Target, Proc) ->
+    {stop, {normal, Target}, Proc};
+handle_event(#messageEvent{name = Name} = Event, Target,
+             #process{module = Module} = Proc) ->
+    event_action(Module, Name, Event, Target, Proc);
+handle_event(_, Target, Proc) ->
+    {reply, {unknown_event, Target}, Proc}.
+-module(bpe_gateways).
+
+-author('Oleksandr Naumov').
+
+-include("bpe.hrl").
+
+-include("doc.hrl").
+
+-export([def/0,
+         vertices/1,
+         vertices/2,
+         getEdgesAndVertices/1,
+         setVertexType/3,
+         fixBeginEndEvents/1]).
+
+-export([fixGateways/1, convertIfNeeded/1, action/2]).
+
+-import(lists, [reverse/1, keyfind/3, keyreplace/4]).
+
+def() ->
+    R_raw = [{r1, a, b},
+             {r2, b, c},
+             {r3, b, d},
+             {r4, c, e},
+             {r5, c, f},
+             {r6, d, g},
+             {r7, e, h},
+             {r8, h, j},
+             {r9, f, i},
+             {r10, i, j},
+             {r11, f, g},
+             {r12, g, j},
+             {r13, j, k}],
+    {R, N} = getEdgesAndVertices(R_raw),
+    P = #process{name = 'Graph', flows = R, tasks = N,
+                 beginEvent = a, endEvent = k, events = []},
+    fixGateways(fixBeginEndEvents(P)).
+
+vertices(R) -> vertices(reverse(R), []).
+
+vertices([], N) -> N;
+vertices([#sequenceFlow{id = Id, source = From,
+                        target = To}
+          | Rtail],
+         N) ->
+    N1 = case keyfind(From, #task.id, N) of
+             false -> [#task{name = From, output = [Id]} | N];
+             V = #task{output = L} ->
+                 keyreplace(From, #task.id, N, V#task{output = [Id | L]})
+         end,
+    NewN = case keyfind(To, #task.id, N1) of
+               false -> [#task{name = To, input = [Id]} | N1];
+               V1 = #task{input = L1} ->
+                   keyreplace(To, #task.id, N1, V1#task{input = [Id | L1]})
+           end,
+    vertices(Rtail, NewN).
+
+getEdgesAndVertices(Edges_Raw) ->
+    R = [#sequenceFlow{name = Id, source = From,
+                       target = To}
+         || {Id, From, To} <- Edges_Raw],
+    {R, vertices(R)}.
+
+setVertexType(Id, Type, Vertices) ->
+    NewVertex = (keyfind(Id,
+                         #task.id,
+                         Vertices))#gateway{type = Type},
+    keyreplace(Id, #sequenceFlow.id, Vertices, NewVertex).
+
+fixBeginEndEvents(Proc) ->
+    Tasks = Proc#process.tasks,
+    [BeginTask] = [T
+                   || #task{input = In} = T <- Tasks, In == []],
+    #task{name = BName, output = _BOut} = BeginTask,
+    [EndTask] = [T
+                 || #task{output = Out} = T <- Tasks, Out == []],
+    #task{name = EName, input = _EIn, output = []} =
+        EndTask,
+    BeginEvent = #beginEvent{name = BName},
+    EndEvent = #endEvent{name = EName},
+    Proc#process{tasks =
+                     [BeginEvent, EndEvent | Tasks -- [BeginTask, EndTask]],
+                 beginEvent = BName, endEvent = EName}.
+
+fixGateways(#process{tasks = Tasks} = Proc) ->
+    Proc#process{tasks =
+                     [convertIfNeeded(T) || T <- Tasks]}.
+
+convertIfNeeded(#task{name = Name, input = In,
+                      output = Out})
+    when length(In) > 1; length(Out) > 1 ->
+    #gateway{name = Name, type = parallel, input = In,
+             output = Out};
+convertIfNeeded(Task) -> Task.
+
+action({request, _, _}, Proc) -> {reply, Proc}.
+-module(bpe_otp).
+
+-author('Maxim Sokhatsky').
+
+-include("bpe.hrl").
+
+-include_lib("kvs/include/cursors.hrl").
+-include_lib("kvs/include/kvs.hrl").
+
+-behaviour(application).
+
+-behaviour(supervisor).
+
+-export([start/2, stop/1, init/1, respawn/0]).
+
+stop(_) -> ok.
+
+opt() -> [set, named_table, {keypos, 1}, public].
+
+respawn() ->
+    spawn(fun () -> [worker(I) || I <- kvs:all("/bpe/proc")]
+          end).
+
+start(_, _) ->
+    [bpe:reload(I)
+     || I
+            <- application:get_env(bpe,
+                                   procmodules,
+                                   [bpe_account, bpe])],
+    logger:add_handlers(bpe),
+    kvs:join(),
+    kvs:join([], #kvs{mod=kvs_mnesia}),
+    kvs:ensure(kvs:writer("/bpe/proc")),
+    supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+
+init([]) ->
+    [ets:new(T, opt()) || T <- [processes, terminateLocks]],
+    {ok, {{one_for_one, 5, 10}, []}}.
+
+worker(#process{id = Id} = P) ->
+    case bpe:head(Id) of
+        #hist{time = #ts{time = Time}} ->
+            worker_do(calendar:time_difference(Time,
+                                               calendar:local_time()),
+                      P);
+        _ -> broken
+    end;
+worker(P) -> logger:notice("BPE: Unknown ~p", [P]).
+
+worker_do({Days, _Time}, _) when Days >= 14 -> skip;
+worker_do({_, _}, #process{status = "deleted"}) -> skip;
+worker_do({_, _}, #process{docs = Docs} = P) -> bpe:start(P, Docs).
+-module(bpe_proc).
+
+-author('Maxim Sokhatsky').
+
+-include("bpe.hrl").
+
+-include_lib("kvs/include/kvs.hrl").
+-include_lib("kvs/include/cursors.hrl").
+
+-behaviour(gen_server).
+
+-export([start_link/1]).
+
+-export([init/1,
+         handle_call/3,
+         handle_cast/2,
+         handle_continue/2,
+         handle_info/2,
+         terminate/2,
+         code_change/3]).
+
+-export([debug/6,
+         process_task/2,
+         process_task/3]).
+
+-define(REQUEST_LIMIT, application:get_env(bpe, request_limit, 500)).
+
+start_link(Parameters) ->
+    gen_server:start_link(?MODULE, Parameters, []).
+
+debug(Proc, Name, Targets, Target, Status, Reason) ->
+    case application:get_env(bpe, debug, true) of
+        true ->
+            logger:notice("BPE: ~ts [~ts:~ts] ~p/~p ~p",
+                          [Proc#process.id,
+                           Name,
+                           Target,
+                           Status,
+                           Reason,
+                           Targets]);
+        false -> skip
+    end.
+
+process_event(EventType, Event, #process{id=Pid, module=Module} = Proc) ->
+  Name = kvs:field(Event, name),
+  #result{type=T, state = NewProc} = Res =
+    case Module:action(Event, Proc) of
+      #result{type = reply} = R when EventType == async -> R#result{type = noreply, reply = []};
+      #result{} = R when EventType == async -> R#result{reply = []};
+      R -> R
+    end,
+  debug(Proc, atom_to_list(element(1, Event)), "", Name, T, ""),
+  kvs:append(NewProc, "/bpe/proc"),
+  kvs:remove(Event, bpe:key("/bpe/messages/queue/", Pid)),
+  kvs:append(erlang:setelement(2, Event, kvs:seq([], [])), bpe:key("/bpe/messages/hist/", Pid)),
+  case Res of
+    #result{continue=C} = X when C =/= [] ->
+      bpe:constructResult(X#result{opt={continue, C}});
+    X -> bpe:constructResult(X)
+  end.
+
+process_task(Stage, Proc) ->
+    process_task(Stage, Proc, false).
+
+process_task(Stage, Proc, NoFlow) ->
+    {_, Curr} = bpe:current_task(Proc),
+    Task = bpe:step(Proc, Curr),
+    Targets = case NoFlow of
+                  true -> noflow;
+                  _ -> bpe_task:targets(Curr, Proc)
+              end,
+    {Status, {Reason, Target}, ProcState} = case {Targets,
+                                                  Curr,
+                                                  Stage}
+                                                of
+                                                {noflow, _, _} -> {reply, {complete, Curr}, Proc};
+                                                {[], [], _} -> bpe_task:already_finished(Proc);
+                                                {[], Curr, _} ->
+                                                    bpe_task:handle_task(Task, Curr, Curr, Proc);
+                                                {[], _, _} -> bpe_task:denied_flow(Curr, Proc);
+                                                {List, _, []} ->
+                                                    bpe_task:handle_task(Task,
+                                                                         Curr,
+                                                                         bpe_task:find_flow(Stage, List),
+                                                                         Proc);
+                                                {List, _, _} ->
+                                                    {reply,
+                                                     {complete, bpe_task:find_flow(Stage, List)},
+                                                     Proc}
+                                            end,
+    case Status == stop orelse NoFlow == true of
+        true -> {stop, Reason, Target, ProcState};
+        _ ->
+            bpe:add_trace(ProcState, [], Target),
+            debug(ProcState, Curr, Targets, Target, Status, Reason),
+            {Status, {Reason, Target}, ProcState}
+    end.
+
+behavior_fun_args(handle_call, Req, From, St) -> [Req, From, St];
+behavior_fun_args(_, Req, _, St) -> [Req, St].
+
+behavior_fun(asyncEvent, _) -> handle_cast;
+behavior_fun(broadcastEvent, {_, broadcastEvent, #broadcastEvent{type = immediate}}) -> handle_cast;
+behavior_fun(_, _) -> handle_call.
+
+convert_api_args(proc, [Id, _ProcId]) -> {Id, get};
+convert_api_args(update, [Id, _ProcId, State]) -> {Id, set, State};
+convert_api_args(assign, [Id, _ProcId]) -> {Id, ensure_mon};
+convert_api_args(Fn, [Id, _ | Args]) ->
+  list_to_tuple([Id, Fn | Args]).
+
+continueId([#continue{} | _] = X, Id) ->
+  lists:map(fun (C) -> C#continue{id = Id} end, X);
+continueId(_, _) -> [].
+
+delete_lock(Id) -> kvs:delete(terminateLock, Id, #kvs{mod=kvs_mnesia}).
+
+handle_result(call, {noreply, S}) -> {reply, ok, S};
+handle_result(call, {noreply, S, X}) -> {reply, ok, S, X};
+handle_result(_, X) -> X.
+handle_result(T, Id, X, #process{id = Pid} = DefState) ->
+  handle_result(T, terminate_check(Id, X, kvs:index(terminateLock, pid, Pid, #kvs{mod=kvs_mnesia}), ?REQUEST_LIMIT, DefState)).
+
+terminate_check(_, _, L, Limit, #process{id = Pid} = DefState) when length(L) > Limit ->
+  logger:error("TERMINATE LOCK LIMIT: ~tp", [Pid]),
+  bpe:cache(terminateLocks, {terminate, Pid}, self()),
+  {stop, normal, DefState};
+terminate_check(Id, X, [#terminateLock{id=Id}], _, #process{id = Pid}) ->
+  bpe:cache(terminateLocks, {terminate, Pid}, case element(1, X) of stop -> self(); _ -> undefined end),
+  delete_lock(Id), X;
+terminate_check(Id, {stop, normal, S}, [#terminateLock{} | _], _, #process{}) ->
+  delete_lock(Id), {noreply, S};
+terminate_check(Id, {stop, normal, Reply, S}, [#terminateLock{} | _], _, #process{}) ->
+  delete_lock(Id), {reply, Reply, S};
+terminate_check(Id, X, _, _, #process{id = Pid}) ->
+  bpe:cache(terminateLocks, {terminate, Pid}, case element(1, X) of stop -> self(); _ -> undefined end),
+  delete_lock(Id), X.
+
+handleContinue({noreply, State}, Continue, Id) when Continue =/= [] ->
+  {noreply, State, {continue, continueId(lists:flatten(Continue), Id)}};
+handleContinue({reply, Reply, State, {continue, C}}, Continue, Id) ->
+  {reply, Reply, State, {continue, continueId(lists:flatten(Continue) ++ C, Id)}};
+handleContinue({reply, Reply, State, _}, Continue, Id) when Continue =/= [] ->
+  {reply, Reply, State, {continue, continueId(lists:flatten(Continue), Id)}};
+handleContinue({noreply, State, {continue, C}}, Continue, Id) ->
+  {noreply, State, {continue, continueId(lists:flatten(Continue) ++ C, Id)}};
+handleContinue({noreply, State, _}, Continue, Id) when Continue =/= [] ->
+  {noreply, State, {continue, continueId(lists:flatten(Continue), Id)}};
+handleContinue({reply, Reply, State}, Continue, Id) when Continue =/= [] ->
+  {reply, Reply, State, {continue, continueId(lists:flatten(Continue), Id)}};
+handleContinue({stop, _, State}, Continue, Id) when Continue =/= [] ->
+  {noreply, State, {continue, continueId(lists:flatten(Continue) ++ [#continue{type=stop}], Id)}};
+handleContinue({stop, _, Reply, State}, Continue, Id) when Continue =/= [] ->
+  {reply, Reply, State, {continue, continueId(lists:flatten(Continue) ++ [#continue{type=stop}], Id)}};
+handleContinue(X, _, _) -> X.
+
+
+% BPMN 2.0 Инфотех
+handle_call({stop, Reason}, _, Proc) -> {stop, Reason, Proc};
+handle_call({Id, mon_link, MID}, _, Proc) ->
+    logger:notice("BPE MON_LINK: ~p.", [Proc#process.id]),
+    ProcNew = Proc#process{monitor = MID},
+    handle_result(call, Id, {reply, ProcNew, ProcNew}, Proc);
+handle_call({Id, ensure_mon}, _, Proc) ->
+    logger:notice("BPE ENSURE_MON: ~p.", [Proc#process.id]),
+    {Mon, ProcNew} = bpe:ensure_mon(Proc),
+    handle_result(call, Id, {stop, normal, Mon, ProcNew}, Proc);
+handle_call({Id, get}, _, Proc) -> logger:notice("BPE GET: ~p.", [Proc#process.id]), handle_result(call, Id, {stop, normal, Proc, Proc}, Proc);
+handle_call({Id, set, State}, _, Proc) ->
+    logger:notice("BPE SET: ~p.", [Proc#process.id]),
+    handle_result(call, Id, {stop, normal, Proc, State}, State);
+handle_call({Id, persist, State}, _, #process{} = Proc) ->
+    logger:notice("BPE PERSIST: ~p.", [Proc#process.id]),
+    kvs:append(State, "/bpe/proc"),
+    handle_result(call, Id, {stop, normal, State, State}, State);
+handle_call({Id, next}, _, #process{} = Proc) ->
+    try handle_result(call, Id, handleContinue(bpe:processFlow(Proc), [], Id), Proc) catch
+        _X:_Y:Z -> {stop, {error, 'next/1', Z}, {error, 'next/1', Z}, Proc}
+    end;
+handle_call({Id, next, [#continue{} | _] = Continue}, _, #process{} = Proc) ->
+    try handle_result(call, Id, handleContinue(bpe:processFlow(Proc), Continue, Id), Proc) catch
+        _X:_Y:Z -> {stop, {error, 'next/1', Z}, {error, 'next/1'}, Proc}
+    end;
+handle_call({Id, next, Stage}, _, Proc) ->
+    try handle_result(call, Id, handleContinue(bpe:processFlow(Stage, Proc), [], Id), Proc) catch
+        _X:_Y:Z -> {stop, {error, 'next/2', Z}, {error, 'next/2', Z}, Proc}
+    end;
+handle_call({Id, amend, Form}, _, Proc) ->
+    try handle_result(call, Id, handleContinue(bpe:processFlow(bpe_env:append(env, Proc, Form)), [], Id), Proc)
+    catch
+        _X:_Y:Z -> {stop, {error, 'amend/2', Z}, {error, 'amend/2', Z}, Proc}
+    end;
+handle_call({Id, discard, Form}, _, Proc) ->
+    try handle_result(call, Id, handleContinue(bpe:processFlow(bpe_env:remove(env, Proc, Form)), [], Id), Proc)
+    catch
+        _X:_Y:Z -> {stop, {error, 'amend/2', Z}, {error, 'discard/2', Z}, Proc}
+    end;
+handle_call({Id, messageEvent, Event}, _, Proc) ->
+    try handle_result(call, Id, handleContinue(process_event(sync, Event, Proc), [], Id), Proc) catch
+        _X:_Y:Z -> {stop, {error, 'messageEvent/2', Z}, {error, 'messageEvent/2', Z}, Proc}
+    end;
+handle_call({Id, messageEvent, Event, [#continue{} | _] = Continue}, _, Proc) ->
+    try handle_result(call, Id, handleContinue(process_event(sync, Event, Proc), Continue, Id), Proc) catch
+        _X:_Y:Z -> {stop, {error, 'messageEvent/3', Z}, {error, 'messageEvent/3', Z}, Proc}
+    end;
+% BPMN 1.0 ПриватБанк
+handle_call({Id, complete}, _, Proc) ->
+    try handle_result(call, Id, handleContinue(process_task([], Proc), [], Id), Proc) catch
+        _X:_Y:Z -> {stop, {error, 'complete/1', Z}, {error, 'complete/1', Z}, Proc}
+    end;
+handle_call({Id, complete, [#continue{} | _] = Continue}, _, Proc) ->
+    try handle_result(call, Id, handleContinue(process_task([], Proc), Continue, Id), Proc) catch
+        _X:_Y:Z -> {stop, {error, 'complete/2', Z}, {error, 'complete/2', Z}, Proc}
+    end;
+handle_call({Id, complete, Stage}, _, Proc) ->
+    try handle_result(call, Id, handleContinue(process_task(Stage, Proc), [], Id), Proc) catch
+        _X:_Y:Z -> {stop, {error, 'complete/2', Z}, {error, 'complete/2', Z}, Proc}
+    end;
+handle_call({Id, modify, Form, append}, _, Proc) ->
+    try handle_result(call, Id, handleContinue(process_task([],
+                     bpe_env:append(env, Proc, Form),
+                     true), [], Id), Proc)
+    catch
+        _X:_Y:Z -> {stop, {error, 'append/2', Z}, {error, 'append/2', Z}, Proc}
+    end;
+handle_call({Id, modify, Form, remove}, _, Proc) ->
+    try handle_result(call, Id, handleContinue(process_task([],
+                     bpe_env:remove(env, Proc, Form),
+                     true), [], Id), Proc)
+    catch
+        _X:_Y:Z -> {stop, {error, 'remove/2', Z}, {error, 'remove/2', Z}, Proc}
+    end;
+
+handle_call({Id, mon_link, MID, Continue}, _, Proc) ->
+    logger:notice("BPE MON_LINK CONTINUE: ~p.", [Proc#process.id]),
+    ProcNew = Proc#process{monitor = MID},
+    handle_result(call, Id, handleContinue({stop, normal, ProcNew, ProcNew}, Continue, Id), Proc);
+handle_call({Id, ensure_mon, Continue}, _, Proc) ->
+    logger:notice("BPE ENSURE_MON CONTINUE: ~p.", [Proc#process.id]),
+    {Mon, ProcNew} = bpe:ensure_mon(Proc),
+    handle_result(call, Id, handleContinue({stop, normal, Mon, ProcNew}, Continue, Id), Proc);
+handle_call({Id, set, State, Continue}, _, Proc) ->
+    logger:notice("BPE SET CONTINUE: ~p.", [Proc#process.id]),
+    handle_result(call, Id, handleContinue({stop, normal, Proc, State}, Continue, Id), State);
+handle_call({Id, persist, State, Continue}, _, #process{} = Proc) ->
+    logger:notice("BPE PERSIST CONTINUE: ~p.", [Proc#process.id]),
+    kvs:append(State, "/bpe/proc"),
+    handle_result(call, Id, handleContinue({stop, normal, State, State}, Continue, Id), State);
+handle_call({Id, next, Stage, Continue}, _, Proc) ->
+    try handle_result(call, Id, handleContinue(bpe:processFlow(Stage, Proc), Continue, Id), Proc) catch
+        _X:_Y:Z -> {stop, {error, 'next/2', Z}, {error, 'next/2', Z}, Proc}
+    end;
+handle_call({Id, amend, Form, Continue}, _, Proc) ->
+    try handle_result(call, Id, handleContinue(bpe:processFlow(bpe_env:append(env, Proc, Form)), Continue, Id), Proc)
+    catch
+        _X:_Y:Z -> {stop, {error, 'amend/2', Z}, {error, 'amend/2', Z}, Proc}
+    end;
+handle_call({Id, discard, Form, Continue}, _, Proc) ->
+    try handle_result(call, Id, handleContinue(bpe:processFlow(bpe_env:remove(env, Proc, Form)), Continue, Id), Proc)
+    catch
+        _X:_Y:Z -> {stop, {error, 'discard/2', Z}, {error, 'discard/2', Z}, Proc}
+    end;
+handle_call({Id, complete, Stage, Continue}, _, Proc) ->
+    try handle_result(call, Id, handleContinue(process_task(Stage, Proc), Continue, Id), Proc) catch
+        _X:_Y:Z -> {stop, {error, 'complete/2', Z}, {error, 'complete/2', Z}, Proc}
+    end;
+handle_call({Id, modify, Form, append, Continue}, _, Proc) ->
+    try handle_result(call, Id, handleContinue(process_task([],
+                     bpe_env:append(env, Proc, Form),
+                     true), Continue, Id), Proc)
+    catch
+        _X:_Y:Z -> {stop, {error, 'append/2', Z}, {error, 'append/2', Z}, Proc}
+    end;
+handle_call({Id, modify, Form, remove, Continue}, _, Proc) ->
+    try handle_result(call, Id, handleContinue(process_task([],
+                     bpe_env:remove(env, Proc, Form),
+                     true), Continue, Id), Proc)
+    catch
+        _X:_Y:Z -> {stop, {error, 'remove/2', Z}, {error, 'remove/2', Z}, Proc}
+    end;
+handle_call(Command, _, Proc) ->
+    handle_result(call, kvs:seq([], []), {stop, unknown, {unknown, Command}, Proc}, Proc).
+
+handle_continue([#continue{type=spawn, module=Module, fn=Fn, args=Args} | T], Proc) ->
+  spawn(fun() -> apply(Module, Fn, Args) end),
+  {noreply, Proc, {continue, T}};
+handle_continue([#continue{id = Id, type=bpe, fn=Fn, args=Args} | T], Proc) ->
+    BpeArgs = convert_api_args(Fn, [Id | Args]),
+    Result = try apply(bpe_proc, behavior_fun(Fn, BpeArgs), behavior_fun_args(behavior_fun(Fn, BpeArgs), BpeArgs, [], Proc))
+             catch
+               _X:_Y:Z -> {stop, {error, Z}, Proc}
+             end,
+    case Result of
+      {noreply, State} ->
+        {noreply, State, {continue, T}};
+      {reply, _, State, {continue, C}} ->
+        {noreply, State, {continue, T ++ continueId(C, Id)}};
+      {reply, _, State, _} ->
+        {noreply, State, {continue, T}};
+      {noreply, State, {continue, C}} ->
+        {noreply, State, {continue, T ++ continueId(C, Id)}};
+      {noreply, State, _} ->
+        {noreply, State, {continue, T}};
+      {reply, _, State} ->
+        {noreply, State, {continue, T}};
+      {stop, _, State} ->
+        {noreply, State, {continue, T ++ [#continue{id = Id, type=stop}]}};
+      {stop, _, _, State} ->
+        {noreply, State, {continue, T ++ [#continue{id = Id, type=stop}]}};
+      X -> X
+    end;
+handle_continue([#continue{id=Id, type=stop}], Proc) ->
+    handle_result(continue, Id, {stop, normal, Proc}, Proc);
+handle_continue([#continue{type=stop} = X | T], Proc) ->
+    case lists:keymember(stop, #continue.type, T) of
+      true -> {noreply, Proc, {continue, T}};
+      _ -> {noreply, Proc, {continue, T ++ [X]}}
+    end;
+handle_continue([], Proc) ->
+    handle_result(continue, [], {stop, normal, Proc}, Proc).
+
+init(Process) ->
+    process_flag(trap_exit, true),
+    bpe:cache(terminateLocks, {terminate, Process#process.id}, undefined),
+    Proc = bpe:load(Process#process.id, Process),
+    logger:notice("BPE: ~ts spawned as ~p",
+                  [Proc#process.id, self()]),
+    Till = bpe:till(calendar:local_time(),
+                    application:get_env(bpe, ttl, 24 * 60 * 60)),
+    bpe:cache(processes, {process, Proc#process.id}, self(), Till),
+    [bpe:reg({messageEvent,
+              element(1, EventRec),
+              Proc#process.id})
+     || EventRec <- bpe:events(Proc)],
+    {ok,
+     Proc#process{timer =
+                      erlang:send_after(rand:uniform(10000),
+                                        self(),
+                                        {timer, ping})}}.
+
+handle_cast({Id, asyncEvent, Event}, Proc) ->
+    try handle_result(cast, Id, handleContinue(process_event(async, Event, Proc), [], Id), Proc) catch
+        _X:_Y:Z -> {stop, {error, 'asyncEvent/2', Z}, Proc}
+    end;
+handle_cast({Id, asyncEvent, Event, [#continue{} | _] = Continue}, Proc) ->
+    try handle_result(cast, Id, handleContinue(process_event(async, Event, Proc), Continue, Id), Proc) catch
+        _X:_Y:Z -> {stop, {error, 'asyncEvent/3', Z}, Proc}
+    end;
+handle_cast({Id, broadcastEvent, Event}, Proc) ->
+    try handle_result(cast, Id, handleContinue(process_event(async, Event, Proc), [], Id), Proc) catch
+        _X:_Y:Z -> {stop, {error, 'broadcastEvent/2', Z}, Proc}
+    end;
+
+handle_cast(Msg, State) ->
+    logger:notice("BPE: Unknown API async: ~p.", [Msg]),
+    handle_result(cast, kvs:seq([], []), {stop, {error, {unknown_cast, Msg}}, State}, State).
+
+handle_info({timer, ping},
+            State = #process{timer = _Timer, id = Id,
+                             events = _Events, notifications = _Pid}) ->
+    lists:foreach(fun (Event) ->
+      try process_event(async, Event, State) catch
+        _X:_Y:Z -> Z
+      end
+    end, kvs:all(bpe:key("/bpe/messages/queue/", Id))),
+    case application:get_env(bpe, ping_discipline, bpe_ping) of
+      undefined -> {noreply, State};
+      M -> M:ping(State)
+    end;
+
+handle_info({'DOWN', _, _, _, _} = Msg, State) ->
+    logger:notice("BPE: Connection closed, shutting down "
+                  "session: ~p.",
+                  [Msg]),
+    handle_result(info, kvs:seq([], []), {stop, normal, State}, State);
+handle_info({'EXIT', _, Reason} = Msg, State) ->
+    logger:notice("BPE EXIT: ~p.", [Msg]),
+    handle_result(info, kvs:seq([], []), {stop, Reason, State}, State);
+handle_info(Info, State = #process{}) ->
+    logger:notice("BPE: Unrecognized info: ~p", [Info]),
+    handle_result(info, kvs:seq([], []), {stop, unknown_info, State}, State).
+
+terminate(Reason, #process{id = Id} = Proc) ->
+    bpe:cache(terminateLocks, {terminate, Id}, self()),
+    logger:notice("BPE: ~ts terminate Reason: ~p ~tp", [Id, Reason, self()]),
+    lists:foreach(fun (Event) ->
+      try process_event(async, Event, Proc) catch
+        _X:_Y:Z -> Z
+      end
+    end, kvs:all(bpe:key("/bpe/messages/queue/", Id))),
+    bpe:cache(processes, {process, Id}, undefined),
+    ok.
+
+code_change(_OldVsn, State, _Extra) -> {ok, State}.
+-module(bpe_task).
+
+-author('Maxim Sokhatsky').
+
+-export([find_flow/1,
+         find_flow/2,
+         move_doclink/2,
+         targets/2,
+         denied_flow/2,
+         already_finished/1,
+         task_action/4,
+         handle_task/4]).
+
+-include("bpe.hrl").
+
+find_flow(noflow) -> [];
+find_flow([H | _] = _List) when is_list(H) -> H;
+find_flow([H | _] = List) when is_integer(H) -> List.
+
+find_flow([], List) -> find_flow(List);
+find_flow(Stage, List) ->
+    case lists:member(Stage, List) of
+        true -> Stage;
+        _ -> find_flow(List)
+    end.
+
+move_doclink({_Source, _Target}, _Proc) -> [].
+
+targets(Name, Proc) ->
+    lists:flatten([Target
+                   || #sequenceFlow{source = Source, target = Target}
+                          <- Proc#process.flows,
+                      Source == Name]).
+
+denied_flow(Curr, Proc) ->
+    {reply, {denied_flow, Curr}, Proc}.
+
+already_finished(Proc) -> {stop, {normal, []}, Proc}.
+
+task_action(Module, Source, Target, Proc) ->
+    {M, F, A} = proplists:get_value(flow_callback,
+                                    Proc#process.etc,
+                                    {bpe_task, move_doclink, [{Source, Target}, Proc]}),
+    case Module:action({request, Source, Target}, Proc) of
+        #result{continue=C} = X when C =/= [] ->
+            X#result{opt={continue, C}};
+        #result{type=reply, reply=[]} = X ->
+            apply(M, F, A),
+            X#result{reply={complete, Target}};
+        #result{type=reply} = X ->
+            apply(M, F, A),
+            X;
+        X -> X
+    end.
+
+handle_task(#beginEvent{}, CurrentTask, Target, Proc) ->
+    task_action(Proc#process.module,
+                CurrentTask,
+                Target,
+                Proc);
+handle_task(#userTask{}, CurrentTask, Target,
+            Proc = #process{module = Module}) ->
+    task_action(Module, CurrentTask, Target, Proc);
+handle_task(#receiveTask{reader = _Reader}, CurrentTask,
+            Target, #process{module = Module} = Proc) ->
+    task_action(Module, CurrentTask, Target, Proc);
+handle_task(#sendTask{writer = _Writer}, CurrentTask,
+            Target, #process{module = Module} = Proc) ->
+    task_action(Module, CurrentTask, Target, Proc);
+handle_task(#serviceTask{}, CurrentTask, Target,
+            #process{module = Module} = Proc) ->
+    task_action(Module, CurrentTask, Target, Proc);
+handle_task(#gateway{type = parallel}, Src, Dst,
+            #process{module = Module} = Proc) ->
+    task_action(Module, Src, Dst, Proc);
+handle_task(#endEvent{}, CurrentTask, Target,
+            #process{module = Module} = Proc) ->
+    task_action(Module, CurrentTask, Target, Proc),
+    {stop, {normal, Target}, Proc};
+handle_task(_, _, Target, Proc) ->
+    {reply, {unknown_task, Target}, Proc}.
+-module(bpe).
+
+-author('Maxim Sokhatsky').
+
+-include_lib("bpe/include/bpe.hrl").
+
+-include_lib("bpe/include/api.hrl").
+
+-include_lib("kvs/include/cursors.hrl").
+-include_lib("kvs/include/kvs.hrl").
+
+-export([load/1,
+         load/2,
+         cleanup/1,
+         current_task/1,
+         add_trace/3,
+         add_error/3,
+         add_sched/3,
+         add_hist/4]).
+
+-export([start/2,
+         start/3,
+         mon_link/3,
+         mon_children/1,
+         pid/1,
+         ensure_mon/1,
+         proc/1,
+         update/2,
+         persist/2]).
+
+-export([key/2,
+         check_flow_condition/2,
+         first_matched_flow/2,
+         check_all_flows/2,
+         random/2,
+         first/2,
+         last/2,
+         exclusive/2]).
+
+-export([get_inserted/4,
+         processAuthorized/6,
+         processSched/2,
+         processFlow/1,
+         processFlow/2,
+         constructResult/1,
+         reg/1,
+         reg/2,
+         unreg/1,
+         send/2,
+         reload/1,
+         ttl/0,
+         till/2]).
+
+-export([assign/1,
+         delete/1,
+         complete/1,
+         next/1,
+         gw_unblock/1,
+         gw_block/3,
+         gw_unblock/3,
+         subscribe/2,
+         unsubscribe/2,
+         messageEvent/2,
+         asyncEvent/2,
+         broadcastEvent/2,
+         assign/2,
+         complete/2,
+         next/2,
+         amend/2,
+         discard/2,
+         complete/3,
+         next/3,
+         amend/3,
+         discard/3,
+         modify/3,
+         messageEvent/3,
+         asyncEvent/3,
+         update/3,
+         persist/3,
+         modify/4,
+         first_flow/1,
+         first_task/1]).
+
+-export([head/1,
+         hist/1,
+         sched_head/1,
+         step/2,
+         docs/1,
+         doc/2,
+         errors/1,
+         tasks/1,
+         flows/1,
+         events/1,
+         flow/2,
+         flowId/1]).
+
+-export([cache/2, cache/3, cache/4]).
+
+-define(SHUTDOWN_TIMEOUT,
+        application:get_env(bpe, shutdown_timeout, 5000)).
+
+-define(TIMEOUT,
+        application:get_env(bpe, timeout, 6000)).
+
+-define(DRIVER,
+        application:get_env(bpe, driver, exclusive)).
+
+id(RecordName) ->
+  case application:get_env(kvs, dba_seq, kvs_rocks) of
+    kvs_rocks -> kvs:seq([], []);
+    _ -> kvs:seq(RecordName, 1)
+  end.
+
+load(Id) -> load(Id, []).
+
+load(Id, Def) ->
+    case application:get_env(kvs, dba, kvs_mnesia) of
+        kvs_mnesia ->
+            case kvs:get(process, Id) of
+                {ok, P1} -> P1;
+                {error, _Reason} -> Def
+            end;
+        kvs_rocks ->
+            case kvs:get("/bpe/proc", Id) of
+                {ok, P2} -> P2;
+                {error, _Reason} -> Def
+            end
+    end.
+
+cleanup(P) ->
+    [kvs:delete("/bpe/hist", Id)
+     || #hist{id = Id} <- bpe:hist(P)],
+    kvs:delete(writer, key("/bpe/hist/", P)),
+    [kvs:delete("/bpe/flow", Id)
+     || #sched{id = Id} <- sched(P)],
+    kvs:delete(writer, key("/bpe/flow/", P)),
+    kvs:delete("/bpe/proc", P).
+
+delete(#process{id = Pid, parent = Parent, monitor = Mid} = Proc) ->
+  gw_unblock(Pid),
+  unsubscribe(Pid, Parent),
+  kvs:remove(Proc, "/bpe/proc"),
+  case kvs:get(key("/bpe/mon/", Mid), Pid) of
+    {ok, X} -> kvs:remove(X, key("/bpe/mon/", Mid));
+    _ -> []
+  end,
+  kvs:append(Proc#process{status = "deleted"}, "/bpe/deleted"),
+  Proc#process{status = "deleted"}.
+
+current_task(#process{id = Id} = Proc) ->
+    case bpe:head(Id) of
+        [] -> {empty, bpe:first_task(Proc)};
+        #hist{id = {step, H, _},
+              task = #sequenceFlow{target = T}} ->
+            {H, T}; %% H - ProcId
+        #hist{id = {step, H, _}, task = T} ->
+            {H, T} %% H - ProcId
+    end.
+
+add_trace(Proc, Name, Task) ->
+    Key = key("/bpe/hist/", Proc#process.id),
+    add_hist(Key, Proc, Name, Task).
+
+add_error(Proc, Name, Task) ->
+    logger:notice("BPE: Error for PID ~ts: ~p ~p",
+                  [Proc#process.id, Name, Task]),
+    Key = key("/bpe/error/", Proc#process.id),
+    add_hist(Key, Proc, Name, Task).
+
+add_hist(Key, #process{executors = Executors} = Proc, Name, Task) ->
+    Writer = kvs:writer(Key),
+    Hist = #hist{id = key({step, Writer#writer.count, Proc#process.id}),
+                 name = Name, time = #ts{time = calendar:local_time()},
+                 docs = Proc#process.docs, task = Task, executors = Executors},
+    kvs:append(Hist, Key),
+    Hist.
+
+add_sched(Proc, Pointer, State) ->
+    Key = key("/bpe/flow/", Proc#process.id),
+    Writer = kvs:writer(Key),
+    kvs:append(#sched{id =
+                          key({step, Writer#writer.count, Proc#process.id}),
+                      pointer = Pointer, state = State},
+               Key).
+start(#process{docs = Docs} = Proc, []) ->
+  start(Proc, Docs, {[], #procRec{}});
+
+start(Proc0, Options) ->
+    start(Proc0, Options, {[], #procRec{}}).
+
+start(Proc0, Options, {Monitor, ProcRec}) ->
+    Id = iolist_to_binary([case Proc0#process.id of
+                               [] -> id(process);
+                               X -> X
+                           end]),
+    {Hist, Task} = current_task(Proc0#process{id = Id}),
+    Pid = proplists:get_value(notification,
+                              Options,
+                              undefined),
+    SProc = Proc0#process{id = Id, docs = Options,
+                         notifications = Pid,
+                         modified = #ts{time = calendar:local_time()},
+                         started = #ts{time = calendar:local_time()}},
+    Proc =
+      case Hist of
+        empty ->
+          #hist{task = Stage} = add_trace(SProc, [], Task),
+          add_sched(SProc, 1, [first_flow(SProc)]),
+          SProc#process{stage = Stage};
+        _ -> SProc
+      end,
+    Restart = transient,
+    Shutdown = ?SHUTDOWN_TIMEOUT,
+    ChildSpec = {Id,
+                 {bpe_proc, start_link, [Proc]},
+                 Restart,
+                 Shutdown,
+                 worker,
+                 [bpe_proc]},
+    case bpe:cache(terminateLocks, {terminate, Id}) of
+      P when is_pid(P) ->
+        Mon = monitor(process, P),
+        receive {'DOWN', Mon, process, P, _} ->
+          receive {'EXIT', P, R} -> R after 10 -> shutdown end, unlink(P), demonitor(Mon)
+        after ?SHUTDOWN_TIMEOUT ->
+          logger:error("BPE SHUTDOWN TIMEOUT: ~tp", [Id]),
+          unlink(P), demonitor(Mon)
+        end;
+      _ -> []
+    end,
+    case supervisor:start_child(bpe_otp, ChildSpec) of
+        {ok, _} -> mon_link(Monitor, Proc, ProcRec), {ok, Id};
+        {ok, _, _} -> mon_link(Monitor, Proc, ProcRec), {ok, Id};
+        {error, already_present} -> supervisor:restart_child(bpe_otp, Id), {ok, Id};
+        {error, Reason} -> {error, Reason}
+    end.
+
+terminateLock(Pid) ->
+  Id = integer_to_binary(erlang:unique_integer([positive, monotonic])),
+  kvs:put(#terminateLock{id=Id, pid=Pid}, #kvs{mod=kvs_mnesia}),
+  Id.
+
+% monitors
+
+mon_link(Mon, Proc, ProcRec) ->
+    mon_link(Mon, Proc, ProcRec, false).
+
+mon_link([], Proc, _, _) ->
+    kvs:append(Proc, "/bpe/proc");
+mon_link(#monitor{parent = []} = M, #process{parentMonitor = PMID} = P, PR, E) when PMID /= [] ->
+    mon_link(M#monitor{parent = PMID}, P, PR, E);
+mon_link(#monitor{id = MID, parent = PMID} = Monitor, #process{id = ProcId} = Proc, ProcRec,
+         Embedded) ->
+    Key = key("/bpe/mon/", MID),
+    kvs:append(Monitor, "/bpe/monitors"),
+    update_parent_monitor(Monitor),
+    MemoProc = case Embedded of
+                   false ->
+                     MsgId1 = terminateLock(ProcId),
+                     gen_server:call(pid(ProcId), {MsgId1, mon_link, MID});
+                   true -> Proc
+               end,
+    kvs:append(MemoProc#process{monitor = MID, parentMonitor = PMID}, "/bpe/proc"),
+    kvs:append(ProcRec#procRec{id = ProcId}, Key),
+    P = MemoProc#process{monitor = MID, parentMonitor = PMID},
+    case Embedded of
+        false ->
+          MsgId2 = terminateLock(ProcId),
+          gen_server:call(pid(ProcId), {MsgId2, set, P}), P;
+        true -> P
+     end.
+
+update_parent_monitor(#monitor{parent = PMID, creator = C} = X) ->
+  Cr = case C of [] -> "default"; C -> C end,
+  case kvs:get("/bpe/monitors", PMID) of
+    {ok, #monitor{}} -> kvs:append(X, key(key("/bpe/submonitors/", PMID), Cr));
+    _ -> []
+  end.
+
+mon_children(MID) -> kvs:all(key("/bpe/mon/", MID)).
+
+pid(Id) -> bpe:cache(processes, {process, iolist_to_binary([Id])}).
+
+ensure_mon(#process{monitor = [], id = Id} = Proc) ->
+    Mon = #monitor{id = id(monitor)},
+    ProcRec = #procRec{id = []},
+    {Mon,
+     mon_link(Mon, Proc, ProcRec#procRec{id = Id}, true)};
+ensure_mon(#process{monitor = MID} = Proc) ->
+    case kvs:get("/bpe/monitors", MID) of
+        {error, X} -> throw({error, X});
+        {ok, Mon} -> {Mon, Proc}
+    end.
+
+proc(ProcId) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId), {Id, get}, ?TIMEOUT) catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end.
+
+update(ProcId, State) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId), {Id, set, State}, ?TIMEOUT) catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end.
+
+update(ProcId, State, Continue) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId), {Id, set, State, Continue}, ?TIMEOUT) catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end.
+persist(ProcId, State) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId), {Id, persist, State}, ?TIMEOUT) catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end.
+
+persist(ProcId, State, Continue) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId),
+                    {Id, persist, State, Continue},
+                    ?TIMEOUT)
+    catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end.
+
+assign(ProcId) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId), {Id, ensure_mon}, ?TIMEOUT) catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end.
+
+assign(ProcId, Continue) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId), {Id, ensure_mon, Continue}, ?TIMEOUT) catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end.
+
+complete(ProcId) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId), {Id, complete}, ?TIMEOUT) catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end.
+
+complete(ProcId, [#continue{} | _] = Continue) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId), {Id, complete, Continue}, ?TIMEOUT) catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end;
+
+complete(ProcId, Stage) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId), {Id, complete, Stage}, ?TIMEOUT) catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end.
+
+complete(ProcId, Stage, Continue) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId),
+                    {Id, complete, Stage, Continue},
+                    ?TIMEOUT)
+    catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end.
+
+next(ProcId) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId), {Id, next}, ?TIMEOUT) catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end.
+
+next(ProcId, [#continue{} | _] = Continue) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId), {Id, next, Continue}, ?TIMEOUT) catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end;
+
+next(ProcId, Stage) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId), {Id, next, Stage}, ?TIMEOUT) catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end.
+
+next(ProcId, Stage, Continue) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId), {Id, next, Stage, Continue}, ?TIMEOUT) catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end.
+
+amend(ProcId, Form) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId), {Id, amend, Form}, ?TIMEOUT) catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end.
+
+amend(ProcId, Form, Continue) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId), {Id, amend, Form, Continue}, ?TIMEOUT) catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end.
+
+discard(ProcId, Form) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId), {Id, discard, Form}, ?TIMEOUT) catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end.
+
+discard(ProcId, Form, Continue) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId), {Id, discard, Form, Continue}, ?TIMEOUT) catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end.
+
+modify(ProcId, Form, Arg) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId), {Id, modify, Form, Arg}, ?TIMEOUT) catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end.
+
+modify(ProcId, Form, Arg, Continue) ->
+    Id = terminateLock(ProcId),
+    start(load(ProcId), []),
+    try gen_server:call(pid(ProcId),
+                    {Id, modify, Form, Arg, Continue},
+                    ?TIMEOUT)
+    catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end.
+
+messageEvent(ProcId, Event) ->
+  Id = terminateLock(ProcId),
+  start(load(ProcId), []),
+  try gen_server:call(pid(ProcId), {Id, messageEvent, Event}, ?TIMEOUT) catch
+    exit:{normal, _}:_Z -> {exit, normal};
+    _X:_Y:Z -> {error, Z}
+  end.
+
+messageEvent(ProcId, Event, Continue) ->
+  Id = terminateLock(ProcId),
+  start(load(ProcId), []),
+  try gen_server:call(pid(ProcId), {Id, messageEvent, Event, Continue}, ?TIMEOUT) catch
+    exit:{normal, _}:_Z -> {exit, normal};
+    _X:_Y:Z -> {error, Z}
+  end.
+
+asyncEvent(ProcId, Event) ->
+  Id = terminateLock(ProcId),
+  start(load(ProcId), []),
+  try gen_server:cast(pid(ProcId), {Id, asyncEvent, Event}) catch
+    exit:{normal, _}:_Z -> {exit, normal};
+    _X:_Y:Z -> {error, Z}
+  end.
+
+asyncEvent(ProcId, Event, Continue) ->
+  Id = terminateLock(ProcId),
+  start(load(ProcId), []),
+  try gen_server:cast(pid(ProcId), {Id, asyncEvent, Event, Continue}) catch
+    exit:{normal, _}:_Z -> {exit, normal};
+    _X:_Y:Z -> {error, Z}
+  end.
+
+broadcastEvent(Topic, #broadcastEvent{type=immediate} = Ev) ->
+  lists:foreach(fun (#subscription{who = Pid}) ->
+    Id = terminateLock(Pid),
+    start(load(Pid), []),
+    try gen_server:cast(pid(Pid), {Id, broadcastEvent, Ev#broadcastEvent{id=kvs:seq([], []),topic=Topic}}) catch
+      exit:{normal, _}:_Z -> {exit, normal};
+      _X:_Y:Z -> {error, Z}
+    end
+  end, kvs:index(subscription, topic, Topic, #kvs{mod = kvs_mnesia}));
+broadcastEvent(Topic, #broadcastEvent{} = Ev) ->
+  lists:foreach(fun (#subscription{who = Pid}) ->
+    kvs:append(Ev#broadcastEvent{id = kvs:seq([], []), topic = Topic}, key("/bpe/messages/queue/", Pid))
+  end, kvs:index(subscription, topic, Topic, #kvs{mod = kvs_mnesia})).
+
+gw_block(Pid, GW, Subject) ->
+    case kvs:index_match(#gw_block{id = '_', pid = Pid, subject = Subject, gw = GW}, pid, #kvs{mod = kvs_mnesia}) of
+      [] -> kvs:put(#gw_block{id = kvs:seq([], []), pid = Pid, subject = Subject, gw = GW}, #kvs{mod = kvs_mnesia});
+      _ -> exist
+    end.
+gw_unblock(Pid) ->
+    lists:foreach(fun (#gw_block{id = Id}) ->
+      kvs:delete(gw_block, Id, #kvs{mod = kvs_mnesia})
+    end, kvs:index_match(#gw_block{id = '_', pid = Pid, subject = '_', gw = '_'}, pid, #kvs{mod = kvs_mnesia})).
+gw_unblock(Pid, GW, Subject) ->
+    lists:foreach(fun (#gw_block{id = Id}) ->
+      kvs:delete(gw_block, Id, #kvs{mod = kvs_mnesia})
+    end, kvs:index_match(#gw_block{id = '_', pid = Pid, subject = Subject, gw = GW}, subject, #kvs{mod = kvs_mnesia})).
+
+subscribe(Pid, Topic) ->
+    case kvs:index_match(#subscription{id = '_', who = Pid, topic = Topic}, who, #kvs{mod = kvs_mnesia}) of
+      [] -> kvs:put(#subscription{id = kvs:seq([], []), who = Pid, topic = Topic}, #kvs{mod = kvs_mnesia});
+      _ -> exist
+    end.
+
+unsubscribe(Pid, Topic) ->
+  lists:foreach(fun (#subscription{id = Id}) ->
+    kvs:delete(subscription, Id, #kvs{mod = kvs_mnesia})
+  end, kvs:index_match(#subscription{id = '_', who = Pid, topic = Topic}, who, #kvs{mod = kvs_mnesia})).
+
+send(Pool, Message) ->
+    syn:publish(term_to_binary(Pool), Message).
+
+reg(Pool) -> reg(Pool, undefined).
+
+reg(Pool, _Value) ->
+    case get({pool, Pool}) of
+        undefined ->
+            syn:join(term_to_binary(Pool), self()),
+            erlang:put({pool, Pool}, Pool);
+        _Defined -> skip
+    end.
+
+unreg(Pool) ->
+    case get({pool, Pool}) of
+        undefined -> skip;
+        _Defined ->
+            syn:leave(Pool, self()),
+            erlang:erase({pool, Pool})
+    end.
+
+first_flow(#process{beginEvent = BeginEvent,
+                    flows = Flows}) ->
+    (lists:keyfind(BeginEvent,
+                   #sequenceFlow.source,
+                   Flows))#sequenceFlow.id.
+
+first_task(#process{tasks = Tasks}) ->
+    case [N || #beginEvent{id = N} <- Tasks] of
+        [] -> [];
+        [Name | _] -> Name
+    end.
+
+head(ProcId) ->
+    Key = case application:get_env(kvs, dba, kvs_mnesia) of
+              kvs_rocks -> key("/bpe/hist/", ProcId);
+              kvs_mnesia -> hist
+          end,
+    case kvs:get(writer, key("/bpe/hist/", ProcId)) of
+        {ok, #writer{count = C}} ->
+            case kvs:get(Key, key({step, C - 1, ProcId})) of
+                {ok, X} -> X;
+                _ -> []
+            end;
+        _ -> []
+    end.
+
+sched(#step{proc = ProcId} = Step) ->
+    Key = case application:get_env(kvs, dba, kvs_mnesia) of
+              kvs_rocks -> key("/bpe/flow/", ProcId);
+              kvs_mnesia -> sched
+          end,
+    case kvs:get(Key, Step) of
+        {ok, X} -> X;
+        _ -> []
+    end;
+sched(ProcId) -> kvs:all(key("/bpe/flow/", ProcId)).
+
+sched_head(ProcId) ->
+    Key = case application:get_env(kvs, dba, kvs_mnesia) of
+              kvs_rocks -> key("/bpe/flow/", ProcId);
+              kvs_mnesia -> sched
+          end,
+    case kvs:get(writer, key("/bpe/flow/", ProcId)) of
+        {ok, #writer{count = C}} ->
+            case kvs:get(Key, key({step, C - 1, ProcId})) of
+                {ok, X} -> X;
+                _ -> []
+            end;
+        _ -> []
+    end.
+
+errors(ProcId) -> kvs:all(key("/bpe/error/", ProcId)).
+
+hist(#step{proc = ProcId, id = N}) -> hist(ProcId, N);
+hist(ProcId) -> kvs:all(key("/bpe/hist/", ProcId)).
+
+hist(ProcId, N) ->
+    Key = case application:get_env(kvs, dba, kvs_mnesia) of
+              kvs_rocks -> key("/bpe/hist/", ProcId);
+              kvs_mnesia -> hist
+          end,
+    case kvs:get(Key, key({step, N, ProcId})) of
+        {ok, Res} -> Res;
+        {error, _Reason} -> []
+    end.
+
+step(Proc, Name) ->
+    case [Task
+          || Task <- tasks(Proc), element(#task.id, Task) == Name]
+        of
+        [T] -> T;
+        [] -> #task{};
+        E -> E
+    end.
+
+docs(Proc) -> (bpe:head(Proc#process.id))#hist.docs.
+
+tasks(Proc) -> Proc#process.tasks.
+
+flows(Proc) -> Proc#process.flows.
+
+events(Proc) -> Proc#process.events.
+
+doc(R, Proc) ->
+    {X, _} = bpe_env:find(env, Proc, R),
+    X.
+
+flow(FlowId, _Proc = #process{flows = Flows}) ->
+    lists:keyfind(FlowId, #sequenceFlow.id, Flows).
+
+flowId(#sched{state = Flows, pointer = N}) ->
+    lists:nth(N, Flows).
+
+cache(Table, Key, undefined) -> ets:delete(Table, Key);
+cache(Table, Key, Value) ->
+    ets:insert(Table,
+               {Key, till(calendar:local_time(), ttl()), Value}),
+    Value.
+
+cache(Table, Key, Value, Till) ->
+    ets:insert(Table, {Key, Till, Value}),
+    Value.
+
+cache(Table, Key) ->
+    Res = ets:lookup(Table, Key),
+    Val = case Res of
+              [] -> undefined;
+              [Value] -> Value;
+              Values -> Values
+          end,
+    case Val of
+        undefined -> undefined;
+        {_, infinity, X} -> X;
+        {_, Expire, X} ->
+            case Expire < calendar:local_time() of
+                true ->
+                    ets:delete(Table, Key),
+                    undefined;
+                false -> X
+            end
+    end.
+
+ttl() -> application:get_env(bpe, ttl, 60 * 15).
+
+till(Now, TTL) ->
+    case is_atom(TTL) of
+        true -> TTL;
+        false ->
+            calendar:gregorian_seconds_to_datetime(calendar:datetime_to_gregorian_seconds(Now)
+                                                       + TTL)
+    end.
+
+reload(Module) ->
+    case code:get_object_code(Module) of
+      error -> {load_error, Module};
+      {Module, Binary, Filename} ->
+        case code:load_binary(Module, Filename, Binary) of
+          {module, Module} -> {reloaded, Module};
+          {error, Reason} -> {load_error, Module, Reason}
+        end
+    end.
+
+constructResult(#result{type=reply, opt=[], reply=R, state=St}) ->
+  {reply, R, St};
+constructResult(#result{type=reply, opt=O, reply=R, state=St}) ->
+  {reply, R, St, flattenOpt(O)};
+constructResult(#result{type=noreply, opt=[], state=St}) ->
+  {noreply, St};
+constructResult(#result{type=noreply, opt=Opt, state=St}) ->
+  {noreply, St, flattenOpt(Opt)};
+constructResult(#result{type=stop, reply=[], reason=Reason, state=St}) ->
+  {stop, Reason, St};
+constructResult(#result{type=stop, reply=Reply, reason=Reason, state=St}) ->
+  {stop, Reason, Reply, St};
+constructResult(_) -> {stop, error, "Invalid return value", []}.
+
+flattenOpt({continue, C}) -> {continue, lists:flatten(C)};
+flattenOpt(X) -> X.
+
+processFlow(ForcedFlowId, #process{} = Proc) ->
+    case flow(ForcedFlowId, Proc) of
+        false ->
+            add_error(Proc, "No such sequenceFlow", ForcedFlowId),
+            constructResult(#result{type=reply,
+                                    reply={error, "No such sequenceFlow", ForcedFlowId},
+                                    state=Proc});
+        ForcedFlow ->
+            Threads = (sched_head(Proc#process.id))#sched.state,
+            case string:str(Threads, [ForcedFlowId]) of
+                0 ->
+                    add_error(Proc, "Unavailable flow", ForcedFlow),
+                    constructResult(#result{type=reply,
+                                            reply={error, "Unavailable flow", ForcedFlow},
+                                            state=Proc});
+                NewPointer ->
+                    add_sched(Proc, NewPointer, Threads),
+                    add_trace(Proc, "Forced Flow", ForcedFlow),
+                    processFlow(Proc)
+            end
+    end.
+
+processFlow(#process{} = Proc) ->
+    constructResult(processSched(sched_head(Proc#process.id), Proc)).
+
+processSched(#sched{state = []}, Proc) ->
+    #result{type=stop, reason=normal, reply='Final', state=Proc};
+processSched(#sched{} = Sched, Proc) ->
+    Flow = flow(flowId(Sched), Proc),
+    SourceTask = lists:keyfind(Flow#sequenceFlow.source,
+                               #task.id,
+                               tasks(Proc)),
+    TargetTask = lists:keyfind(Flow#sequenceFlow.target,
+                               #task.id,
+                               tasks(Proc)),
+    Module = Proc#process.module,
+    Autorized = Module:auth(element(#task.roles,
+                                    SourceTask)),
+    processAuthorized(Autorized,
+                      SourceTask,
+                      TargetTask,
+                      Flow,
+                      Sched,
+                      Proc).
+
+processAuthorized(false, SourceTask, _TargetTask, Flow,
+                  _Sched, Proc) ->
+    add_error(Proc, "Access denied", Flow),
+    #result{type=reply, reply={error, "Access denied", SourceTask}, state=Proc};
+processAuthorized(true, _, Task, Flow,
+                  #sched{id = SchedId, pointer = Pointer,
+                         state = Threads},
+                  Proc) ->
+    #sequenceFlow{id = Next, source = Src, target = Dst} =
+        Flow,
+    #result{state=State, reason=Reason, type=Status, executed = Executed} = Res =
+      bpe_task:task_action(Proc#process.module,
+                           Src,
+                           Dst,
+                           Proc),
+    Inserted = get_inserted(Task, Flow, SchedId, State),
+    NewThreads = lists:sublist(Threads, Pointer - 1) ++
+                     Inserted ++ lists:nthtail(Pointer, Threads),
+    NewPointer = if Pointer == length(Threads) -> 1;
+                    true -> Pointer + length(Inserted)
+                 end,
+    NewExecuted = add_executed(Proc, Executed),
+    add_sched(State, NewPointer, NewThreads),
+    NewState0 = State#process{executors = executors(State, Flow)},
+    NewResult0 = Res#result{state = NewState0, executed = NewExecuted},
+    #hist{task = NewTask} = add_trace(NewState0, [], Flow),
+    NewState = NewState0#process{stage = NewTask},
+    NewResult = NewResult0#result{state = NewState},
+    bpe_proc:debug(NewState, Next, Src, Dst, Status, Reason),
+    kvs:append(NewState, "/bpe/proc"),
+    flow_callback(Flow, NewResult, Proc),
+    NewResult.
+
+flow_callback(#sequenceFlow{source = Src, target = Target, callbacks = [{callback, Fun} | T]} = Flow, Result, #process{module = Module} = PrevState) ->
+    flow_callback(Flow#sequenceFlow{callbacks = T}, Module:Fun({callback, Src, Target}, Result, PrevState), PrevState);
+flow_callback(#sequenceFlow{source = Src, target = Target, callbacks = [{callback, Fun, Module} | T]} = Flow, Result, PrevState) ->
+    flow_callback(Flow#sequenceFlow{callbacks = T}, Module:Fun({callback, Src, Target}, Result, PrevState), PrevState);
+flow_callback(#sequenceFlow{source = Src, target = Target, callbacks = [{callback, Fun, Module, Arg} | T]} = Flow, Result, PrevState) ->
+    flow_callback(Flow#sequenceFlow{callbacks = T}, Module:Fun({callback, Src, Target}, Result, Arg), PrevState);
+flow_callback(#sequenceFlow{callbacks = []}, R, _) -> R;
+flow_callback(_, R, _) -> R.
+
+add_executed(#process{id = Id, executors = PrevExecutors}, Executed0) ->
+    Key = key("/bpe/hist/", Id),
+    Writer = kvs:writer(Key),
+    Time = calendar:local_time(),
+    Executed =
+        lists:map(fun (#executor{executed = []} = X) -> X#executor{executed = #ts{time = Time}};
+                      (X) -> X end, Executed0),
+    NewExecuted =
+        lists:map(fun (#executor{id = EId, executed = E} = R) ->
+            case lists:keyfind(EId, 2, Executed) of
+                #executor{executed = X} when E == [] -> R#executor{executed = X};
+                false -> R
+            end
+        end, PrevExecutors),
+    case kvs:get(Key, key({step, Writer#writer.count - 1, Id})) of
+        {error, _} -> [];
+        {ok, #hist{} = Hist} -> kvs:append(Hist#hist{executors = NewExecuted}, Key)
+    end,
+    Executed.
+
+executors(#process{executors = E}, #sequenceFlow{source = S, target = T, expression = {save_executors, Task}}) ->
+  case S == Task orelse T == Task of
+    true -> E;
+    false -> []
+  end;
+executors(#process{module = Module} = State, #sequenceFlow{source = S, target = T}) ->
+  case erlang:function_exported(Module, executors, 2) of
+    true -> handleExecutors(Module:executors({request, S, T}, State));
+    false -> []
+  end.
+
+handleExecutors(Executors) ->
+    lists:map(fun (#executor{} = R) -> R#executor{received = #ts{time = calendar:local_time()}} end, Executors).
+
+get_inserted(T, _, _, _)
+    when [] == element(#task.output, T) ->
+    [];
+get_inserted(#gateway{id = Name, type = exclusive,
+                      output = Out, def = []},
+             _, _, Proc) ->
+    case first_matched_flow(Out, Proc) of
+        [] ->
+            add_error(Proc,
+                      "All conditions evaluate to false in "
+                      "exlusive gateway without default",
+                      Name),
+            [];
+        X -> X
+    end;
+get_inserted(#gateway{type = exclusive, output = Out,
+                      def = DefFlow},
+             _, _, Proc) ->
+    case first_matched_flow(Out -- [DefFlow], Proc) of
+        [] -> [DefFlow];
+        X -> X
+    end;
+get_inserted(#gateway{type = Type, input = In,
+                      output = Out},
+             Flow, ScedId, _Proc)
+    when Type == inclusive; Type == parallel ->
+    case check_all_flows(In -- [Flow#sequenceFlow.id],
+                         ScedId)
+        of
+        true -> Out;
+        false -> []
+    end;
+get_inserted(T, _, _, Proc) -> bpe:(?DRIVER)(T, Proc).
+
+exclusive(T, Proc) ->
+    first_matched_flow(element(#task.output, T), Proc).
+
+last(T, _Proc) ->
+    [lists:last(element(#task.output, T))].
+
+first(T, _Proc) -> [hd(element(#task.output, T))].
+
+random(T, _Proc) ->
+    Out = element(#task.output, T),
+    [lists:nth(rand:uniform(length(Out)), Out)].
+
+check_all_flows([], _) -> true;
+check_all_flows(_, #step{id = 0}) -> false;
+check_all_flows(Needed, ScedId = #step{id = Id}) ->
+    case hist(ScedId) of
+        #hist{task = #sequenceFlow{id = Fid}} ->
+            check_all_flows(Needed -- [Fid],
+                            ScedId#step{id = Id - 1});
+        _ -> false
+    end.
+
+first_matched_flow([], _Proc) -> [];
+first_matched_flow([H | Flows], Proc) ->
+    case check_flow_condition(flow(H, Proc), Proc) of
+        true -> [H];
+        false -> first_matched_flow(Flows, Proc)
+    end.
+
+check_flow_condition(#sequenceFlow{condition =
+                                       {compare, BpeDocParam, Field, ConstCheckAgainst}},
+                     Proc) ->
+    case doc(BpeDocParam, Proc) of
+        [] ->
+            add_error(Proc, "No such document", BpeDocParam),
+            false;
+        Docs when is_list(Docs) ->
+            element(Field, hd(Docs)) == ConstCheckAgainst
+    end;
+check_flow_condition(#sequenceFlow{source = GW,
+                                   condition = {service, gw_block}},
+                     #process{id = Pid}) ->
+    kvs:index_match(#gw_block{id = '_', gw = GW, subject = Pid, pid = '_'}, subject, #kvs{mod = kvs_mnesia}) == [];
+check_flow_condition(#sequenceFlow{condition =
+                                       {service, Fun}},
+                     Proc = #process{module = Module}) ->
+    Module:Fun(Proc);
+check_flow_condition(#sequenceFlow{condition =
+                                       {service, Fun, Module}},
+                     Proc) ->
+    Module:Fun(Proc);
+
+check_flow_condition(#sequenceFlow{condition = []},
+                     #process{}) ->
+    true.
+
+
+% temp
+key({step, N, [208 | _] = Pid}) ->
+    {step, N, list_to_binary(Pid)};
+key(Pid) -> Pid.
+
+key(Prefix, Pid) -> iolist_to_binary([Prefix, Pid, "/"]).
+-module(bpe_account).
+-author('Maxim Sokhatsky').
+-include("bpe.hrl").
+-include("doc.hrl").
+-export([def/0,auth/1,action/2]).
+
+% use bpe:complete with this BPMN 1.0 process
+
+auth(_) -> true.
+
+def() ->
+  P =  #process { name = "IBAN Account",
+        module = ?MODULE,
+        flows = [
+            #sequenceFlow { id="->Init", source="Created", target="Init"},
+            #sequenceFlow { id="->Upload", source="Init", target="Upload"},
+            #sequenceFlow { id="->Payment", source="Upload", target="Payment"},
+            #sequenceFlow { id="Payment->Signatory", source="Payment", target="Signatory"},
+            #sequenceFlow { id="Payment->Process", source="Payment", target="Process"},
+            #sequenceFlow { id="Process-loop", source="Process", target="Process"},
+            #sequenceFlow { id="Process->Final", source="Process", target="Final"},
+            #sequenceFlow { id="Signatory->Process", source="Signatory", target="Process"},
+            #sequenceFlow { id="Signatory->Final", source="Signatory", target="Final"} ],
+        tasks = [
+            #beginEvent { id="Created" },
+            #userTask { id="Init" },
+            #userTask { id="Upload" },
+            #userTask { id="Signatory" },
+            #serviceTask { id="Payment" },
+            #serviceTask { id="Process" },
+            #endEvent { id="Final" } ],
+        beginEvent = "Created",
+        endEvent = "Final",
+        events = [ #messageEvent{id="PaymentReceived"},
+                   #boundaryEvent{id='*', timeout=#timeout{spec={0, {10, 0, 10}}}} ] },
+
+   P#process{tasks = bpe_xml:fillInOut(P#process.tasks,P#process.flows)}.
+
+action({request,"Created",_}, Proc) ->
+    #result{type=reply,state=Proc};
+
+action({request,"Init",_}, Proc) ->
+    #result{type=reply,state=Proc};
+
+action({request,"Payment",_X}, Proc) ->
+    Payment = bpe:doc({payment_notification},Proc),
+    case Payment of
+         [] -> #result{type=reply,reply="Process",state=Proc#process{docs=[#tx{}]}};
+          _ -> #result{type=reply,reply="Signatory",state=Proc} end;
+
+action({request,"Signatory",_}, Proc) ->
+    #result{type=reply,reply="Process",state=Proc};
+
+action({request,"Process",_X}, Proc) ->
+    case bpe:doc(#close_account{},Proc) of
+         [#close_account{}] -> #result{type=reply,reply="Final",state=Proc};
+                          _ -> #result{type=reply,reply="Process",state=Proc} end;
+
+action({request,"Upload",_}, Proc) ->
+    #result{type=reply,state=Proc};
+
+action({request,"Final",_}, Proc) ->
+    #result{type=stop,state=Proc}.
+-module(bpe_boundary).
+-include_lib("bpe/include/bpe.hrl").
+-export([timer_restart/1, ping/0, ping/1]).
+
+timer_restart(Diff) -> {X,Y,Z} = Diff, erlang:send_after(500*(Z+60*Y+60*60*X),self(),{timer,ping}).
+ping() -> application:get_env(bpe,ping,{0,0,5}).
+
+ping(State=#process{timer=Timer,id=Id,events=Events,notifications=Pid}) ->
+    {_,Task} = bpe:current_task(State),
+    case Timer of [] -> skip; _ -> erlang:cancel_timer(Timer) end,
+
+%   search for '*' wildcard terminal event in process definition
+    Terminal = case lists:keytake('*',#messageEvent.id,Events) of
+        {value,Event,_} -> {'*',element(1,Event),element(#messageEvent.timeout,Event)};
+                  false -> {'*',none,#timeout{spec={none,none}}} end, % forever if none is set
+
+%   search the events with the same name as current task, save event type and timeout
+%   if no event found then use timeout information from terminal event
+    {Name,Record,#timeout{spec={Days,Pattern}}} = case lists:keytake(Task,#messageEvent.name,Events) of
+        {value,Event2,_} -> {Task,element(1,Event2),element(#messageEvent.timeout,Event2)};
+                   false -> Terminal end,
+
+%   calculate diff from past event
+    {DD,Diff} = case bpe:head(Id) of
+        #hist{time=#ts{time=Time1}} -> calendar:time_difference(Time1,calendar:local_time());
+                        _ -> {immediate,timeout} end,
+
+    case {{DD,Diff} < {Days,Pattern}, Record} of
+        {_,none} -> {noreply,State#process{timer=timer_restart(ping())}};
+        {true,_} -> {noreply,State#process{timer=timer_restart(ping())}};
+        {false,timeoutEvent} -> % perform auto-complete on timeoutEvents
+            logger:notice("BPE: ~p complete Timeout: ~p",[Id,{DD,Diff}]),
+            case bpe_proc:process_task([],State) of
+                {reply,_,NewState} -> {noreply,NewState#process{timer=timer_restart(ping())}};
+                {stop,normal,_,NewState} -> {stop,normal,NewState} end;
+        {false,Record} -> logger:notice("BPE: ~p close ~p Timeout: ~p",[Id,Record,{DD,Diff}]),
+            case is_pid(Pid) of
+                true -> Pid ! {direct,{bpe,terminate,{Name,{Days,Pattern}}}};
+                false -> skip end,
+            bpe:cache(processes, {process,Id},undefined),
+            {stop,normal,State} end.
+-module(bpe_metainfo).
+-include("bpe.hrl").
+-include_lib("kvs/include/metainfo.hrl").
+-export([metainfo/0]).
+
+metainfo() ->
+    #schema{name = bpe, tables = [
+          #table{name = process, fields=record_info(fields, process), instance = #process{}},
+          #table{name = monitor, fields=record_info(fields, monitor), instance = #monitor{}},
+          #table{name = procRec, fields=record_info(fields, procRec), instance = #procRec{}},
+          #table{name = hist, fields=record_info(fields, hist), instance = #hist{}},
+          #table{name = sched, fields=record_info(fields, sched), instance = #sched{}},
+          #table{name = broadcastEvent, fields=record_info(fields, broadcastEvent), instance = #broadcastEvent{}},
+          #table{name = messageEvent, fields=record_info(fields, messageEvent), instance = #messageEvent{}},
+          #table{name = asyncEvent, fields=record_info(fields, asyncEvent), instance = #asyncEvent{}},
+          #table{name = subscription, fields=record_info(fields, subscription), instance = #subscription{}, keys=record_info(fields, subscription)},
+          #table{name = gw_block, fields=record_info(fields, gw_block), instance = #gw_block{}, keys=record_info(fields, gw_block)},
+          #table{name = terminateLock, fields=record_info(fields, terminateLock), instance = #terminateLock{}, keys=record_info(fields, terminateLock)}
+         ]}.
+
+-module(bpe_n2o).
+-include_lib("bpe/include/bpe.hrl").
+-include_lib("bpe/include/doc.hrl").
+-record('Token', {data= [] :: binary()}).
+-record(io, {code= [] :: term(),data = [] :: [] | #'Token'{} | #process{} | #io{} | term() }).
+-export([info/3]).
+
+info(#'Amen'{id=Proc,docs=Docs},R,S) -> {reply,{bert,#io{data=bpe:amend(binary_to_list(Proc),Docs)}},R,S};
+info(#'Hist'{id=Proc},R,S) -> {reply,{bert,#io{data=bpe:hist(binary_to_list(Proc))}},  R,S};
+info(#'Proc'{id=Proc},R,S) -> {reply,{bert,#io{data=bpe:proc(binary_to_list(Proc))}},  R,S};
+info(#'Load'{id=Proc},R,S) -> {reply,{bert,#io{data=bpe:load(binary_to_list(Proc))}},  R,S};
+info(#'Next'{id=Proc},R,S) -> {reply,{bert,#io{data=bpe:next(binary_to_list(Proc))}},  R,S};
+info(#'Make'{proc=M,docs=Docs},R,S) -> {reply,{bert,#io{data=bpe:start((nitro:to_atom(M)):def(),Docs)}},R,S};
+info(M,R,S) -> {unknown,M,R,S}.
+-module(bpe_ping).
+-include_lib("bpe/include/bpe.hrl").
+-export([ping/1, ping/0, termination/0]).
+
+timer_restart(Diff) -> {X,Y,Z} = Diff, erlang:send_after(500*(Z+60*Y+60*60*X),self(),{timer,ping}).
+ping() -> application:get_env(bpe,ping,{0,0,30}).
+termination() -> application:get_env(bpe,boundary,{7,{0,0,0}}).
+ping(State=#process{timer=Timer,id=Id,modified = #ts{time=Time2}, events=_Events,notifications=_Pid}) ->
+    case Timer of [] -> skip; _ -> erlang:cancel_timer(Timer) end,
+    case bpe:head(Id) of
+        #hist{time=#ts{time=Time1}} ->
+            {D1,Diff1} = calendar:time_difference(Time1,calendar:local_time()),
+            {D2,Diff2} = calendar:time_difference(Time2,calendar:local_time()),
+
+            case {D1,Diff1} > termination() orelse {D2,Diff2} > termination() of
+                 true  -> {stop,normal,State};
+                 false -> {noreply,State#process{timer=timer_restart(ping())}} end;
+        _ -> skip
+    end.
+-module(bpe_xml).
+-include_lib("bpe/include/bpe.hrl").
+-include_lib("xmerl/include/xmerl.hrl").
+-export([ns/2, def/0, attr/1, find/2, load/1, load/2, reduce/2, fillInOut/2, fixRoles/2, update_roles/3, parse/1, auth/1, action/2]).
+-import(lists,[keyfind/3, keyreplace/4]).
+
+-define(MODEL, 'http://www.omg.org/spec/BPMN/20100524/MODEL').
+
+ns(#xmlElement{name=N, nsinfo=[], namespace=#xmlNamespace{default=?MODEL}}=E,S) ->
+  N1 = list_to_atom("bpmn:"++atom_to_list(N)),
+  {E#xmlElement{name=N1, nsinfo={"bpmn", N}}, S};
+ns(#xmlElement{name=N, nsinfo=[], namespace=#xmlNamespace{default=[], nodes=Nds}}=E,S) ->
+  case lists:keyfind(?MODEL, 2, Nds) of
+    {P,_} -> 
+      N1 = list_to_atom(P++":"++atom_to_list(N)),
+      {E#xmlElement{name=N1, nsinfo={P,N}},S};
+    false -> {E,S} end;
+ns(E,S) -> {E,S}.
+
+attr(E) -> [ {N,V} || #xmlAttribute{name=N,value=V} <- E].
+
+find(E=[#xmlText{}, #xmlElement{name='bpmn:conditionExpression'} | _],[]) ->
+  [{X,[V],attr(A)} || #xmlElement{name=X,attributes=A,content=[#xmlText{value=V}]} <- E];
+find(E=[#xmlText{}, #xmlElement{name='bpmn:flowNodeRef'} | _],[]) ->
+  [{X,[],{value,V}} || #xmlElement{name=X,content=[#xmlText{value=V}]} <- E];
+find(E,[]) -> [{X,find(Sub,[]),attr(A)} || #xmlElement{name=X,attributes=A,content=Sub} <- E];
+find(E, I) -> [{X,find(Sub,[]),attr(A)} || #xmlElement{name=X,attributes=A,content=Sub} <- E, X == I].
+
+def() -> load("priv/sample.bpmn").
+
+load(File) -> load(File, ?MODULE).
+
+load(File,Module) ->
+    case xmerl_scan:file(File, [{hook_fun, fun ns/2}]) of 
+      {error, R} -> {error, R};
+      {#xmlElement{name=N,content=C},_} ->
+        _E = {'bpmn:definitions',[{'bpmn:process',Elements,Attrs}],_} = {N,find(C,'bpmn:process'),attr(C)},
+        Id = proplists:get_value(id,Attrs),
+        Name = unicode:characters_to_binary(proplists:get_value(name,Attrs,[])),
+        Proc = reduce(Elements,#process{id=Id,name=Name,module=Module}),
+        Tasks = fillInOut(Proc#process.tasks, Proc#process.flows),
+        Tasks1 = fixRoles(Tasks, Proc#process.roles),
+        Proc#process{ id=[],
+                      tasks = Tasks1,
+                      xml = filename:basename(File, ".bpmn"),
+                      events = Proc#process.events } end.
+
+reduce([], Acc) ->
+    Acc;
+
+reduce([{'bpmn:task',_Body,Attrs}|T],#process{tasks=Tasks} = Process) ->
+    Id = proplists:get_value(id,Attrs),
+    Name = unicode:characters_to_binary(proplists:get_value(name,Attrs,[])),
+    reduce(T,Process#process{tasks=[#task{id=Id,name=Name}|Tasks]});
+
+reduce([{'bpmn:startEvent',_Body,Attrs}|T],#process{tasks=Tasks} = Process) ->
+    Id = proplists:get_value(id,Attrs),
+    Name = unicode:characters_to_binary(proplists:get_value(name,Attrs,[])),
+    reduce(T,Process#process{tasks=[#beginEvent{id=Id,name=Name}|Tasks],beginEvent=Id});
+
+reduce([{'bpmn:endEvent',_Body,Attrs}|T],#process{tasks=Tasks} = Process) ->
+    Id = proplists:get_value(id,Attrs),
+    Name = unicode:characters_to_binary(proplists:get_value(name,Attrs,[])),
+    reduce(T,Process#process{tasks=[#endEvent{id=Id,name=Name}|Tasks],endEvent=Id});
+
+reduce([{'bpmn:sequenceFlow',Body,Attrs}|T],#process{flows=Flows} = Process) ->
+    Id   = proplists:get_value(id,Attrs),
+    Name   = unicode:characters_to_binary(proplists:get_value(name,Attrs,[])),
+    Source = proplists:get_value(sourceRef,Attrs),
+    Target = proplists:get_value(targetRef,Attrs),
+    F = #sequenceFlow{id=Id,name=Name,source=Source,target=Target},
+    Flow = reduce(Body,F),
+    reduce(T,Process#process{flows=[Flow|Flows]});
+
+reduce([{'bpmn:conditionExpression',Body,_Attrs}|T],#sequenceFlow{} = Flow) ->
+    reduce(T, parseExpression(Flow, parse(hd(Body))));
+
+reduce([{'bpmn:parallelGateway',_Body,Attrs}|T],#process{tasks=Tasks} = Process) ->
+    Id = proplists:get_value(id,Attrs),
+    Name = unicode:characters_to_binary(proplists:get_value(name,Attrs,[])),
+    reduce(T,Process#process{tasks=[#gateway{id=Id,name=Name,type=parallel}|Tasks]});
+
+reduce([{'bpmn:exclusiveGateway',_Body,Attrs}|T],#process{tasks=Tasks} = Process) ->
+    Id = proplists:get_value(id,Attrs),
+    Default = proplists:get_value(default,Attrs,[]),
+    Name = unicode:characters_to_binary(proplists:get_value(name,Attrs,[])),
+    reduce(T,Process#process{tasks=[#gateway{id=Id,name=Name,type=exclusive,def=Default}|Tasks]});
+
+reduce([{'bpmn:inclusiveGateway',_Body,Attrs}|T],#process{tasks=Tasks} = Process) ->
+    Id = proplists:get_value(id,Attrs),
+    Name = unicode:characters_to_binary(proplists:get_value(name,Attrs,[])),
+    reduce(T,Process#process{tasks=[#gateway{id=Id,name=Name,type=inclusive}|Tasks]});
+
+reduce([{'bpmn:complexGateway',_Body,Attrs}|T],#process{tasks=Tasks} = Process) ->
+    Id = proplists:get_value(id,Attrs),
+    Name = unicode:characters_to_binary(proplists:get_value(name,Attrs,[])),
+    reduce(T,Process#process{tasks=[#gateway{id=Id,name=Name,type=complex}|Tasks]});
+
+reduce([{'bpmn:gateway',_Body,Attrs}|T],#process{tasks=Tasks} = Process) ->
+    Id = proplists:get_value(id,Attrs),
+    Name = unicode:characters_to_binary(proplists:get_value(name,Attrs,[])),
+    reduce(T,Process#process{tasks=[#gateway{id=Id,name=Name}|Tasks]});
+
+reduce([{'bpmn:laneSet',Lanes,_Attrs}|T], Process) ->
+    Roles = [ #role{ id = proplists:get_value(id,Att,[]),
+                     tasks = [ Name || {_, [], {value, Name}} <- Tasks ],
+                     name = unicode:characters_to_binary(proplists:get_value(name,Att,[]),utf16)
+                   } || {_,Tasks,Att} <- Lanes],
+%   io:format("Lanes: ~p~n",[Lanes]),
+%   io:format("Roles: ~p~n",[Roles]),
+    reduce(T,Process#process{roles = Roles});
+
+reduce([{SkipType,_Body,_Attrs}|T],#process{} = Process)
+    when SkipType == 'bpmn:dataObjectReference';
+         SkipType == 'bpmn:dataObject';
+         SkipType == 'bpmn:association';
+         SkipType == 'bpmn:textAnnotation';
+         SkipType == 'bpmn:extensionElements' ->
+    skip,
+    reduce(T,Process).
+
+parseExpression(#sequenceFlow{callbacks = C} = Flow, [X | T]) when is_tuple(X) ->
+    case expressionType(X) of
+        callback -> parseExpression(Flow#sequenceFlow{callbacks = C ++ [X]}, T);
+        condition -> parseExpression(Flow#sequenceFlow{condition = X}, T);
+        _ -> parseExpression(Flow#sequenceFlow{expression = X}, T)
+    end;
+parseExpression(Flow, X) when is_tuple(X) -> parseExpression(Flow, [X]);
+parseExpression(Flow, _) -> Flow.
+
+expressionType(X) when is_tuple(X) ->
+    case erlang:element(1, X) of
+      callback -> callback;
+      T -> case lists:member(T, ?CONDITION_TYPES) of true -> condition; false -> unknown end
+    end;
+expressionType(_) -> unknown.
+
+fillInOut(Tasks, []) -> Tasks;
+fillInOut(Tasks, [#sequenceFlow{id=Name,source=Source,target=Target}|Flows]) ->
+    Tasks1 = key_push_value(Name, #gateway.output, Source, #gateway.id, Tasks),
+    Tasks2 = key_push_value(Name, #gateway.input,  Target, #gateway.id, Tasks1),
+    fillInOut(Tasks2, Flows).
+
+key_push_value(Value, ValueKey, ElemId, ElemIdKey, List) ->
+    Elem = keyfind(ElemId, ElemIdKey, List),
+    RecName = hd(tuple_to_list(Elem)),
+    case RecName of
+         endEvent   -> List;
+                  _ -> keyreplace(ElemId, ElemIdKey, List,
+                       setelement(ValueKey, Elem, [Value|element(ValueKey,Elem)])) end.
+
+fixRoles(Tasks, []) -> Tasks;
+fixRoles(Tasks, [#role{id=Id,name=_Name,tasks=XmlTasks}|Lanes]) -> fixRoles(update_roles(XmlTasks, Tasks, Id), Lanes).
+
+update_roles([], AllTasks, _Role) -> AllTasks;
+update_roles([TaskId|Rest], AllTasks, Role) ->
+    update_roles(Rest,key_push_value(Role, #task.roles, TaskId, #task.id, AllTasks),Role).
+
+action({request,_,_},P) -> {reply,P}.
+
+auth(_) -> true.
+
+parse(Term) when is_binary(Term) ->
+  parse(binary_to_list(Term));
+
+parse(Term) ->
+  {ok,Tokens,_} = erl_scan:string(Term),
+  {ok,AbsForm}  = erl_parse:parse_exprs(Tokens),
+  {_,Value,_}   = erl_eval:exprs(AbsForm, erl_eval:new_bindings()),
+  Value.

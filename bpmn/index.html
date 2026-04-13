@@ -1,0 +1,161 @@
+<html><head><meta charset="utf-8" /><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="ERP/1: Процеси — сервер BPMN 2.0 та BPEL з інфраструктурою (OTP, KVS, X.509, LDAP) для бізнес-процесів SYNRC." />
+<meta name="author" content="Maxim Sokhatsky" />
+<title>ERP/1: Процеси</title>
+    <link rel="stylesheet" href="../index.css"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="../img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../img/favicon-16x16.png">
+    <link rel="manifest" href="../img/site.webmanifest">
+</head><body>
+
+<nav class="sticky">
+    <div class="nav-container">
+        <a href="https://erp.uno/" class="logo">ERP/1</a>
+        <div class="lang-group">
+            <div class="lang-switcher">
+              <a href="index.html" class="lang-btn active">UA</a>
+              <a href="index.en.html" class="lang-btn">EN</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<header>
+    <div class="hero-content">
+        <h1>Процеси</h1>
+        <p class="hero-subtitle">ERP/1: Процеси — це сервер BPMN 2.0 та BPEL з інфраструктурою (OTP, KVS, XML, X.509, LDAP)
+                                 та бібліотекою для виконання бізнес-процесів SYNRC.</p>
+    </div>
+</header><main>
+    <section class="section-products">
+        <h2>Опис</h2>
+        <div>
+            ERP/1: Процеси забезпечує повний цикл моделювання, виконання та моніторингу бізнес-процесів відповідно до стандарту BPMN 2.0.
+            Система підтримує динамічні моделі з ролями, документами, гейтвеями та подіями, забезпечуючи сумісність з національними стандартами ДСТУ.
+            Ядро реалізовано на Erlang/OTP з підтримкою Elixir, Swift та С99, що гарантує високу продуктивність, відмовостійкість
+            та безпеку в високонавантажених середовищах.
+        </div>
+        <figure><center><img width="600px" src="https://bpe.n2o.dev/man/img/camunda.png"/></center></figure>
+    </section>
+
+    <section class="section-solutions">
+        <h2>BPMN можливості</h2>
+        <div class="solutions-grid">
+            <div>
+                <h4>Задачі</h4>
+                <ul>
+                    <li>userTask, serviceTask, receiveTask, sendTask</li>
+                    <li>beginEvent, endEvent, boundaryEvent</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Гейтвеї</h4>
+                <ul>
+                    <li>exclusive, parallel, inclusive, complex</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Події</h4>
+                <ul>
+                    <li>messageEvent, timeoutEvent, asyncEvent, broadcastEvent</li>
+                    <li>messageBeginEvent</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Документи та Виконання</h4>
+                <ul>
+                    <li>docs, roles, executors, hist, sched</li>
+                    <li>BPMN 2.0, KVS, X.509</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-standards">
+        <h2>Сервіси та протоколи</h2>
+        <ul class="standards-list">
+            <li><strong>BPMN 2.0</strong> — повна підтримка нотації та виконання бізнес-процесів.</li>
+            <li><strong>OTP</strong> — надійний моніторинг та відновлення процесів.</li>
+            <li><strong>KVS</strong> — розподілене сховище процесів, історії та документів.</li>
+        </ul>
+    </section>
+
+    <section class="section-products">
+        <h2>Архітектура BPMN</h2>
+        <div>
+            BPMN — це стандартизована нотація для бізнес-процесів з контролем потоку задач, подій, даних та ролей на рівні ABAC.
+            Використовує XML/BPMN для моделювання та Erlang OTP як рушій виконання.
+        </div>
+        <div class="solutions-grid" style="margin-top: 2rem;">
+            <div><strong>Process Engine</strong> — Erlang/OTP сервер для динамічного виконання процесів.</div>
+            <div><strong>Tasks &amp; Events</strong> — повний набір елементів BPMN 2.0.</div>
+            <div><strong>Gateways &amp; Flows</strong> — розгалуження, паралелізм та умови.</div>
+        </div>
+        <div style="margin-top: 2rem;">
+            На відміну від статичних систем, ERP/1: Процеси забезпечує динамічну модель з автоматичним виконанням, історією,
+            моніторингом та інтеграцією з документами, забезпечуючи гнучкість, прозорість та масштабованість бізнес-процесів.
+        </div>
+    </section>
+
+    <section class="section-standards">
+        <h2>Історія розробки</h2>
+        <ul class="standards-list">
+            <li>2010—2018: KVS, N2O, LDAP.</li>
+            <li>2020: BPMN 1.0 (ПриватБанк).</li>
+            <li>2023: BPMN 2.0, BPE (МВС).</li>
+            <li>2023: OTP Supervisor, KVS Integration, X.509.</li>
+            <li>2024: ASN.1, EST, WebSocket API.</li>
+            <li>2026: реєстрація авторського твору.</li>
+        </ul>
+    </section>
+
+    <section class="section-standards">
+        <h2>Відкритий код</h2>
+        <center>
+        <a href="https://github.com/synrc/bpe">
+         <img style="width:150px;" src="https://n2o.dev/img/github.svg"/></a>
+        </center>
+    </section>
+
+</main>
+<footer>
+    <div class="footer-columns">
+        <div>
+            <h4>ERP/1</h4>
+            <p>ТОВ «Системи Електронного Урядування»</p>
+            <p>ТОВ «Криптографічні Телесистеми»</p>
+        </div>
+        <div>
+            <h4>Продукти</h4>
+            <ul>
+                <li><a href="../ca/index.html">Сертифікати</a></li>
+                <li><a href="../ldap/index.html">Директорія</a></li>
+                <li><a href="../mail/index.html">Документи</a></li>
+                <li><a href="../acc/index.html">Облік</a></li>
+                <li><a href="../warehouse/index.html">Склад</a></li>
+                <li><a href="../health/index.html">Здоров'я</a></li>
+                <li><a href="../edu/index.html">Освіта</a></li>
+                <li><a href="../cart/index.html">Реєстри</a></li>
+                <li><a href="../bpmn/index.html">Процеси</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Завантаження</h4>
+            <ul>
+                <li><a href="https://zencrypted.github.io/x509.chat/bdfl.pdf">BDFL Cathedral</a></li>
+                <li><a href="https://zencrypted.github.io/x509.chat/encryption.pdf">Encryption Architecture</a></li>
+                <li><a href="https://protocol.zencrypted.uk">Buddha Protocol</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Контакти</h4>
+            <p><a href="mailto:synrc.inquery@gmail.com">synrc.inquery@gmail.com</a></p>
+            <p>2026 © ТОВ "СЕУ"</p>
+            <p>2026 © ТОВ "КТ"</p>
+        </div>
+    </div>
+</footer>
+</body>
+</html>
