@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+ <meta charset="utf-8" />
+ <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+ <meta name="description" content="ERP/1: Комунікатор — X509 Sokhatsky Messenger v2. Корпоративний месенджер з наскрізним шифруванням X.509 CMS, ASN.1 DER та протоколом BUDDHA. Офіційний клієнт для сервера CHAT." />
+ <meta name="author" content="Maxim Sokhatsky" />
+ <title>ERP/1: Комунікатор</title>
+ <link rel="stylesheet" href="../index.css"/>
+ <link rel="apple-touch-icon" sizes="180x180" href="../img/apple-touch-icon.png">
+ <link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32x32.png">
+ <link rel="icon" type="image/png" sizes="16x16" href="../img/favicon-16x16.png">
+ <link rel="manifest" href="../img/site.webmanifest">
+</head>
+<body>
+
+<nav class="sticky">
+ <div class="nav-container">
+ <a href="https://erp.uno/" class="logo">ERP/1</a>
+ <div class="lang-group">
+ <div class="lang-switcher">
+ <a href="index.html" class="lang-btn active">UA</a>
+ <a href="index.en.html" class="lang-btn">EN</a>
+ </div>
+ </div>
+ </div>
+</nav>
+
+<header>
+ <div class="hero-content">
+ <h1>Комунікатор</h1>
+ <p class="hero-subtitle">ERP/1: Комунікатор — це сервер BUDDHA протоколу, безпечна програма обміну
+    повідомленнями з відкритим кодом на основі відкритого ключа. Сервер використовується лише як
+    брокер для маршрутизації. Повне наскрізне шифрування X.509 CMS в ASN.1 DER кодуванні на
+    клієнтах BUDDHA протоколу, та шифрування заголовків серверними ключами.</p>
+ </div>
+</header>
+
+<main>
+ <section class="section-products">
+ <h2>Опис</h2>
+
+ <h3>CHAT СЕРВЕР</h3>
+ <div>
+ Сервер CHAT належить до класу захищених за допомогою ECC PKI сертифікатів месенжерів.
+ Він побудований на телекомунікаційній платформі Erlang/OTP від Ericsson, підтримує
+ Double Ratchet, часто змінює ключі та приймає і надсилає повідомлення в S/MIME сумісних
+ CMS конвертах. CHAT реалізований як простий сервер доставки миттєвих повідомлень у DER
+ форматі, розроблений для ненадійних мереж та у відповідності до стандартів ISO/IETF.
+ Він використовує монолітний асинхронний TCP сервер, гомотопічне DER кодування визначене
+ ASN.1 специфікаціями, які компілюються, так само як LDAP сервер для корпоративних
+ ієрархічних конфігурацій, а також NS сервер імен UNIX та CA сервер для видачі сертифікатів з ABAC атрибутикою:
+ <ul>
+ <li>LDAP для директорії користувачів;</li>
+ <li>DNS для безпеки іменного простору;</li>
+ <li>CA для видачі сертифікатів.</li>
+ </ul>
+ </div>
+ <figure><code>$ x509 -c x509.chat</code></figure>
+ </section>
+
+ <section class="section-products">
+ <h2>Принципи</h2>
+ <p>Компанія користується наступними принципами які формують цілі продукту:</p>
+
+ <p><b class="se">Конфіденційність</b>. Кожне повідомлення шифрується за допомогою моделей полів Галуа GF(2^m) GCM або з використанням еліптичних кривих та групових операції на них, які зберігаються в X.509 CMS конвертах. Нешифровані месаджі не в CMS конвертах заборонені в системі.</p>
+
+ <p><b class="se">Верифіковуваність</b>. Повний вихідний код CHAT X.509 клієнтів і серверних рішень доступний на GitHub. Це дає змогу зацікавленим сторонам перевірити код на безпеку та правильність. Всі серверні субкомпоненти системи написані на Erlang та доступні для верифікації та ліцензування публічно. Єдиний і повний автор усіх компонент системи який здійснює свою політику згідно BDFL собору є Максим Сохацький.</p>
+
+ <p><b class="se">Інтероперабельність</b>. Додаток відповідає світовим та державним телекомунікаційним (ISO/IETF/ITU/IEEE/ANSI) та криптографічним (NIST/FIPS) стандартам. Це означає, що ми не придумали нічого свого, а лише реалізували усе у відповідності до стандартів, як це робить Nokia, Siemens, Ericsson, Apple, Microsoft, Google, тощо.</p>
+
+ <p><b class="se">Мінімалістичність</b>. Базовий додаток займає 300КБ, ми переконані, що якісне програмне забезпечення вимагає верифікації на всіх рівнях, а отже повинно бути мінімалістичним. Ми взяли за основу сучасний SwiftUI декларативний фреймворк і повторили в ньому естетику рідного додатку.</p>
+ </section>
+
+ <section class="section-products">
+ <h2>Цілі</h2>
+ <p><b class="se">Контакти</b> не зберігаються на серверах. Вся контактна інформація про ваші підписки, чати, канали, та компанії може зберігатися ексклюзивно на клієнті. Після логіна на іншому пристрої користувач має змогу отримати контактну книгу (ростер) з іншого клієнта, який працює на іншому пристрої;</p>
+
+ <p><b class="se">Повідомлення</b> не зберігаються на серверах. Транзієнта оперативна черга доставки повідомлень на MNESIA. Кожне повідомлення після останнього кроку отримання квитанції про доставку кореспондентом знищується на сервері і залишається відтепер тільки на клієнті. Так працювали перші версії Viber;</p>
+
+ <p><b class="se">Метадані</b> не зберігаються на серверах. Месенжер не зберігає ніяких метаданих, як то локація, IP адреса, інформація про апаратуру клієнта, тощо. ЧАТ використовує тільки наступні внутрішні ідентифікатори: client, device, profile, roster виключно для роутінга повідомлень. Користувач також має змогу обрати зберігати контактну книгу (ростер) не на сервері, а на клієнті;</p>
+ </section>
+
+ <section class="section-products">
+ <h2>Суспільство</h2>
+ <p>Зроблено для людей:</p>
+ <p>— Безкоштовний захищений анонімний месенджер;<br>
+ — Безкоштовний захищений веріфікований месенджер;<br>
+ — Безпека персональних даних при спілкуванні в Інтернеті;<br>
+ — Календар (iCal) та Контакт (vCard) органайзер;<br>
+ — Референсний iOS UI дизайн, додаток без залежностей;<br>
+ — Відкритий консольний клієнт;</p>
+ </section>
+
+ <section class="section-products">
+ <h2>Держава</h2>
+ <p>Підтримка програми інформатизації:</p>
+ <p>
+ — B2C сервісні канали для ОВВ;<br>
+ — Цифровізація держпослуг та звернень громадян;<br>
+ — Використання електронного підпису документів онлайн;<br>
+ — Інтегровані системи масового оповіщення;<br>
+ — Державний або корпоративний ДСТУ 4145 логін.
+ </p>
+ </section>
+
+ <section class="section-products">
+ <h2>Бізнес</h2>
+ <p>Форми співробітництва:</p>
+ <p>
+ — B2C сервісні канали для Бізнесу;<br>
+ — Автономні впровадження на ВАШИХ потужностях;<br>
+ — Хостинг сервісу по підписці на НАШИХ потужностях;<br>
+ — Багато-ростерні конфігурації по підписці;<br>
+ — Інтеграційне API SDK для партнерських програм;<br>
+ — Конфігурація під потреби бізнесу.
+ </p>
+ </section>
+
+ <section class="section-standards">
+ <h2>Характеристики</h2>
+ <h4>СТАНДАРТИ</h4>
+ <p>NIST: SP 800 38D-56A-57-162, P-384, P-571;<br>
+ ISO: 15946 10646 8824 8825;<br>
+ ANSI: X9-64, X9-62;<br>
+ FIPS: PUB 180-4;<br>
+ ДСТУ: 4541 28147 GF(2^509);<br>
+ ITU: X.509 (PKI), X.894 (CMS), X.680-X.683 X.690-697 (ASN.1);<br>
+ ДССЗІ: #112 14.05.2010 #1236/5/453 20.08.2012 #687 27.10.2020.</p>
+
+ <h4>КРИПТОГРАФІЧНІ АЛГОРИТМИ</h4>
+ <p>Протоколи ключів: SECP-571r1, GF(2^509);<br>
+ Похідні ключі: KDF, PBDKF2, HKDF, AES-KW;<br>
+ Шифри: AES-CBC, AES-GCM, AES-CCM, ДСТУ-КАЛИНА;<br>
+ Хеші: SHA-2, POLY-1305, AES-CMAK, ДСТУ-КУПИНА, CAdES;<br>
+ Протоколи груп: MLS;<br>
+ Постквантова криптографія: KYBER, IBE.</p>
+ </section>
+
+ <section class="section-products">
+ <h2>Клієнт iOS 18.0</h2>
+ <p>Тут ви можете верифікувати клієнт для мобільних телефонів:</p>
+ <p>
+ <a href="https://github.com/zencrypted/x509">X509</a> — SwiftUI клієнт (Swift 6.2) для iOS не нижче 18.0.
+ </p>
+ </section>
+
+ <section class="section-standards">
+ <h2>Відкритий код</h2>
+ <center>
+ <a href="https://github.com/synrc/chat" target="_blank"><img style="width:150px;" src="https://n2o.dev/img/github.svg" alt="synrc/chat"/></a>
+ <a href="https://github.com/zencrypted/protocol" target="_blank" style="margin-left:30px;"><img style="width:150px;" src="https://n2o.dev/img/github.svg" alt="zencrypted/protocol"/></a>
+ </center>
+ <p style="text-align:center;margin-top:1rem;">Live Demo: <a href="http://chat.n2o.dev" target="_blank">chat.n2o.dev</a></p>
+ </section>
+
+</main>
+
+<footer>
+ <div class="footer-columns">
+ <div>
+ <h4>ERP/1</h4>
+ <p>ТОВ «Системи Електронного Урядування»</p>
+ <p>ТОВ «Криптографічні Телесистеми»</p>
+ </div>
+ <div>
+ <h4>Продукти</h4>
+ <ul>
+ <li><a href="../ca/index.html">Сертифікати</a></li>
+ <li><a href="../chat/index.html">Комунікатор</a></li>
+ <li><a href="../chat/index.html">Комунікатор</a></li>
+ <li><a href="../ldap/index.html">Директорія</a></li>
+ <li><a href="../mail/index.html">Документи</a></li>
+ <li><a href="../acc/index.html">Облік</a></li>
+ <li><a href="../warehouse/index.html">Склад</a></li>
+ <li><a href="../health/index.html">Здоров'я</a></li>
+ <li><a href="../edu/index.html">Освіта</a></li>
+ <li><a href="../cart/index.html">Реєстри</a></li>
+ <li><a href="../bpmn/index.html">Процеси</a></li>
+ </ul>
+ </div>
+ <div>
+ <h4>Завантаження</h4>
+ <ul>
+ <li><a href="https://zencrypted.github.io/x509.chat/bdfl.pdf">BDFL Cathedral</a></li>
+ <li><a href="https://zencrypted.github.io/x509.chat/encryption.pdf">Encryption Architecture</a></li>
+ <li><a href="https://protocol.zencrypted.uk">Buddha Protocol</a></li>
+ </ul>
+ </div>
+ <div>
+ <h4>Контакти</h4>
+ <p><a href="mailto:synrc.inquery@gmail.com">synrc.inquery@gmail.com</a></p>
+ <p>2026 © ТОВ "СЕУ"</p>
+ <p>2026 © ТОВ "КТ"</p>
+ </div>
+ </div>
+</footer>
+</body>
+</html>
+ 
