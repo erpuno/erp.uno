@@ -21,6 +21,8 @@
     box-sizing: border-box;
 }
 
+hr { margin-top: 10px; margin-bottom: 10px }
+
 body {
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--bg);
