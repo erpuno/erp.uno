@@ -34,22 +34,32 @@
 
     <header>
         <div class="hero-content">
-            <h1>Сертифікати</h1>
-            <p class="hero-subtitle">ERP/1: Сертифікати — це сервер PKI X.509 з інфраструктурою (CMP, OCSP, TSP, CMS,
-                CSR)
-                та криптографічною бібліотекою, сумісною з ASN.1, X.509 та OpenSSL для сервісів SYNRC.</p>
+            <h1
+                style="background: linear-gradient(135deg, #ffffff 0%, #a0a5aa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Сертифікати</h1>
+            <p class="hero-subtitle"
+                style="font-size: 1.15rem; line-height: 1.6; color: rgba(255,255,255,0.8); max-width: 800px; margin: 1rem auto 0 auto;">
+                <strong>ERP/1: Сертифікати (synrc/ca)</strong> — це надзвичайно потужний, стійкий до відмов сервер PKI
+                X.509 та універсальний центр сертифікації. Побудований на технологіях Erlang/OTP для критичних
+                інфраструктур, він підтримує повний стек протоколів (CMP, OCSP, TSP, CMS, EST) та повністю задовольняє
+                вимоги побудови систем military-grade за стандартами NIST та Держспецзв'язку.
+            </p>
     </header>
     <main>
         <section class="section-products">
             <h2>Опис</h2>
             <div>
-                ERP/1: Сертифікати забезпечує повний цикл керування цифровими ідентичностями, сертифікатами та їх
-                підписами.
-                Система підтримує сучасні децентралізовані моделі EUDI, забезпечуючи сумісність з національними
-                стандартами ДСТУ.
-                Криптографічне ядро реалізовано на Erlang, Elixir, Swift і С99, що гарантує високу продуктивність та
-                безпеку
-                в високонавантажених середовищах.
+                <p style="margin-bottom: 1rem; line-height: 1.6;">
+                    <strong>synrc/ca</strong> виводить керування цифровими ідентичностями на новий рівень безпеки та
+                    продуктивності. Завдяки унікальній архітектурі, система не лише підтримує класичні та сучасні
+                    децентралізовані моделі EUDI (OpenID4VC), але й гарантує абсолютну цілісність даних через
+                    імплементацію контролів на рівні самої віртуальної машини BEAM.
+                </p>
+                <p style="line-height: 1.6;">
+                    Криптографічне ядро реалізовано на Erlang, забезпечуючи сумісність з міжнародними (NIST, ANSI) та
+                    національними стандартами (ДСТУ). Це рішення розроблено для високонавантажених, безперебійних
+                    середовищ державного та фінансового секторів, де компроміси щодо безпеки є неприпустимими.
+                </p>
             </div>
             <figure>
                 <center><img width=100% src="https://ca.n2o.dev/priv/design/ca-shaders.png"></center>
@@ -58,30 +68,38 @@
 
         <section class="section-solutions">
             <h2>Криптографічні можливості</h2>
-            <div class="solutions-grid">
-                <div>
-                    <h4>Підписання</h4>
-                    <ul>
+            <div class="solutions-grid" style="gap: 1.5rem;">
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 1rem;">Підписання</h4>
+                    <ul style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">
                         <li>PBMAC1, ECDSA (Pure Elixir), RSA</li>
                         <li>CAdES, ДСТУ 4145:2014, ДСТУ 7564:2014</li>
                     </ul>
                 </div>
-                <div>
-                    <h4>Шифрування</h4>
-                    <ul>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 1rem;">Шифрування</h4>
+                    <ul style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">
                         <li>AES, AES-KW, CMS</li>
                         <li>ДСТУ 7624:2014 (Калина)</li>
                     </ul>
                 </div>
-                <div>
-                    <h4>Деривація</h4>
-                    <ul>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 1rem;">Деривація</h4>
+                    <ul style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">
                         <li>KDF, HKDF, PBKDF2</li>
                     </ul>
                 </div>
-                <div>
-                    <h4>Криві</h4>
-                    <ul>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 1rem;">Криві</h4>
+                    <ul style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">
                         <li>SECP384R1, SECP256V1, SECP521R1</li>
                         <li>CURVE25519, CURVE448</li>
                     </ul>
@@ -93,11 +111,9 @@
             <h2>Сервіси та протоколи</h2>
             <ul class="standards-list">
                 <li><strong>EST (Enrollment over Secure Transport)</strong> — автоматизація видачі сертифікатів.</li>
-                <li>
-                    <string>CMP (Certificate Management Protocol)</strong> — повний життєвий цикл сертифікатів.
-                </li>
+                <li><strong>CMP (Certificate Management Protocol)</strong> — повний життєвий цикл сертифікатів.</li>
                 <li><strong>OCSP (Online Certificate Status Protocol)</strong> — онлайн-перевірка статусу.</li>
-                <li><strong>TSP (Time Stamping Protocol)</strong> — севрер міток часу.</li>
+                <li><strong>TSP (Time Stamping Protocol)</strong> — сервер міток часу.</li>
                 <li><strong>LDAP</strong> — інтеграція з директоріями для публікації сертифікатів та CRL.</li>
                 <li><strong>eIDAS</strong> — кореневий сервер інфраструктури EUDI.</li>
                 <li><strong>OpenID4VC</strong> — сервер видачі офіційних довготривалих документів.</li>
@@ -111,11 +127,31 @@
                 EUDI — це децентралізований PKIX з контролем атрибутів на рівні ABAC, що використовує JSON для кодування
                 та HTTP як транспорт.
             </div>
-            <div class="solutions-grid" style="margin-top: 2rem;">
-                <div><strong>Holder (Wallet)</strong> — iOS/Android додаток для зберігання та презентації облікових
-                    даних.</div>
-                <div><strong>Issuer (Provider)</strong> — OpenID для Verifiable Credentials (PID, QEAA).</div>
-                <div><strong>Verifier</strong> — перевірка статусу та презентацій облікових даних.</div>
+            <div class="solutions-grid" style="margin-top: 2rem; gap: 1.5rem;">
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)';"
+                    onmouseout="this.style.transform='translateY(0)';">
+                    <strong style="color: #fff; display: block; margin-bottom: 0.5rem; font-size: 1.1em;">Holder
+                        (Wallet)</strong>
+                    <span style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">iOS/Android додаток
+                        для зберігання та презентації облікових даних.</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)';"
+                    onmouseout="this.style.transform='translateY(0)';">
+                    <strong style="color: #fff; display: block; margin-bottom: 0.5rem; font-size: 1.1em;">Issuer
+                        (Provider)</strong>
+                    <span style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">OpenID для
+                        Verifiable Credentials (PID, QEAA).</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)';"
+                    onmouseout="this.style.transform='translateY(0)';">
+                    <strong
+                        style="color: #fff; display: block; margin-bottom: 0.5rem; font-size: 1.1em;">Verifier</strong>
+                    <span style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">Перевірка статусу
+                        та презентацій облікових даних.</span>
+                </div>
             </div>
             <div style="margin-top: 2rem;">
                 На відміну від централізованої моделі PKIX, EUDI забезпечує розподілену модель без єдиного кореневого
@@ -134,51 +170,52 @@
             </div>
             <div
                 style="margin-top: 2.5rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; padding: 1rem 0;">
+                <a href="https://ca.n2o.dev/priv/security-profiles.pdf"
+                    style="display: inline-flex; align-items: center; text-decoration: none; font-weight: 600; gap: 0.5rem; transition: transform 0.2s, color 0.2s; color: var(--text-secondary);"
+                    onmouseover="this.style.transform='translateY(-2px)'; this.style.color='white';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.color='var(--text-secondary)';">
+                    <img src="https://anders.groupoid.space/images/pdf.jpg" width="20" height="20" alt="PDF">
+                    SECURITY POLICIES
+                </a>
                 <a href="https://ca.n2o.dev/priv/bible_profile.pdf"
                     style="display: inline-flex; align-items: center; text-decoration: none; font-weight: 600; gap: 0.5rem; transition: transform 0.2s, color 0.2s; color: var(--text-secondary);"
                     onmouseover="this.style.transform='translateY(-2px)'; this.style.color='white';"
                     onmouseout="this.style.transform='translateY(0)'; this.style.color='var(--text-secondary)';">
                     <img src="https://anders.groupoid.space/images/pdf.jpg" width="20" height="20" alt="PDF">
-                    FULL PROFILE
+                    CONTROLS DIRECTORY (950)
                 </a>
                 <a href="https://ca.n2o.dev/priv/base_profile.pdf"
                     style="display: inline-flex; align-items: center; text-decoration: none; font-weight: 600; gap: 0.5rem; transition: transform 0.2s, color 0.2s; color: var(--text-secondary);"
                     onmouseover="this.style.transform='translateY(-2px)'; this.style.color='white';"
                     onmouseout="this.style.transform='translateY(0)'; this.style.color='var(--text-secondary)';">
                     <img src="https://anders.groupoid.space/images/pdf.jpg" width="20" height="20" alt="PDF">
-                    BASE PROFILE
-                </a>
-                <a href="https://ca.n2o.dev/priv/court_profile.pdf"
-                    style="display: inline-flex; align-items: center; text-decoration: none; font-weight: 600; gap: 0.5rem; transition: transform 0.2s, color 0.2s; color: var(--text-secondary);"
-                    onmouseover="this.style.transform='translateY(-2px)'; this.style.color='white';"
-                    onmouseout="this.style.transform='translateY(0)'; this.style.color='var(--text-secondary)';">
-                    <img src="https://anders.groupoid.space/images/pdf.jpg" width="20" height="20" alt="PDF">
-                    COURT INDUSTRY PROFILE
-                </a>
-                <a href="https://ca.n2o.dev/priv/chat_profile.pdf"
-                    style="display: inline-flex; align-items: center; text-decoration: none; font-weight: 600; gap: 0.5rem; transition: transform 0.2s, color 0.2s; color: var(--text-secondary);"
-                    onmouseover="this.style.transform='translateY(-2px)'; this.style.color='white';"
-                    onmouseout="this.style.transform='translateY(0)'; this.style.color='var(--text-secondary)';">
-                    <img src="https://anders.groupoid.space/images/pdf.jpg" width="20" height="20" alt="PDF">
-                    CHAT SECURITY TARGET
-                </a>
-                <a href="https://ca.n2o.dev/priv/vpn_profile.pdf"
-                    style="display: inline-flex; align-items: center; text-decoration: none; font-weight: 600; gap: 0.5rem; transition: transform 0.2s, color 0.2s; color: var(--text-secondary);"
-                    onmouseover="this.style.transform='translateY(-2px)'; this.style.color='white';"
-                    onmouseout="this.style.transform='translateY(0)'; this.style.color='var(--text-secondary)';">
-                    <img src="https://anders.groupoid.space/images/pdf.jpg" width="20" height="20" alt="PDF">
-                    VPN SECURITY TARGET
+                    BASIC PROFILE (155)
                 </a>
             </div>
+            <div>
+                <strong>Імплементація Опорного монітора (Reference Monitor, AC-25):</strong>
+                Для гарантування цілісності та неможливості обходу (non-bypassable), динамічні політики безпеки (ABAC)
+                не зберігаються у традиційних базах даних.
+                Натомість в ERP/1 Сертифікати матриця доступу та політики компілюються безпосередньо у незмінний
+                (immutable) BEAM байт-код віртуальної машини Erlang, функціонуючи як memory-resident механізм.
+                Це архітектурне рішення забезпечує виконання вимог NIST щодо захисту політик від модифікації
+                (tamper-proof) та повністю нівелює класичні вектори атак на корупцію пам'яті (Buffer Overflow,
+                Use-After-Free), притаманні традиційним ANSI C99 реалізаціям, усуваючи відповідні класи вразливостей
+                (CVE).
+            </div>
+
             <div class="solutions-grid" style="margin-top: 2rem;">
                 <div>
-                    <h4>Використання стандартів NIST</h4>
+                    <h4>Використання стандартів NIST і ISO</h4>
                     <ul>
                         <li><strong>NIST SP 800-53</strong> — Контроли безпеки та приватності</li>
                         <li><strong>NIST SP 800-53A</strong> — Доступ до контролів безпеки в організаціях</li>
                         <li><strong>NIST SP 800-37</strong> — Структура управління ризиками (RMF)</li>
                         <li><strong>FIPS 199 / FIPS 200</strong> — Категоризація та мінімальні вимоги</li>
                         <li><strong>NIST SP 800-162</strong> — Настанови щодо систем ABAC</li>
+                        <li><strong>ISO/IEC 27002</strong> — Інформаційні технології — Методи захисту — Контролі
+                            інформаційної безпеки</li>
+                        <li><strong>ISO/IEC 27001</strong> — Системи управління інформаційною безпекою — Вимоги</li>
                     </ul>
                 </div>
                 <div>
@@ -189,6 +226,189 @@
                         <li>Неперервний аудит, логування подій та моніторинг</li>
                         <li>Безперервна верифікація та валідація криптографічних засобів і сертифікатів</li>
                     </ul>
+                </div>
+            </div>
+        </section>
+
+
+        <section class="section-standards">
+
+
+            <div
+                style="margin-top: 2.5rem; background: rgba(0, 0, 0, 0.2); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05);">
+                <h3 style="margin-top: 0; font-size: 1.3rem;">Походження архітектури контролів: NIST vs ISO</h3>
+                <p style="margin-top: 1rem; font-size: 0.95em; line-height: 1.6;">
+                    Класифікація сімейств заходів захисту, яка лежить в основі платформи (абревіатури AC, AU, SC, IA
+                    тощо), <strong>не є частиною міжнародних стандартів ISO/IEC 27001 або 27002</strong>. Ці стандарти
+                    мають інший підхід до групування. Наша архітектура базується на еталонному каталозі <strong>NIST SP
+                        800-53</strong> (США). Саме ця гранулярна база контролів була нещодавно повністю адаптована
+                    Державною службою спеціального зв’язку та захисту інформації України у новому національному
+                    стандарті <strong>НД ТЗІ 3.6-006-24</strong>. Ми обрали шлях NIST, оскільки він забезпечує
+                    максимальну деталізацію, необхідну для побудови military-grade систем та атестації державних
+                    реєстрів.
+                </p>
+            </div>
+
+            <div class="solutions-grid" style="margin-top: 2rem;">
+                <div>
+                    <h4>Державний сектор (НД ТЗІ 3.6-006-24)</h4>
+                    <p style="margin-top: 1rem; font-size: 0.95em;">
+                        У державному секторі України захист інформації регламентується новітнім стандартом НД ТЗІ
+                        3.6-006-24, який повністю гармонізовано з NIST SP 800-53. Процедура побудови Комплексної системи
+                        захисту інформації (КСЗІ) передбачає:
+                    </p>
+                    <ul style="margin-top: 0.5rem; font-size: 0.9em;">
+                        <li>Розробку та затвердження <strong>Цільового профілю безпеки</strong> системи на основі
+                            Базового або Галузевого профілю.</li>
+                        <li>Впровадження засобів технічного і криптографічного захисту, що відповідають обраним заходам
+                            контролю.</li>
+                        <li>Проведення державної експертизи КСЗІ (або декларування відповідності) для отримання
+                            <strong>Атестата відповідності</strong> від Держспецзв'язку.
+                        </li>
+                    </ul>
+                    <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.8rem;">
+                        <a href="https://ca.n2o.dev/priv/requirements/%D0%9D%D0%94%20%D0%A2%D0%97%D0%86%203.6-006-24.pdf"
+                            style="display: inline-flex; align-items: center; text-decoration: none; font-weight: 600; gap: 0.5rem; transition: transform 0.2s, color 0.2s; color: var(--text-secondary);"
+                            onmouseover="this.style.transform='translateY(-2px)'; this.style.color='white';"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.color='var(--text-secondary)';">
+                            <img src="https://anders.groupoid.space/images/pdf.jpg" width="20" height="20" alt="PDF">
+                            НД ТЗІ 3.6-006-24
+                        </a>
+                        <a href="https://ca.n2o.dev/priv/requirements/%D0%9D%D0%94%20%D0%A2%D0%97%D0%86%202.3-025-24_%D0%A21.pdf"
+                            style="display: inline-flex; align-items: center; text-decoration: none; font-weight: 600; gap: 0.5rem; transition: transform 0.2s, color 0.2s; color: var(--text-secondary);"
+                            onmouseover="this.style.transform='translateY(-2px)'; this.style.color='white';"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.color='var(--text-secondary)';">
+                            <img src="https://anders.groupoid.space/images/pdf.jpg" width="20" height="20" alt="PDF">
+                            НД ТЗІ 2.3-025-24 Том 1
+                        </a>
+                        <a href="https://ca.n2o.dev/priv/requirements/%D0%9D%D0%94%20%D0%A2%D0%97%D0%86%202.3-025-24_%D0%A22.pdf"
+                            style="display: inline-flex; align-items: center; text-decoration: none; font-weight: 600; gap: 0.5rem; transition: transform 0.2s, color 0.2s; color: var(--text-secondary);"
+                            onmouseover="this.style.transform='translateY(-2px)'; this.style.color='white';"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.color='var(--text-secondary)';">
+                            <img src="https://anders.groupoid.space/images/pdf.jpg" width="20" height="20" alt="PDF">
+                            НД ТЗІ 2.3-025-24 Том 2
+                        </a>
+                        <a href="https://ca.n2o.dev/priv/requirements/%D0%9D%D0%94%20%D0%A2%D0%97%D0%86%202.3-025-24_%D0%A23.pdf"
+                            style="display: inline-flex; align-items: center; text-decoration: none; font-weight: 600; gap: 0.5rem; transition: transform 0.2s, color 0.2s; color: var(--text-secondary);"
+                            onmouseover="this.style.transform='translateY(-2px)'; this.style.color='white';"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.color='var(--text-secondary)';">
+                            <img src="https://anders.groupoid.space/images/pdf.jpg" width="20" height="20" alt="PDF">
+                            НД ТЗІ 2.3-025-24 Том 3
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h4>Приватний сектор (NIST SP 800-53)</h4>
+                    <p style="margin-top: 1rem; font-size: 0.95em;">
+                        Для корпоративного сектору, фінтеху та критичної інфраструктури еталоном є пряме застосування
+                        сімейства стандартів NIST. Сертифікація базується на Risk Management Framework (NIST SP 800-37)
+                        і включає:
+                    </p>
+                    <ul style="margin-top: 0.5rem; font-size: 0.9em;">
+                        <li>Категоризацію системи за FIPS 199/200 та вибір базового профілю контролів (Baseline) за NIST
+                            SP 800-53.</li>
+                        <li>Розробку System Security Plan (SSP) та імплементацію архітектури безпеки і засобів
+                            моніторингу.</li>
+                        <li>Незалежну оцінку контролів за NIST SP 800-53A та формальне надання внутрішнього дозволу на
+                            експлуатацію <strong>(Authority to Operate - ATO)</strong>.</li>
+                    </ul>
+                    <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.8rem;">
+                        <a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-53r5.pdf"
+                            style="display: inline-flex; align-items: center; text-decoration: none; font-weight: 600; gap: 0.5rem; transition: transform 0.2s, color 0.2s; color: var(--text-secondary);"
+                            onmouseover="this.style.transform='translateY(-2px)'; this.style.color='white';"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.color='var(--text-secondary)';">
+                            <img src="https://anders.groupoid.space/images/pdf.jpg" width="20" height="20" alt="PDF">
+                            NIST SP 800-53 Rev. 5
+                        </a>
+                        <a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-53Ar5.pdf"
+                            style="display: inline-flex; align-items: center; text-decoration: none; font-weight: 600; gap: 0.5rem; transition: transform 0.2s, color 0.2s; color: var(--text-secondary);"
+                            onmouseover="this.style.transform='translateY(-2px)'; this.style.color='white';"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.color='var(--text-secondary)';">
+                            <img src="https://anders.groupoid.space/images/pdf.jpg" width="20" height="20" alt="PDF">
+                            NIST SP 800-53A Rev. 5
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                style="margin-top: 2.5rem; background: rgba(0, 0, 0, 0.2); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05);">
+                <h3 style="margin-top: 0; font-size: 1.3rem;">Принцип розділення обов'язків (Segregation of Duties)</h3>
+                <p style="margin-top: 1rem; font-size: 0.95em; line-height: 1.6;">
+                    Відповідно до нормативної бази України (НД ТЗІ 2.6-001-11) та найкращих світових практик (принцип
+                    <em>Maker/Checker</em>), побудова та сертифікація Комплексної системи захисту інформації (КСЗІ) є
+                    строго <strong>двоетапною процедурою</strong>. Вона вимагає залучення двох абсолютно незалежних
+                    провайдерів-ліцензіатів для унеможливлення конфлікту інтересів.
+                </p>
+                <div class="solutions-grid" style="margin-top: 2rem; gap: 1.5rem;">
+                    <div style="border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.02); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s;"
+                        onmouseover="this.style.transform='translateY(-4px)';"
+                        onmouseout="this.style.transform='translateY(0)';">
+                        <h4 style="color: #fff; font-size: 1.1em;">Етап 1: Розробник (Провайдер №1)</h4>
+                        <p style="margin-top: 1rem; font-size: 0.95em; line-height: 1.6; color: rgba(255,255,255,0.7);">
+                            Проводить оцінку ризиків, обстеження середовища та створює «технічні інструкції» —
+                            <strong>Технічне завдання (Цільовий профіль безпеки)</strong>. Здійснює фізичну
+                            імплементацію архітектури безпеки: налаштовує криптографію, Reference Monitor (AC-25),
+                            встановлює сертифікати та здає систему в дослідну експлуатацію.
+                        </p>
+                    </div>
+                    <div style="border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.02); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s;"
+                        onmouseover="this.style.transform='translateY(-4px)';"
+                        onmouseout="this.style.transform='translateY(0)';">
+                        <h4 style="color: #fff; font-size: 1.1em;">Етап 2: Організатор експертизи (Провайдер №2)</h4>
+                        <p style="margin-top: 1rem; font-size: 0.95em; line-height: 1.6; color: rgba(255,255,255,0.7);">
+                            Отримує Технічне завдання від розробника та розробляє <strong>Програму експертизи</strong>.
+                            Проводить незалежний технічний аудит, інструментальне тестування та перевірку
+                            імплементованих контролів наживо. У разі успіху видає Експертний висновок для
+                            Держспецзв'язку.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 2rem; display: flex; flex-direction: column; gap: 1.5rem; padding: 1rem 0;">
+                <div>
+                    <a href="https://ca.n2o.dev/priv/court_profile.pdf"
+                        style="display: inline-flex; align-items: center; text-decoration: none; font-weight: 600; gap: 0.5rem; transition: transform 0.2s, color 0.2s; color: var(--text-secondary);"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.color='white';"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.color='var(--text-secondary)';">
+                        <img src="https://anders.groupoid.space/images/pdf.jpg" width="20" height="20" alt="PDF">
+                        COURT INDUSTRY PROFILE
+                    </a>
+                    <p style="margin-top: 0.5rem; font-size: 0.95em; line-height: 1.5; color: var(--text-secondary);">
+                        <strong>Галузевий профіль безпеки для судової системи.</strong> Описує розширений набір базових
+                        контролів (Baseline) для обробки чутливої інформації в державних реєстрах та судах, враховуючи
+                        вимоги високої доступності та цілісності даних на базі НД ТЗІ 3.6-006-24.
+                    </p>
+                </div>
+                <div>
+                    <a href="https://ca.n2o.dev/priv/chat_profile.pdf"
+                        style="display: inline-flex; align-items: center; text-decoration: none; font-weight: 600; gap: 0.5rem; transition: transform 0.2s, color 0.2s; color: var(--text-secondary);"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.color='white';"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.color='var(--text-secondary)';">
+                        <img src="https://anders.groupoid.space/images/pdf.jpg" width="20" height="20" alt="PDF">
+                        X.509 CMS MESSAGING SECURITY TARGET
+                    </a>
+                    <p style="margin-top: 0.5rem; font-size: 0.95em; line-height: 1.5; color: var(--text-secondary);">
+                        <strong>Завдання з безпеки (Security Target) для систем корпоративного месенджера.</strong>
+                        Базується на криптографічних протоколах X.509 та CMS (Cryptographic Message Syntax),
+                        забезпечуючи наскрізне шифрування (E2EE), строгу автентифікацію та гарантію невідмовності
+                        авторства для юридично значущих комунікацій.
+                    </p>
+                </div>
+                <div>
+                    <a href="https://ca.n2o.dev/priv/vpn_profile.pdf"
+                        style="display: inline-flex; align-items: center; text-decoration: none; font-weight: 600; gap: 0.5rem; transition: transform 0.2s, color 0.2s; color: var(--text-secondary);"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.color='white';"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.color='var(--text-secondary)';">
+                        <img src="https://anders.groupoid.space/images/pdf.jpg" width="20" height="20" alt="PDF">
+                        VPN SECURITY TARGET
+                    </a>
+                    <p style="margin-top: 0.5rem; font-size: 0.95em; line-height: 1.5; color: var(--text-secondary);">
+                        <strong>Завдання з безпеки для інфраструктури віртуальних приватних мереж (VPN) та центрів
+                            сертифікації (PKI).</strong> Визначає механізми тунелювання, автентифікації вузлів (SC-8) і
+                        захисту мережевого трафіку на транспортному рівні для захисту каналів зв'язку від перехоплення
+                        та модифікації.
+                    </p>
                 </div>
             </div>
         </section>
