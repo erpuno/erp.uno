@@ -107,6 +107,74 @@
             </div>
         </section>
 
+        <section class="section-solutions">
+            <h2>Безпекові переваги</h2>
+            <div style="margin-bottom: 2rem; line-height: 1.6;">
+                Платформа <strong>synrc/ca</strong> розроблена на базі віртуальної машини <strong>BEAM
+                    (Erlang/OTP)</strong>, створеної спеціально для безперебійних телекомунікаційних систем. Це
+                архітектурне рішення виключає цілі класи критичних вразливостей (CVE) та дозволяє нам забезпечити
+                нативну підтримку ключових контролів безпеки NIST:
+            </div>
+            <div class="solutions-grid" style="gap: 1.5rem; grid-template-columns: repeat(3, 1fr);">
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">SI-16</h4>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">ЗАХИСТ ПАМ'ЯТІ.
+                        Відсутність ручного керування пам'яттю повністю виключає вразливості типу Buffer Overflow та
+                        Use-After-Free, які є найчастішим вектором атак у класичних C/C++ серверах.
+                    </p>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">SC-39</h4>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">ІЗОЛЯЦІЯ ПРОЦЕСУ.
+                        Мільйони легковагових акторів (процесів) ізольовані на рівні віртуальної машини. Збій або
+                        компрометація одного процесу ніколи не вплине на інші, забезпечуючи абсолютну стійкість.
+                    </p>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">SI-13</h4>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">ЗАПОБІГАННЯ ЗБОЇВ.
+                        Філософія "Let it crash" та потужні дерева супервізорів (Supervision Trees) забезпечують
+                        автоматичне відновлення стану системи за мілісекунди без простоїв.
+                    </p>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">AC-25</h4>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">ОПОРНИЙ МОНІТОР.
+                        Маршрути, правила ABAC та критичні реєстри компілюються прямо в байт-код (memory-resident). Це
+                        виключає затримки БД і гарантує неможливість обходу політик (non-bypassable).
+                    </p>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">SC-5</h4>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">ЗАХИСТ ВІД ВІДМОВИ В
+                        ОБСЛУГОВУВАННІ.
+                        На відміну від JVM/CLR зі Stop-The-World паузами, кожен процес має мікро-GC. Витискальна
+                        багатозадачність гарантує Soft Real-time відгук і захист від Application DoS-атак.
+                    </p>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">SI-2</h4>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">УСУНЕННЯ ВРАЗЛИВОСТЕЙ
+                        (HOT CODE SWAPPING).
+                        Дозволяє замінювати скомпільований код (патчі) «на льоту» без рестарту VM. Ви можете закривати
+                        вразливості або міняти логіку без розриву активних з'єднань клієнтів.
+                    </p>
+                </div>
+            </div>
+        </section>
+
         <section class="section-standards">
             <h2>Сервіси та протоколи</h2>
             <ul class="standards-list">
