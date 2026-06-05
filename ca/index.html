@@ -113,7 +113,7 @@
                 Платформа <strong>synrc/ca</strong> розроблена на базі віртуальної машини <strong>BEAM
                     (Erlang/OTP)</strong>, створеної спеціально для безперебійних телекомунікаційних систем. Це
                 архітектурне рішення виключає цілі класи критичних вразливостей (CVE) та дозволяє нам забезпечити
-                нативну підтримку ключових контролів безпеки NIST:
+                нативну підтримку ключових контролів безпеки NIST, які недосяжні на віртуальних машинах CRL і JVM:
             </div>
             <div class="solutions-grid" style="gap: 1.5rem; grid-template-columns: repeat(3, 1fr);">
                 <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
@@ -132,6 +132,7 @@
                     <p style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">ІЗОЛЯЦІЯ ПРОЦЕСУ.
                         Мільйони легковагових акторів (процесів) ізольовані на рівні віртуальної машини. Збій або
                         компрометація одного процесу ніколи не вплине на інші, забезпечуючи абсолютну стійкість.
+                        Тому, що у кожного BEAM процесу свій gc, чого немає в JVM і CLR.
                     </p>
                 </div>
                 <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
@@ -170,6 +171,50 @@
                         (HOT CODE SWAPPING).
                         Дозволяє замінювати скомпільований код (патчі) «на льоту» без рестарту VM. Ви можете закривати
                         вразливості або міняти логіку без розриву активних з'єднань клієнтів.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-solutions">
+            <h2>Гомотопічне кодування (ASN.1 DER)</h2>
+            <div style="margin-bottom: 2rem; line-height: 1.6;">
+                Ми обрали <strong>ASN.1 DER</strong> як фундаментальний стандарт серіалізації для <strong>всіх API
+                    ендпойнтів нашої
+                    екосистеми</strong>. На відміну від популярних форматів (Protobuf / gRPC, JSON), які є вразливими до
+                маніпуляцій через множинність варіантів кодування одного й того ж об'єкта, гомотопічний (канонічний)
+                <strong>DER</strong> математично гарантує єдине унікальне байтове представлення для кожної структури
+                даних. Це повністю виключає атаки типу <strong>Parser Differentials</strong> (наприклад,
+                Bleichenbacher's forgery) та дозволяє нам забезпечити бездоганне виконання наступних вимог безпеки:
+            </div>
+            <div class="solutions-grid" style="gap: 1.5rem; grid-template-columns: repeat(3, 1fr);">
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">SI-10</h4>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">ПЕРЕВІРКА ВВОДУ
+                        ІНФОРМАЦІЇ.
+                        Сувора перевірка вхідних даних відкидає будь-які нестандартні (BER) або надлишкові кодування,
+                        унеможливлюючи вразливості до маніпуляцій (malleability).
+                    </p>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">SI-7</h4>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">ЦІЛІСНІСТЬ ІНФОРМАЦІЇ.
+                        Цифрові підписи та хешування залишаються валідними лише за умови бієктивної (гомотопічної)
+                        серіалізації, захищаючи від прихованої модифікації байтового представлення.
+                    </p>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">SC-13</h4>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">КРИПТОГРАФІЧНИЙ
+                        ЗАХИСТ.
+                        Вимоги стандартів (X.509, CMS, PKCS) для безпечного застосування криптографії та збереження
+                        довіри до інфраструктури відкритого ключа (PKI).
                     </p>
                 </div>
             </div>
