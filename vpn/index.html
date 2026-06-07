@@ -1,0 +1,261 @@
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="VPN & PKI — Захищені децентралізовані тунелі на базі Erlang/OTP інтегровані з інфраструктурою PKI." />
+    <meta name="author" content="Maxim Sokhatsky" />
+    <title>ERP/1: VPN та PKI</title>
+    <link rel="stylesheet" href="../index.css" />
+    <link rel="apple-touch-icon" sizes="180x180" href="../img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../img/favicon-16x16.png">
+    <link rel="manifest" href="../img/site.webmanifest">
+</head>
+
+<body>
+
+    <nav class="sticky">
+        <div class="nav-container">
+            <a href="https://erp.uno/" class="logo">ERP/1</a>
+            <ul class="nav-links">
+                <li><a href="https://github.com/zencrypted/vpn">Розробникам</a></li>
+            </ul>
+            <div class="lang-group">
+                <div class="lang-switcher">
+                    <a href="index.html" class="lang-btn active">UA</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header>
+        <div class="hero-content">
+            <h1
+                style="background: linear-gradient(135deg, #ffffff 0%, #a0a5aa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                VPN та PKI</h1>
+            <p class="hero-subtitle"
+                style="font-size: 1.15rem; line-height: 1.6; color: rgba(255,255,255,0.8); max-width: 800px; margin: 1rem auto 0 auto;">
+                <strong>ERP/1: VPN та PKI (zencrypted/vpn)</strong> — високопродуктивна система побудови захищених децентралізованих тунелів (L2/L3) на базі віртуальної машини Erlang/OTP. Продукт забезпечує криптографічний захист інформації в реальному часі та інтегрований з повноцінною інфраструктурою PKI (Центр сертифікації, EST, CMP, OCSP, TSP, LDAP) відповідно до вимог військових стандартів та КСЗІ.
+            </p>
+        </div>
+    </header>
+    <main>
+        <section class="section-products">
+            <h2>Опис</h2>
+            <div>
+                <p style="margin-bottom: 1rem; line-height: 1.6;">
+                    <strong>ERP/1 VPN</strong> виводить мережеву безпеку на рівень Military-Grade. Завдяки реалізації на віртуальній машині BEAM (Erlang/OTP), система пропонує децентралізовані, захищені шифруванням віртуальні канали зв'язку через драйвери TUN/TAP з нульовою ймовірністю типових вразливостей переповнення буфера чи витоку пам'яті.
+                </p>
+                <p style="line-height: 1.6;">
+                    Продукт функціонує відповідно до <strong>Профілю безпеки Рівня 2 (L2: VPN & PKI Infrastructure Security Profile)</strong>. Він розширює базовий рівень захисту специфічними заходами для віртуальних мереж, апаратного шифрування, автоматизованого управління життєвим циклом ключів та інтеграції з децентралізованими цифровими документами (EUDI Wallet) та корпоративними каталогами (LDAP).
+                </p>
+            </div>
+            <figure>
+                <center><img width=100% src="../img/vpn-shaders.png"></center>
+            </figure>
+        </section>
+
+        <section class="section-solutions">
+            <h2>Криптографічний захист та специфікації</h2>
+            <div class="solutions-grid" style="gap: 1.5rem;">
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 1rem;">Шифрування даних</h4>
+                    <ul style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">
+                        <li>ChaCha20-Poly1305 AEAD</li>
+                        <li>AES-256-GCM</li>
+                        <li>Криптографічний захист In-Transit</li>
+                    </ul>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 1rem;">Мережевий рівень</h4>
+                    <ul style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">
+                        <li>L2/L3 Тунелювання (tunctl)</li>
+                        <li>UDP Транспорт</li>
+                        <li>Запобігання Split Tunneling</li>
+                    </ul>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 1rem;">Ідентифікація</h4>
+                    <ul style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">
+                        <li>X.509 Кваліфіковані Сертифікати</li>
+                        <li>Mutual TLS (IA-5(2))</li>
+                        <li>EUDI Wallet / LDAP</li>
+                    </ul>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 1rem;">Автоматизація управління</h4>
+                    <ul style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">
+                        <li>CMP та EST протоколи (SC-12)</li>
+                        <li>Неспростовність дій (AU-10(5))</li>
+                        <li>Мітки часу TSP / CMS</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-solutions">
+            <h2>Параметри безпеки (L2: VPN & PKI)</h2>
+            <div style="margin-bottom: 2rem; line-height: 1.6;">
+                Відповідно до профілю безпеки <strong>CA.L3.VPN</strong>, система реалізує комплекс технічних та криптографічних контролів для надійного захисту віртуальної інфраструктури:
+            </div>
+            <div class="solutions-grid" style="gap: 1.5rem; grid-template-columns: repeat(2, 1fr);">
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">VPN & Мережевий доступ (AC-17, SC-7, SC-10, SC-23)</h4>
+                    <ul style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.6; padding-left: 1.2rem;">
+                        <li><strong>Шифрування та моніторинг (AC-17(1,2,9))</strong>: Весь трафік тунелю повністю шифрується. Система забезпечує безперервний моніторинг підключень з можливістю примусового розриву сесії адміністратором на льоту.</li>
+                        <li><strong>Заборона Split Tunneling (SC-7(7))</strong>: Маршрутизація всього мережевого трафіку здійснюється через захищений VPN-канал для уникнення витоку даних поза криптографічним периметром.</li>
+                        <li><strong>Розрив сесій (SC-10 / SC-23)</strong>: Автоматичний розрив VPN сесії при відсутності активності та додатковий криптографічний захист сесій після їх встановлення.</li>
+                    </ul>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">Інфраструктура відкритих ключів (IA-5, IA-7, SC-12, SC-17, SC-49, SC-51, AU-10)</h4>
+                    <ul style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.6; padding-left: 1.2rem;">
+                        <li><strong>Mutual TLS (IA-5(2))</strong>: Строга автентифікація на основі відкритого ключа для кожного підключення.</li>
+                        <li><strong>Автоматизація ключів (SC-12 / SC-17)</strong>: Автоматичний випуск, верифікація та відкликання сертифікатів через стандарти CMP та EST.</li>
+                        <li><strong>Неспростовність дій (AU-10(5))</strong>: Використання міток часу (TSP) та цифрових підписів (CMS) для фіксації системних подій.</li>
+                        <li><strong>Захист ключів CA (IA-7 / SC-49 / SC-51)</strong>: Обов'язкове використання апаратних модулів безпеки (HSM) для захисту приватних ключів CA/OCSP/TSP.</li>
+                    </ul>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">Каталог та Ідентифікація (IA-2, IA-4, AC-2, AC-3)</h4>
+                    <ul style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.6; padding-left: 1.2rem;">
+                        <li><strong>Багатофакторна автентифікація (IA-2(11,12))</strong>: Підтримка MFA, кваліфікованих сертифікатів та криптографічних цифрових гаманців EUDI Wallet для доступу.</li>
+                        <li><strong>Керування ідентифікаторами (IA-4)</strong>: Інтеграція з централізованими каталогами LDAP.</li>
+                        <li><strong>Контроль доступу (AC-2 / AC-3)</strong>: Управління обліковими записами та жорсткі політики доступу (ABAC).</li>
+                    </ul>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">Криптографічний захист даних (SC-8, SC-28)</h4>
+                    <ul style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.6; padding-left: 1.2rem;">
+                        <li><strong>Захист у русі (SC-8(1))</strong>: Шифрування та забезпечення цілісності пакетів у процесі мережевої передачі.</li>
+                        <li><strong>Захист у спокої (SC-28(1))</strong>: Шифрування баз даних LDAP каталогів та конфігураційних файлів у сховищі.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-solutions">
+            <h2>Безпекові переваги платформи Erlang/OTP (BEAM)</h2>
+            <div style="margin-bottom: 2rem; line-height: 1.6;">
+                Реалізація VPN на базі віртуальної машини <strong>BEAM (Erlang)</strong> надає системі унікальні архітектурні переваги для захисту мережевих тунелів, виключаючи цілі класи класичних вразливостей:
+            </div>
+            <div class="solutions-grid" style="gap: 1.5rem; grid-template-columns: repeat(3, 1fr);">
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">SI-16: Безпека пам'яті</h4>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">Унеможливлює Buffer Overflow та Use-After-Free атаки, які є основним вектором компрометації класичних C/C++ серверів VPN.</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">SC-39: Ізоляція процесів</h4>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">Кожен тунель обслуговується окремим ізольованим процесом зі своїм збирачем сміття (GC). Скомпрометований чи аварійний процес не впливає на інші тунелі.</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">SI-13: Автоматичне відновлення</h4>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">Завдяки деревам супервізорів (Supervision Trees), будь-які неочікувані збої мережі чи девайсів автоматично перезапускають з'єднання без простою всієї системи.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-standards">
+            <h2>Специфікації та нормативна база</h2>
+            <div>
+                Продукт ERP/1 VPN та його профіль безпеки повністю відповідають вимогам технічного захисту інформації в Україні (НД ТЗІ 3.6-006-24, гармонізований з NIST SP 800-53), забезпечуючи повний мапінг вимог законодавства на технічні заходи захисту:
+            </div>
+            <div class="solutions-grid" style="margin-top: 2rem;">
+                <div>
+                    <h4>Національні стандарти (НД ТЗІ)</h4>
+                    <ul>
+                        <li><strong>НД ТЗІ 3.6-006-24</strong> — Профілі безпеки для державних реєстрів та систем</li>
+                        <li><strong>НД ТЗІ 2.3-025-24</strong> — Захист інформації в інформаційно-комунікаційних системах</li>
+                        <li><strong>ДСТУ 4145-2002 / ДСТУ 7624:2014</strong> — Вітчизняні стандарти підпису та шифрування</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Міжнародні вимоги та NIST</h4>
+                    <ul>
+                        <li><strong>NIST SP 800-53 Rev. 5</strong> — Каталог контролів безпеки та приватності</li>
+                        <li><strong>RFC 5652 / RFC 5751</strong> — Формат повідомлень CMS/S-MIME</li>
+                        <li><strong>EST (RFC 7030) / CMPv2 (RFC 4210)</strong> — Автоматизований менеджмент сертифікатів</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-columns">
+            <div> &nbsp;
+            </div>
+            <div>
+                <h4>Системні продукти</h4>
+                <ul>
+                    <li><a href="../ca/index.html">Сертифікати</a></li>
+                    <li><a href="index.html">VPN та PKI</a></li>
+                    <li><a href="../chat/index.html">Комунікатор</a></li>
+                    <li><a href="../ldap/index.html">Директорія</a></li>
+                    <li><a href="../bpmn/index.html">Процеси</a></li>
+                    <li><a href="https://mqtt.erp.uno">Брокер</a></li>
+                    <li><a href="https://kvs.n2o.dev">Сховище</a></li>
+                    <li><a href="https://ws.n2o.dev">Фреймворк</a></li>
+                    <li><a href="https://form.n2o.dev">Форми</a></li>
+                    <li><a href="https://asn1.zencrypted.uk">Компілятор</a></li>
+                    <li><a href="https://abac.erp.uno">Контроль</a></li>
+                </ul>
+                <br>
+                <h4>Корпоративні продукти</h4>
+                <ul>
+                    <li><a href="../edu/index.html">Освіта</a></li>
+                    <li><a href="../health/index.html">Здоров'я</a></li>
+                    <li><a href="../cart/index.html">Реєстри</a></li>
+                    <li><a href="../mail/index.html">Документи</a></li>
+                    <li><a href="../acc/index.html">Облік</a></li>
+                    <li><a href="../warehouse/index.html">Склад</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Завантаження</h4>
+                <ul>
+                    <li><a href="https://x509.chat/bdfl.pdf">Кафедральний собор</a></li>
+                    <li><a href="https://x509.chat/encryption.pdf">Архітектура шифрування</a></li>
+                    <li><a href="https://books.axiosis.top/erp/erp.pdf">Навчальний посібник</a></li>
+                    <li><a href="https://protocol.zencrypted.uk">Регламент взаємодії</a></li>
+                    <li><a href="https://n2o.dev">Фреймворк підприємства</a></li>
+                    <li><a href="../man/ua/1.htm">Керівництво виконавця ERP/1</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Контакти</h4>
+                <p><a href="mailto:ceo@erp.uno">ceo@erp.uno</a></p>
+                <p>2026 © <a href="https://erp.uno/">ERP.UNO</a></p>
+                <p>2026 © <a href="https://synrc.com/">SYNRC.COM</a></p>
+                <br>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
