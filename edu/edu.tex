@@ -1,0 +1,814 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{helvet}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{eso-pic}
+\usepackage{fancyhdr}
+\usepackage{parskip}
+\usepackage{microtype}
+\usepackage[english, ukrainian]{babel}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{titlesec}
+
+\definecolor{nato}{HTML}{293757}
+\definecolor{footergray}{gray}{0.65}
+
+\geometry{a4paper,left=3cm,right=3cm,top=3cm,bottom=3cm}
+\renewcommand{\familydefault}{\sfdefault}
+\setcounter{secnumdepth}{3}
+
+\titleformat{\section}
+  {\color{nato}\Huge\bfseries}{\thesection.}{1em}{}
+\titlespacing*{\section}{0pt}{30pt}{12pt}
+
+\titleformat{\subsection}
+  {\color{nato}\LARGE\bfseries}{\thesubsection.}{1em}{}
+\titlespacing*{\subsection}{0pt}{20pt}{8pt}
+
+\titleformat{\subsubsection}
+  {\color{nato}\Large\bfseries}{\thesubsubsection.}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{6pt}
+
+\fancyhf{}
+\fancyhead[R]{\small\color{footergray} 27 червня 2026}
+\fancyfoot[L]{\small\color{footergray} Технічні вимоги ERP/1. Модуль Освіта}
+\fancyfoot[R]{\small\color{footergray}\thepage}
+
+\newcommand\HUGE[1]{\fontsize{40}{40}\selectfont #1}
+
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\footrule}{\color{footergray}\hrule width \textwidth height 0.4pt}
+
+\begin{document}
+
+\pagestyle{fancy}
+
+\begin{titlepage}
+  \AddToShipoutPictureBG*{\AtPageLowerLeft{\color{nato}\rule{\paperwidth}{\paperheight}}}
+  \color{white}\thispagestyle{empty}\vspace*{4cm}\centering
+  {\Huge  \textbf{ERP/1: Освіта} \par} \vspace{2cm}
+  {\HUGE  \textbf{Технічні вимоги} \par} \vspace{2.5cm}
+  {\LARGE \textbf{до системи автоматизації та управління освітнім процесом} \par} \vspace{2.5cm}
+  \vfill
+  {\large 2026 \copyright\ Системи Електронного Урядування \par}
+\end{titlepage}
+
+\newpage
+
+\begin{center}
+  {\Huge\color{nato}\bfseries Зміст\par}
+\end{center}
+\vspace{40pt}
+\tableofcontents
+
+\begin{abstract}
+  У цьому документі наведено детальні технічні вимоги до підсистеми ERP/1: Освіта, яка розробляється як сучасна LMS/EMS-платформа на базі Erlang/OTP. Вимоги розроблено згідно з Політиками Технічних вимог, ТЗ та ТД (ДСТУ 3973-2000, ДСТУ 3008:2015 та ISO/IEC/IEEE 42010). Документ визначає повний перелік довідників, реєстрових сутностей, бізнес-процесів (включаючи навчальні плани, електронний журнал, оцінювання та генерацію розкладу занять), рольову модель доступів на базі ABAC, а також нефункціональні вимоги до архітектури, безпеки (КЕП CAdES-X Long), продуктивності та логування.
+\end{abstract}
+
+\newpage
+
+\section{Умовні скорочення та визначення}
+
+Терміни та скорочення, що використовуються в цьому документі:
+
+\begin{longtable}{p{4cm}p{10cm}}
+\toprule
+\textbf{Термін / Скорочення} & \textbf{Значення} \\
+\midrule
+LMS & Learning Management System (Система управління навчанням) \\
+EMS & Educational Management System (Система управління освітнім процесом) \\
+КЕП / QES & Кваліфікований електронний підпис / Qualified Electronic Signature \\
+ЄДЕБО & Єдина державна електронна база з питань освіти \\
+ЄДРПОУ & Єдиний державний реєстр підприємств та організацій України \\
+BPMN & Business Process Model and Notation (Модель та нотація бізнес-процесів) \\
+FSM & Finite State Machine (Скінченний автомат) \\
+ABAC & Attribute-Based Access Control (Контроль доступу на основі атрибутів) \\
+RBAC & Role-Based Access Control (Рольовий контроль доступу) \\
+SCORM & Sharable Content Object Reference Model (Стандарт обміну електронними курсами) \\
+REST & Representational State Transfer (Стиль архітектури програмного забезпечення) \\
+gRPC & Google Remote Procedure Call (Механізм віддаленого виклику процедур) \\
+MQTT & Message Queuing Telemetry Transport (Протокол передачі повідомлень) \\
+PKI & Public Key Infrastructure (Інфраструктура відкритих ключів) \\
+ELK & Elasticsearch, Logstash, Kibana (Стек логування та моніторингу) \\
+OTP & Open Telecom Platform (Набір бібліотек та шаблонів проектування для Erlang) \\
+\bottomrule
+\end{longtable}
+
+\newpage
+\section{Загальні відомості}
+
+\subsection{Передумови}
+Проект ERP/1: Освіта створюється як сучасна високотехнологічна LMS/EMS-платформа на базі Erlang/OTP, що призначена для автоматизації та управління освітнім процесом (очна, дистанційна та змішана форми навчання). Впровадження платформи покликане забезпечити перехід до цифрового ведення документації, підвищення прозорості оцінювання та спрощення обміну даними між навчальними закладами й державними базами даних.
+
+\subsection{Питання, що вирішуються}
+Платформа вирішує такі ключові завдання:
+\begin{itemize}
+    \item Організація цифрового обліку контингенту (особових справ учнів/студентів) та кадрового складу педагогів.
+    \item Управління навчальними планами й автоматична генерація розкладів занять.
+    \item Ведення електронних журналів із фіксацією відвідуваності та оцінок.
+    \item Засвідчення юридичної значущості записів оцінювання за допомогою інтеграції КЕП.
+    \item Інтеграція з Єдиною державною електронною базою з питань освіти (ЄДЕБО).
+\end{itemize}
+
+\subsection{Вимоги законодавства та міжнародних стандартів}
+Система повинна розроблятися та функціонувати відповідно до:
+\begin{itemize}
+    \item Закону України «Про освіту»;
+    \item Закону України «Про захист персональних даних»;
+    \item Закону України «Про захист інформації в інформаційно-телекомунікаційних системах»;
+    \item Закону України «Про основні засади забезпечення кібербезпеки України»;
+    \item Закону України «Про інформацію»;
+    \item Нормативних стандартів ДСТУ 3973-2000, ДСТУ 3974-2000 та ДСТУ 3008:2015;
+    \item Міжнародних стандартів ISO/IEC/IEEE 42010 (опис архітектури) та рекомендацій NIST.
+\end{itemize}
+
+\section{Призначення та цілі впровадження}
+Основною метою впровадження ERP/1: Освіта є підвищення ефективності управління навчальними закладами через автоматизацію рутинних операцій, забезпечення надійного захисту персональних даних та результатів навчання, а також надання зручних інструментів взаємодії для всіх учасників освітнього процесу (адміністрації, вчителів, учнів та батьків).
+
+\newpage
+\section{Класифікація вимог}
+
+\subsection{3.1. Функціональні вимоги}
+
+\subsubsection{3.1.1. Опис довідників}
+Платформа повинна підтримувати систему довідників (словників) для класифікації, валідації та уніфікації даних. До обов'язкових довідників відносяться:
+\begin{itemize}
+    \item \textbf{Форми навчання (FormOfStudy):} Очна, Дистанційна, Змішана, Екстернат, Вечірня/Заочна, Дуальна.
+    \item \textbf{Статуси учасників освітнього процесу (ParticipantStatus):} Активний, Академічна відпустка, Відрахований, Випускник, На переведенні, Тимчасово відсутній.
+    \item \textbf{Типи оцінок / Шкали оцінювання (GradeType / GradeScale):} 12-бальна, Залікова (Зараховано/Не зараховано), ECTS (A-F), Компетенційна, Бальна (0-100).
+    \item \textbf{Типи навчальних занять (LessonType):} Лекція, Практичне заняття, Семінар, Лабораторна робота, Контрольна робота, Самостійна робота, Консультація, Залік / Екзамен.
+    \item \textbf{Статуси журналу (JournalStatus):} Чернетка, Зафіксовано, Підписано педагогом (КЕП), Перевірено завучем, Архівний.
+    \item \textbf{Ролі учасників (Role):} Учень/Студент, Педагог/Викладач, Класний керівник, Завуч/Методист, Директор/Ректор, Батьки/Представники, Admin, Комісія атестації.
+    \item \textbf{Посади педагогічних працівників (Position):} Директор/Ректор, Завуч/Проректор, Вчитель/Викладач, Старший викладач, Доцент, Професор, Майстер виробничого навчання.
+    \item \textbf{Кваліфікаційні категорії (QualificationCategory):} Спеціаліст, Спеціаліст другої категорії, Спеціаліст першої категорії, Спеціаліст вищої категорії, Майстер-викладач.
+    \item \textbf{Типи компетенцій (CompetenceType):} Предметні, Загальноосвітні, Цифрові, Соціально-емоційні, Громадянські.
+    \item \textbf{Типи документів (DocumentType):} Наказ, Особова справа, Атестаційний лист, Звіт для МОН, Довідка, Договір, Протокол засідання.
+    \item \textbf{Статуси документів (DocumentStatus):} Чернетка, На погодженні, Підписано (КЕП), Зареєстровано, Архівний.
+    \item \textbf{Типи звітності (ReportType):} Статистична (форма №1), Фінансова, Навчальна успешність, Контингент, Кадрова.
+    \item \textbf{Типи інтеграцій (IntegrationType):} ЄДЕБО, MQTT, PKI / КЕП, SCORM, Зовнішній реєстр.
+    \item \textbf{Рівні доступу / Чутливість (SensitivityLevel):} Публічний, Внутрішній, Конфіденційний, Персональні дані (GDPR).
+    \item \textbf{Типи подій логування (LogEventType):} Зміна оцінки, Підпис КЕП, Вхід в систему, Помилка валідації, Адміністративна дія.
+    \item \textbf{Типи освітніх програм (EducationalProgramType):} Загальна середня, Профільна середня, Професійно-технічна, Фахова передвища, Вища освіта (бакалавр), Вища освіта (магістр), Дуальна форма.
+\end{itemize}
+
+\paragraph{Алгоритми конвертації шкал оцінювання}
+Система повинна забезпечувати автоматичну конвертацію між різними шкалами:
+\begin{enumerate}
+    \item \textbf{12-бальна $\rightarrow$ ECTS (європейська):}
+    \begin{itemize}
+        \item $\ge 10 \rightarrow A$, $\ge 9 \rightarrow B$, $\ge 8 \rightarrow C$, $\ge 7 \rightarrow D$, $\ge 6 \rightarrow E$, $\ge 4 \rightarrow FX$, менше $4 \rightarrow F$.
+    \end{itemize}
+    \item \textbf{12-бальна $\rightarrow$ 100-бальна (відсоткова):}
+    \begin{itemize}
+        \item $Percent = \text{round}((Grade / 12) \times 100)$.
+    \end{itemize}
+    \item \textbf{100-бальна $\rightarrow$ 12-бальна:}
+    \begin{itemize}
+        \item $\ge 95 \rightarrow 12$, $\ge 86 \rightarrow 11$, $\ge 78 \rightarrow 10$, $\ge 71 \rightarrow 9$, $\ge 64 \rightarrow 8$, $\ge 57 \rightarrow 7$, $\ge 50 \rightarrow 6$, $\ge 43 \rightarrow 5$, $\ge 36 \rightarrow 4$, $\ge 29 \rightarrow 3$, $\ge 22 \rightarrow 2$, менше $22 \rightarrow 1$.
+    \end{itemize}
+    \item \textbf{Компетенційна шкала $\rightarrow$ числова:}
+    \begin{itemize}
+        \item Розвинена $\rightarrow 10\text{--}12$, Базова $\rightarrow 7\text{--}9$, Початкова $\rightarrow 4\text{--}6$, Не сформована $\rightarrow 1\text{--}3$.
+    \end{itemize}
+    \item \textbf{Загальна формула підсумкової оцінки за семестр:}
+    \begin{itemize}
+        \item $FinalGrade = \text{round}(CurrentAvg \times 0.6 + FinalAvg \times 0.4)$, де $CurrentAvg$ --- середнє арифметичне поточних балів, а $FinalAvg$ --- бал за підсумкову роботу.
+    \end{itemize}
+\end{enumerate}
+Детальний опис схем довідників та алгоритмів наведено в Додатку A та Додатку Б відповідно.
+
+\subsubsection{3.1.2. Опис реєстрових сутностей та їх станів}
+Основними реєстровими сутностями системи є:
+\begin{itemize}
+    \item \textbf{Student (Учень / Студент):} Особові дані учнів. Стани: \textit{Активний}, \textit{Академічна відпустка}, \textit{Відрахований}, \textit{Випускник}.
+    \item \textbf{Teacher (Педагог / Викладач):} Особові та професійні дані педагогів. Стани: \textit{Активний}, \textit{Тимчасово відсутній}, \textit{Звільнений}.
+    \item \textbf{Group (Група / Клас):} Дані про академічну групу. Стани: \textit{Активна}, \textit{Випущена}.
+    \item \textbf{Course (Курс / Дисципліна):} Опис навчального предмету та SCORM-матеріалів. Стани: \textit{Активний}, \textit{Архівний}.
+    \item \textbf{Curriculum (Навчальний план):} План на рік/семестр. Стани: \textit{Чернетка}, \textit{На погодженні}, \textit{Затверджено}, \textit{Архівний}.
+    \item \textbf{JournalRecord (Журнал / Запис оцінювання):} Оцінки, відвідуваність та компетенції. Стани: \textit{Чернетка}, \textit{Зафіксовано}, \textit{Підписано}, \textit{Архівний}.
+    \item \textbf{Schedule (Розклад занять):} Структура розкладу. Стани: \textit{Чернетка}, \textit{Активований}.
+    \item \textbf{Homework (Домашнє завдання):} Дані про завдання та додатки. Стани: \textit{Створено}, \textit{Опубліковано}.
+    \item \textbf{Document (Документ):} Накази, договори, особові справи. Стани: \textit{Чернетка}, \textit{На погодженні}, \textit{Підписано КЕП}, \textit{Зареєстровано}, \textit{Архівний}.
+    \item \textbf{Role/Permission (Ролі та права):} Права доступу користувачів.
+    \item \textbf{Competence (Компетенція):} Карта компетенцій відповідно до держстандартів.
+    \item \textbf{ProcessLog (Подія / Історія процесу):} Лог аудиту дій користувачів та процесів.
+    \item \textbf{EducationalProgram (Освітня програма):} Реєстр програм навчання. Стани: \textit{Чернетка}, \textit{Акредитована}, \textit{Неакредитована}.
+\end{itemize}
+
+\paragraph{Зв'язки між сутностями та їх кардинальність}
+\begin{itemize}
+    \item Учень належить до однієї Групи ($N:1$).
+    \item Група має Навчальний план на семестр ($1:N$).
+    \item Навчальний план містить багато Курсів ($N:M$ через проміжну сутність \texttt{CurriculumItem}).
+    \item Запис в журналі створюється для одного Учня та одного Курсу ($N:1$).
+    \item Запис в журналі фіксується одним Педагогом ($N:1$).
+    \item Розклад занять прив'язаний до однієї Групи, Курсу та Педагога ($N:1$).
+    \item Документи поліморфно зв'язані з будь-якою сутністю ($1:N$).
+\end{itemize}
+Детальні таблиці реквізитів сутностей наведено в Додатку A.
+
+\subsubsection{3.1.3. Опис бізнес-процесів}
+Освітні бізнес-процеси в ERP/1 побудовані на базі FSM (Finite State Machines) та інтегруються з рушієм процесів BPMN:
+
+\paragraph{1. Процес «Формування та затвердження навчального плану / розкладу» (Curriculum Approval):}
+\begin{itemize}
+    \item \textbf{Крок 1:} Методист створює або імпортує навчальний план (сутність \texttt{Curriculum}).
+    \item \textbf{Крок 2:} Методист проводить валідацію плану на відповідність державній програмі. Якщо знайдено помилки --- повертає на доопрацювання.
+    \item \textbf{Крок 3:} Завуч переглядає та погоджує план. При відхиленні --- вказує коментар та повертає на крок 1.
+    \item \textbf{Крок 4:} Директор підписує план КЕП.
+    \item \textbf{Крок 5:} Сервіс автоматично запускає генерацію розкладу на основі затвердженого плану.
+\end{itemize}
+
+\paragraph{2. Процес «Проведення заняття та фіксація відвідувань/оцінок» (Core навчальний процес):}
+\begin{itemize}
+    \item \textbf{Крок 1:} Початок уроку за розкладом.
+    \item \textbf{Крок 2:} Педагог відкриває форму електронного журналу групи.
+    \item \textbf{Крок 3:} Фіксація відвідувань (вручну або через QR/mobile check-in).
+    \item \textbf{Крок 4:} Виставлення оцінок та балів компетенцій за відповідною шкалою.
+    \item \textbf{Крок 5:} Автоматичний розрахунок середнього балу та оновлення аналітики.
+    \item \textbf{Крок 6:} Підпис журналу КЕП педагога протягом 48 годин. Після підпису зміни допускаються лише через процедуру аудитованого «Виправлення».
+\end{itemize}
+
+\paragraph{3. Процес «Генерація розкладу» (Schedule Generation):}
+\begin{itemize}
+    \item \textbf{Крок 1:} Запуск процесу після затвердження плану. Завантаження обмежень (кількість аудиторій, доступність викладачів, очна/дистанційна форма).
+    \item \textbf{Крок 2:} Автоматичний розрахунок варіанту розкладу.
+    \item \textbf{Крок 3:} Перевірка наявності конфліктів. Якщо конфлікти є --- перехід до ручного коригування методистом.
+    \item \textbf{Крок 4:} Перевірка та затвердження розкладу завучем або директором.
+    \item \textbf{Крок 5:} Публікація розкладу в системі та розсилка сповіщень.
+\end{itemize}
+
+\paragraph{4. Процес «Атестація та підвищення кваліфікації педагогів»:}
+\begin{itemize}
+    \item \textbf{Крок 1:} Подання особової справи та портфоліо педагогом.
+    \item \textbf{Крок 2:} Автоматичний розрахунок інтегрального показника KPI.
+    \item \textbf{Крок 3:} Погодження атестаційного листа атестаційною комісією (підписи КЕП).
+    \item \textbf{Крок 4:} Затвердження наказу директором.
+    \item \textbf{Крок 5:} Оновлення штатного розпису та кваліфікаційної категорії педагога.
+\end{itemize}
+
+\paragraph{5. Процес «Формування звітності для МОН» (інтеграційний):}
+\begin{itemize}
+    \item \textbf{Крок 1:} Збір даних про успішність, відвідуваність та контингент.
+    \item \textbf{Крок 2:} Валідація даних на відповідність державній формі звіту.
+    \item \textbf{Крок 3:} Підписання звіту КЕП відповідальної особи.
+    \item \textbf{Крок 4:} Передача даних до ЄДЕБО/МОН через інтеграційну шину.
+\end{itemize}
+Описи процесів на Erlang BPE DSL наведено в Додатку Б.
+
+\subsubsection{3.1.4. Вимоги до протоколів взаємодії}
+Усі API-методи, що розробляються для модуля «Освіта», повинні бути задокументовані за єдиним стандартом:
+\begin{itemize}
+    \item \textbf{Призначення методу:} яку дію виконує.
+    \item \textbf{Формулювання методу:} HTTP метод та ендпойнт.
+    \item \textbf{Параметри виклику:} таблиця вхідних параметрів із зазначенням типу даних, обов'язковості та прикладів.
+    \item \textbf{Відповідь сервера:} приклад структури у форматі JSON із кодом 200 OK.
+    \item \textbf{Обробка помилок:} таблиця з кодами помилок та їх описом.
+    \item \textbf{Додаткова інформація:} права доступу (Scopes), обмеження частоти запитів (Rate Limiting).
+\end{itemize}
+Зовнішня інтеграція здійснюється через шину «Трембіта» (з реєстрами ЄДЕБО, МОН) за допомогою REST API та безпечних gRPC контрактів.
+
+\subsubsection{3.1.5. Опис прав та привілеїв (ABAC/RBAC/ACL)}
+Модель контролю доступу базується на гібридному підході (RBAC + ABAC):
+\begin{itemize}
+    \item \textbf{Subject (Суб'єкт):} \texttt{user\_id}, \texttt{roles} (Teacher, Student, Parent, Admin), \texttt{person\_id}, \texttt{kep\_cert\_thumbprint}, \texttt{is\_active}.
+    \item \textbf{Object (Об'єкт):} \texttt{entity\_type} (Student, JournalRecord, Curriculum), \texttt{owner\_id}, \texttt{group\_id}, \texttt{status} (Draft, Signed, Archive).
+    \item \textbf{Action (Дія):} \texttt{read}, \texttt{write}, \texttt{sign}, \texttt{delete}, \texttt{approve}, \texttt{view\_grades}.
+    \item \textbf{Environment (Середовище):} \texttt{time} (робочий час), \texttt{ip\_range}, \texttt{device\_type}, \texttt{session\_risk}.
+\end{itemize}
+
+\paragraph{Ключові бізнес-правила доступу}
+\begin{enumerate}
+    \item \textbf{Педагог:} Дозволено \texttt{read}, \texttt{write}, \texttt{sign} для журналу (\texttt{JournalRecord}), якщо він є викладачем цього курсу (\texttt{teacher\_id == subject.person\_id}) або курс входить до його списку дисциплін. Заборонено \texttt{delete} та \texttt{write} після підписання журналу КЕП.
+    \item \textbf{Учень:} Дозволено \texttt{read} журналу тільки для власних записів (\texttt{student\_id == subject.person\_id}). Заборонено \texttt{write}, \texttt{sign}.
+    \item \textbf{Батько/Мати:} Дозволено \texttt{read} для записів успішності дитини (\texttt{student\_id in subject.children\_ids}). Обмежено відображення службових коментарів педагога.
+    \item \textbf{Адміністратор/Директор:} Повний доступ до всіх дій із обов'язковим логуванням (Audit Log).
+    \item \textbf{Часові обмеження:} Редагування журналу дозволено тільки протягом 48 годин після проведення уроку за розкладом (для непідписаних записів).
+\end{enumerate}
+
+\subsubsection{3.1.6. Опис валідацій}
+Валідація повинна відбуватися на трьох рівнях: Frontend (попередній контроль), Backend (API контроль) та Mnesia level (контроль на рівні доступу до даних та Erlang-специфікацій).
+
+\paragraph{Валідація порогів оцінювання (GradeThreshold)}
+Валідація порогів пов'язана з довідником \texttt{GradeType} та перевіряє значення оцінок:
+\begin{itemize}
+    \item Поріг \texttt{passing} (прохідний бал): $\ge 6$ (для 12-бальної шкали). Якщо оцінка нижча --- видається попередження, але збереження дозволене.
+    \item Поріг \texttt{excellent}: $\ge 10$.
+    \item Поріг \texttt{critical} (критично незадовільно): $< 4$. Це блокуюча валідація, що вимагає обов'язкового коментаря педагога та додаткового погодження завучем при підсумковому оцінюванні.
+\end{itemize}
+
+\paragraph{Інші обов'язкові валідації}
+\begin{itemize}
+    \item Сума кредитів навчального плану повинна дорівнювати обсягу кредитів освітньої програми (\texttt{Curriculum.total\_credits == EducationalProgram.credits\_ects}).
+    \item Заборона накладок у розкладі занять (один викладач або аудиторія не можуть бути зайняті в один час).
+    \item Наявність дійсного КЕП при затвердженні планів та журналів.
+\end{itemize}
+
+\subsubsection{3.1.7. Шаблони сповіщень}
+Система повинна забезпечувати автоматичне формування та відправку сповіщень:
+\begin{itemize}
+    \item Сповіщення учням та батькам про отримання незадовільних оцінок ($< 4$) або пропуски занять.
+    \item Сповіщення педагогам про наближення дедлайну підписання журналу (за 12 годин до завершення 48-годинного вікна).
+    \item Сповіщення завучу при масовій відсутності учнів у групі (понад 30\% відсутніх на занятті).
+\end{itemize}
+Доставка сповіщень здійснюється через інтеграційну шину MQTT (push-сповіщення у додатках) або Email.
+
+\subsubsection{3.1.8. Вимоги до серіалізації}
+Усі дані для обміну між компонентами системи та зовнішніми інтерфейсами повинні передаватися у форматі JSON. Для зберігання неструктурованих метаданих (наприклад, файлових додатків до домашніх завдань або специфічних параметрів навчального плану) в Mnesia використовується формат JSON або вбудовані структури Erlang (Maps/Records).
+
+\subsubsection{3.1.9. Вимоги до транспорту}
+Передача даних повинна здійснюватися через:
+\begin{itemize}
+    \item HTTPS з підтримкою протоколу TLS 1.3;
+    \item Secure WebSockets (WSS) для забезпечення роботи веб-інтерфейсу в режимі реального часу;
+    \item MQTT із шифруванням TLS для надсилання миттєвих повідомлень та телеметрії.
+\end{itemize}
+
+\subsection{3.2. Нефункціональні вимоги}
+
+\subsubsection{3.2.1. Вимоги до архітектури}
+Архітектура системи будується на базі методологии ISO/IEC/IEEE 42010 та фреймворку Захмана:
+\begin{itemize}
+    \item \textbf{Core слой:} Розробка на базі Erlang/OTP, що гарантує високу відмовостійкість, ізоляцію збоїв та підтримку тисяч одночасних підключень.
+    \item \textbf{Сховище даних:} Повністю інтегроване Erlang-native сховище. Усі транзакційні, оперативні дані процесів та сесій записуються виключно в Erlang Mnesia (із конфігуруванням таблиць disc\_copies, disc\_only\_copies або ram\_copies залежно від вимог до швидкодії та збереженості). Для збереження медіафайлів (особові справи, домашні завдання) використовується S3-сумісне сховище.
+    \item \textbf{Масштабування:} Горизонтальне масштабування шляхом реплікації таблиць Mnesia між Erlang-вузлами у кластері, контейнеризація сервісів та балансування навантаження через Traefik / KONG.
+    \item \textbf{Асинхронність:} Усі часомісткі операції (генерація розкладу, формування звітів) виконуються асинхронно через черги повідомлень.
+\end{itemize}
+
+\subsubsection{3.2.2. Вимоги до безпеки}
+Захист інформації є наскрізним і забезпечується на всіх рівнях моделі OSI:
+\begin{itemize}
+    \item \textbf{Автентифікація:} Вхід у систему здійснюється виключно через кваліфікований електронний підпис (КЕП) у форматі CAdES-X Long (із зчитуванням сертифікатів X.509 з захищених апаратних носіїв).
+    \item \textbf{Мережева безпека:} Відкритим повинен бути лише порт 443 для безпечного з'єднання HTTPS. Усі інші порти мають бути закриті.
+    \item \textbf{Шифрування:} Використання TLS 1.3 із сертифікатами ECC (ECDSA) або RSA (DSA з довжиною ключа не менше 2048 біт).
+    \item \textbf{Захист від атак (OWASP Top 10):}
+    \begin{itemize}
+        \item Оскільки SQL не використовується, ризик SQL-ін'єкцій відсутній. Натомість має бути забезпечена сувора валідація вхідних даних на рівні Erlang-сервісів для запобігання пошкодженню структури рекодів.
+        \item Захист від XSS-ін'єкцій шляхом блокування введення конструкцій: \texttt{javascript:}, \texttt{vbscript:}, \texttt{data:}, \texttt{onclick}, \texttt{onload}, \texttt{onsubmit}, \texttt{?}, \texttt{<}, \texttt{>}, \texttt{NULL}.
+        \item Використання HTTP заголовків безпеки: CSP, HttpOnly, Secure, HSTS, X-Frame-Options.
+        \item Заборона використання функцій динамічного виконання коду (\texttt{eval}, \texttt{exec}).
+    \end{itemize}
+    \item \textbf{Керування сесіями:} Токени сесій повинні зберігатися в Cookie з атрибутами \texttt{Secure} та \texttt{HttpOnly}. Заборонено паралельні сесії одного користувача з різних пристроїв.
+\end{itemize}
+
+\subsubsection{3.2.3. Вимоги до потужності і ємності}
+Система повинна відповідати таким показникам продуктивності:
+\begin{longtable}{p{5cm}p{5cm}p{4cm}}
+\toprule
+\textbf{Характеристика} & \textbf{Опис} & \textbf{Цільовий показник} \\
+\midrule
+Час реакції & Активація асинхронної задачі & \textless{} 200 мс \\
+Пропускна здатність & Кількість виконаних задач за одиницю часу & $\ge 500$ задач/с \\
+Затримка передачі (latency) & Час приходу першого байту відповіді & \textless{} 150 мс \\
+Завантаження таблиць & Повне завантаження таблиці на 2000 рядків & \textless{} 1 с \\
+Відображення таблиць & Відображення видимої частини таблиці UI & \textless{} 300 мс \\
+\bottomrule
+\end{longtable}
+
+\subsubsection{3.2.4. Вимоги до функціональності логування}
+Логування здійснюється за допомогою ELK-стеку (Filebeat, Logstash, Elasticsearch, Kibana):
+\begin{itemize}
+    \item \textbf{Формат логів:} JSON-об'єкт із обов'язковими полями \texttt{time}, \texttt{severity} (Trace, Debug, Info, Warning, Error, Critical), \texttt{log} (повідомлення).
+    \item \textbf{Метадані:} При наявності записуються поля \texttt{source\_location.file}, \texttt{source\_location.line}, \texttt{error.initial\_call}, \texttt{error.reason}.
+    \item \textbf{Захист даних:} Заборонено записувати персональні дані, паролі та ключі у відкритому вигляді. Ці дані повинні маскуватися або хешуватися.
+    \item \textbf{Термін зберігання:} Журнали аудиту безпеки та доступу до конфіденційних даних повинні зберігатися не менше 3 місяців у захищеному від модифікації вигляді.
+\end{itemize}
+
+\subsubsection{3.2.5. Адміністративні вимоги}
+\begin{itemize}
+    \item \textbf{Тестування:} Пакет поставки повинен містити автоматичні тести (Unit, Integration) з покриттям коду не менше 80\%. Має бути передбачена можливість автоматичного тестування з відключеними сервісами КЕП на тестових середовищах.
+    \item \textbf{Документування:} Наявність Настанови адміністратора, Настанови користувача та опису API-методів відповідно до ДСТУ 3008:2015.
+    \item \textbf{Технологічний стек:} Повністю безкоштовні open-source залежності з підтримкою розробників не менше 1 року.
+\end{itemize}
+
+\subsubsection{3.2.6. Загальні вимоги до документації та артефактів}
+Вендор зобов'язаний надати повну технічну документацію, що включає архітектурний опис (ISO 42010), схему даних (опис Erlang-рекордів та ER-діаграми), API-специфікацію та UX-прототипи у Figma.
+
+\subsubsection{3.2.7. Юридичні вимоги}
+\begin{itemize}
+    \item Передача замовнику всіх майнових прав інтелектуальної власності на створене програмне забезпечення.
+    \item Врегулювання відносин із авторами (розробниками) та субпідрядниками, надання підтверджень оригінальності коду та відсутності претензій третіх осіб.
+    \item Забезпечення патентної чистоти.
+    \item Надання гарантійної технічної підтримки терміном не менше 1 року після введення системи в експлуатацію.
+\end{itemize}
+
+\newpage
+\begin{appendix}
+
+\section{Додаток А. Специфікація реквізитів сутностей (для ТЗ)}
+У цьому додатку наведено детальні таблиці реквізитів для основних реєстрових сутностей та довідників модуля «Освіта». Ці таблиці призначені для перенесення до Технічного завдання (ТЗ) відповідно до Політик документування.
+
+\subsection{А.1. Довідник «Типи освітніх програм» (EducationalProgramType)}
+\begin{longtable}{p{3.5cm}p{3cm}p{2cm}p{5.5cm}}
+\toprule
+\textbf{Реквізит} & \textbf{Тип даних} & \textbf{Обов'язковий} & \textbf{Опис} \\
+\midrule
+id & UUID & Так & Унікальний ідентифікатор \\
+code & String (30) & Так & Унікальний код типу програми \\
+name\_ua & String (300) & Так & Назва українською \\
+name\_en & String (300) & Ні & Назва англійською \\
+education\_level & Enum & Так & Рівень освіти (ДНЗ, ЗСО, ПО, ФПО, ВО тощо) \\
+program\_category & Enum & Так & Категорія (Загальна, Профільна, Професійна тощо) \\
+duration\_years\_min & Decimal & Так & Мінімальна тривалість навчання (років) \\
+duration\_years\_max & Decimal & Ні & Максимальна тривалість навчання \\
+ects\_min & Integer & Так & Мінімальний обсяг кредитів ECTS \\
+description & Text & Ні & Опис типу програми \\
+is\_active & Boolean & Так & Статус активності довідника \\
+order & Integer & Так & Порядок відображення \\
+legal\_basis & Text & Ні & Посилання на нормативно-правову базу \\
+created\_at, updated\_at & Timestamp & Так & Дати створення та зміни \\
+version & Integer & Так & Версія запису (для оптимістичного блокування) \\
+metadata & JSONB & Ні & Додаткові гнучкі параметри \\
+\bottomrule
+\end{longtable}
+
+\subsection{А.2. Довідник «Освітні програми» (EducationalProgram)}
+\begin{longtable}{p{3.5cm}p{3cm}p{2cm}p{5.5cm}}
+\toprule
+\textbf{Реквізит} & \textbf{Тип даних} & \textbf{Обов'язковий} & \textbf{Опис} \\
+\midrule
+id & UUID & Так & Унікальний ідентифікатор \\
+code & String (50) & Так & Код програми (наприклад, 122, 013) \\
+name\_ua & String (500) & Так & Повна назва українською \\
+name\_en & String (500) & Ні & Назва англійською \\
+level & Enum & Так & Рівень освіти \\
+specialty\_code & String (20) & Так & Код спеціальності (ЗКП/ОП) \\
+specialty\_name & String (300) & Так & Назва спеціальності \\
+qualification & String (300) & Так & Кваліфікація, що присвоюється \\
+duration\_years & Decimal & Так & Тривалість навчання \\
+credits\_acts & Integer & Так & Загальний обсяг кредитів ECTS \\
+form\_of\_study\_id & UUID & Так & FK $\rightarrow$ FormOfStudy \\
+language & Enum & Так & Основна мова викладання \\
+accreditation\_status & Enum & Так & Статус акредитації \\
+accreditation\_until & Date & Ні & Дата закінчення дії акредитації \\
+license\_number & String & Ні & Номер ліцензії на освітню діяльність \\
+department\_id & UUID & Так & FK $\rightarrow$ Department (кафедра/факультет) \\
+is\_active & Boolean & Так & Чи є програма активною \\
+order & Integer & Так & Порядок сортування \\
+created\_at, updated\_at & Timestamp & Так & Дати створення та зміни \\
+version & Integer & Так & Версія запису \\
+metadata & JSONB & Ні & Додаткові метадані \\
+\bottomrule
+\end{longtable}
+
+\subsection{А.3. Довідник «Форми навчання» (FormOfStudy)}
+\begin{longtable}{p{3.5cm}p{3cm}p{2cm}p{5.5cm}}
+\toprule
+\textbf{Реквізит} & \textbf{Тип даних} & \textbf{Обов'язковий} & \textbf{Опис} \\
+\midrule
+id & UUID & Так & Унікальний ідентифікатор \\
+code & String (10) & Так & Унікальний код форми (FULL, DIST, MIX) \\
+name\_ua & String (150) & Так & Назва українською \\
+name\_en & String (150) & Ні & Назва англійською \\
+description & Text & Ні & Детальний опис \\
+is\_active & Boolean & Так & Флаг активності довідника \\
+order & Integer & Так & Порядок сортування \\
+supports\_mixed & Boolean & Так & Чи підтримує змішане навчання \\
+requires\_online\_platform& Boolean & Так & Чи вимагає системи LMS \\
+legal\_basis & String & Ні & Нормативне обґрунтування \\
+created\_at, updated\_at & Timestamp & Так & Дати створення та зміни \\
+version & Integer & Так & Версія запису \\
+metadata & JSONB & Ні & Додаткові гнучкі параметри \\
+\bottomrule
+\end{longtable}
+
+\subsection{А.4. Довідник «Типи оцінок» (GradeType)}
+\begin{longtable}{p{3.5cm}p{3cm}p{2cm}p{5.5cm}}
+\toprule
+\textbf{Реквізит} & \textbf{Тип даних} & \textbf{Обов'язковий} & \textbf{Опис} \\
+\midrule
+id & UUID & Так & Унікальний ідентифікатор \\
+code & String (20) & Так & Код типу оцінки (наприклад, CURRENT\_12) \\
+name\_ua & String (255) & Так & Назва українською \\
+name\_en & String (255) & Ні & Назва англійською \\
+scale\_type & Enum & Так & Тип шкали (NUMERIC\_12, ECTS, COMPETENCE, тощо) \\
+min\_value & Decimal & Ні & Мінімально можливе значення оцінки \\
+max\_value & Decimal & Ні & Максимально можливе значення оцінки \\
+passing\_threshold & Decimal & Ні & Прохідний бал \\
+weight & Decimal & Так & Ваговий коефіцієнт (від 0.0 до 1.0) \\
+is\_final & Boolean & Так & Чи є підсумковою \\
+requires\_approval & Boolean & Так & Чи потребує затвердження завучем \\
+description & Text & Ні & Опис правил застосування \\
+legal\_basis & Text & Ні & Посилання на норматив \\
+is\_active & Boolean & Так & Чи є активним запис \\
+order & Integer & Так & Порядок відображення \\
+created\_at, updated\_at & Timestamp & Так & Дати створення та зміни \\
+version & Integer & Так & Версія запису \\
+metadata & JSONB & Ні & Метадані (кольори, іконки тощо) \\
+\bottomrule
+\end{longtable}
+
+\subsection{А.5. Сутність «Навчальний план» (Curriculum)}
+\begin{longtable}{p{3.5cm}p{3cm}p{2cm}p{5.5cm}}
+\toprule
+\textbf{Реквізит} & \textbf{Тип даних} & \textbf{Обов'язковий} & \textbf{Опис} \\
+\midrule
+id & UUID & Так & Унікальний ідентифікатор \\
+program\_id & UUID & Так & FK $\rightarrow$ EducationalProgram \\
+group\_id & UUID & Так & FK $\rightarrow$ Group \\
+academic\_year & Integer & Так & Навчальний рік \\
+semester & Integer (1-2) & Так & Семестр \\
+total\_credits & Decimal & Так & Загальний обсяг кредитів \\
+total\_hours & Integer & Так & Загальний обсяг годин (розрахунковий) \\
+approved\_by & UUID & Ні & FK $\rightarrow$ Teacher (Директор, який підписав КЕП) \\
+approved\_at & Timestamp & Ні & Дата та час затвердження КЕП \\
+status & Enum & Так & Статус плану (Чернетка / На погодженні / Затверджено / Архів) \\
+form\_of\_study\_id & UUID & Так & FK $\rightarrow$ FormOfStudy \\
+language & Enum & Так & Мова викладання плану \\
+is\_active & Boolean & Так & Ознака активності плану \\
+created\_at, updated\_at & Timestamp & Так & Дати створення та зміни \\
+version & Integer & Так & Версія запису \\
+metadata & JSONB & Ні & Метадані \\
+\bottomrule
+\end{longtable}
+
+\subsection{А.6. Сутність «Деталі навчального плану» (CurriculumItem)}
+\begin{longtable}{p{3.5cm}p{3cm}p{2.5cm}p{5cm}}
+\toprule
+\textbf{Реквізит} & \textbf{Тип даних} & \textbf{Обов'язковий} & \textbf{Опис} \\
+\midrule
+id & UUID & Так & Унікальний ідентифікатор \\
+curriculum\_id & UUID & Так & FK $\rightarrow$ Curriculum \\
+course\_id & UUID & Так & FK $\rightarrow$ Course \\
+semester & Integer & Так & Номер семестру \\
+hours\_lectures & Integer & Так & Кількість лекційних годин \\
+hours\_practice & Integer & Так & Кількість практичних годин \\
+hours\_lab & Integer & Так & Кількість лабораторних годин \\
+hours\_self & Integer & Так & Кількість годин самостійної роботи \\
+credits\_acts & Decimal & Так & Кількість кредитів ECTS за курс \\
+grade\_type\_id & UUID & Так & FK $\rightarrow$ GradeType (основний тип оцінювання) \\
+teacher\_id & UUID & Ні & FK $\rightarrow$ Teacher (закріплений викладач) \\
+order & Integer & Так & Порядок у навчальному плані \\
+is\_mandatory & Boolean & Так & Ознака обов'язковості дисципліни \\
+\bottomrule
+\end{longtable}
+
+\subsection{А.7. Реєстрові сутності контингенту та журналів}
+\begin{itemize}
+    \item \textbf{Student (Учень / Студент):} \texttt{id} (UUID, PK), \texttt{external\_id} (String, ЄДЕБО ID), \texttt{full\_name} (String), \texttt{date\_of\_birth} (Date), \texttt{gender} (Enum), \texttt{tax\_number} (String), \texttt{address} (JSON), \texttt{phone} (String), \texttt{email} (String), \texttt{group\_id} (UUID, FK $\rightarrow$ Group), \texttt{status} (Enum), \texttt{personal\_file\_id} (UUID, FK $\rightarrow$ Document), \texttt{kep\_cert} (Binary, сертифікат КЕП X.509), \texttt{created\_at}, \texttt{updated\_at}, \texttt{deleted\_at} (Timestamp), \texttt{version} (Integer).
+    \item \textbf{Teacher (Педагог / Викладач):} \texttt{id} (UUID, PK), \texttt{full\_name} (String), \texttt{position} (String), \texttt{qualification} (String), \texttt{tax\_number} (String), \texttt{phone}, \texttt{email} (String), \texttt{department\_id} (UUID, FK), \texttt{kep\_cert} (Binary, обов'язковий сертифікат X.509), \texttt{kpi\_score} (Decimal), \texttt{status} (Enum), \texttt{personal\_file\_id} (UUID, FK $\rightarrow$ Document), \texttt{created\_at}, \texttt{updated\_at}, \texttt{deleted\_at} (Timestamp), \texttt{version} (Integer).
+    \item \textbf{Group (Група):} \texttt{id} (UUID, PK), \texttt{code} (String, наприклад "11-А"), \texttt{course\_id} (UUID, FK), \texttt{academic\_year} (Integer), \texttt{form\_of\_study} (Enum), \texttt{student\_count} (Integer), \texttt{curator\_id} (UUID, FK $\rightarrow$ Teacher).
+    \item \textbf{Course (Курс):} \texttt{id} (UUID, PK), \texttt{name} (String), \texttt{code} (String), \texttt{description} (Text), \texttt{credits} (Decimal), \texttt{hours} (Integer), \texttt{scorm\_package\_id} (UUID, FK), \texttt{teacher\_id} (UUID, FK, основний лектор), \texttt{status} (Enum).
+    \item \textbf{JournalRecord (Запис в журналі):} \texttt{id} (UUID, PK), \texttt{student\_id} (UUID, FK $\rightarrow$ Student), \texttt{course\_id} (UUID, FK $\rightarrow$ Course), \texttt{lesson\_date} (Date), \texttt{attendance\_status} (Enum: Присутній, Відсутній, Поважна причина, Неповажна причина), \texttt{grade} (Decimal), \texttt{grade\_type} (Enum $\rightarrow$ GradeType), \texttt{competence\_scores} (JSON/Map), \texttt{comment} (Text), \texttt{signed\_by} (UUID, FK $\rightarrow$ Teacher, КЕП автора), \texttt{signed\_at} (Timestamp), \texttt{version} (Integer).
+    \item \textbf{Schedule (Розклад):} \texttt{id} (UUID, PK), \texttt{group\_id} (UUID, FK), \texttt{course\_id} (UUID, FK), \texttt{teacher\_id} (UUID, FK), \texttt{room} (String), \texttt{start\_time}, \texttt{end\_time} (Timestamp), \texttt{weekday} (Enum).
+    \item \textbf{Document (Документ):} \texttt{id} (UUID, PK), \texttt{type} (Enum $\rightarrow$ DocumentType), \texttt{title} (String), \texttt{content} (Text), \texttt{file\_hash} (String), \texttt{signed\_by} (UUID, FK $\rightarrow$ Teacher), \texttt{signed\_at} (Timestamp), \texttt{related\_entity\_type} (String), \texttt{related\_entity\_id} (UUID).
+    \item \textbf{GradeThreshold (Пороги оцінок):} \texttt{id} (UUID, PK), \texttt{grade\_type\_code} (String), \texttt{threshold\_name} (String), \texttt{value} (Decimal), \texttt{operator} (Enum), \texttt{message\_ua} (Text), \texttt{is\_blocking} (Boolean), \texttt{requires\_approval} (Boolean).
+    \item \textbf{GradeScaleConversion (Конвертація шкал):} \texttt{id} (UUID, PK), \texttt{source\_scale} (Enum), \texttt{target\_scale} (Enum), \texttt{conversion\_rule} (JSON / String), \texttt{direction} (Enum), \texttt{is\_default} (Boolean), \texttt{legal\_basis} (Text), \texttt{metadata} (JSONB).
+\end{itemize}
+
+\newpage
+\section{Додаток Б. Технічні деталі реалізації процесів та валідацій}
+У цьому додатку наведено програмні лістинги на Erlang/OTP для опису процесів (BPE DSL) та модулів валідації.
+
+\subsection{Б.1. Опис процесу оцінювання (bpe\_education\_assessment.erl)}
+\begin{verbatim}
+-module(bpe_education_assessment).
+-include("bpe.hrl").
+-compile(export_all).
+
+def() ->
+    #process{
+        name = 'Student Assessment',
+        beginEvent = 'StartAssessment',
+        endEvent = 'AssessmentSigned',
+        tasks = [
+            #beginEvent{name='StartAssessment'},
+            #userTask{name='EnterGrades', module=?MODULE},
+            #serviceTask{name='ValidateGrades', module=?MODULE},
+            #serviceTask{name='CalculateCompetences', module=?MODULE},
+            #userTask{name='TeacherSign', module=?MODULE},
+            #userTask{name='ViceCheck', module=?MODULE},
+            #endEvent{name='AssessmentSigned'}
+        ],
+        flows = [
+            #sequenceFlow{name='1', source='StartAssessment', target='EnterGrades'},
+            #sequenceFlow{name='2', source='EnterGrades', target='ValidateGrades'},
+            #sequenceFlow{name='3', source='ValidateGrades', 
+                         target='CalculateCompetences', condition="validation_ok"},
+            #sequenceFlow{name='4', source='ValidateGrades', 
+                         target='EnterGrades', condition="validation_failed"},
+            #sequenceFlow{name='5', source='CalculateCompetences', target='TeacherSign'},
+            #sequenceFlow{name='6', source='TeacherSign', 
+                         target='ViceCheck', condition="requires_approval"},
+            #sequenceFlow{name='7', source='TeacherSign', 
+                         target='AssessmentSigned', condition="no_approval_needed"},
+            #sequenceFlow{name='8', source='ViceCheck', 
+                         target='AssessmentSigned', condition="vice_approved"}
+        ],
+        roles = [teacher, vice_rector]
+    }.
+
+action({serviceTask, 'ValidateGrades'}, Proc) ->
+    case validate_grades(Proc) of
+        ok -> {reply, Proc, "validation_ok"};
+        _  -> {reply, Proc, "validation_failed"}
+    end;
+
+action({userTask, 'TeacherSign'}, Proc) ->
+    case requires_vice_approval(Proc) of
+        true -> {reply, Proc, "requires_approval"};
+        false -> {reply, Proc, "no_approval_needed"}
+    end;
+
+action(_, Proc) -> {reply, Proc}.
+\end{verbatim}
+
+\subsection{Б.2. Опис процесу проведення уроку (bpe\_education\_lesson.erl)}
+\begin{verbatim}
+-module(bpe_education_lesson).
+-include("bpe.hrl").
+-compile(export_all).
+
+def() ->
+    #process{
+        name = 'Lesson Execution and Assessment',
+        beginEvent = 'LessonStart',
+        endEvent = 'LessonClosed',
+        tasks = [
+            #beginEvent{name='LessonStart'},
+            #userTask{name='TakeAttendance', module=?MODULE},
+            #userTask{name='AssessStudents', module=?MODULE},
+            #serviceTask{name='CalculateAverages', module=?MODULE},
+            #userTask{name='SignJournal', module=?MODULE},
+            #endEvent{name='LessonClosed'}
+        ],
+        flows = [
+            #sequenceFlow{name='1', source='LessonStart', target='TakeAttendance'},
+            #sequenceFlow{name='2', source='TakeAttendance', target='AssessStudents'},
+            #sequenceFlow{name='3', source='AssessStudents', target='CalculateAverages'},
+            #sequenceFlow{name='4', source='CalculateAverages', 
+                         target='SignJournal', condition="averages_ok"},
+            #sequenceFlow{name='5', source='CalculateAverages', 
+                         target='AssessStudents', condition="averages_need_correction"},
+            #sequenceFlow{name='6', source='SignJournal', 
+                         target='LessonClosed', condition="kep_signed"}
+        ],
+        events = [#timeoutEvent{name='JournalDeadline', 
+                               timeout=#timeout{spec={hours,48}}}]
+    }.
+
+action({serviceTask, 'CalculateAverages'}, Proc) ->
+    case averages_valid(Proc) of
+        true -> {reply, Proc, "averages_ok"};
+        false -> {reply, Proc, "averages_need_correction"}
+    end;
+
+action({userTask, 'SignJournal'}, Proc) ->
+    case has_valid_kep(Proc) of
+        true -> {reply, Proc, "kep_signed"};
+        false -> {reply, Proc}
+    end;
+
+action(_, Proc) -> {reply, Proc}.
+\end{verbatim}
+
+\subsection{Б.3. Процес затвердження навчального плану (bpe\_curriculum\_approval.erl)}
+\begin{verbatim}
+-module(bpe_curriculum_approval).
+-include("bpe.hrl").
+-compile(export_all).
+
+def() ->
+    #process{
+        name = 'Curriculum Approval',
+        beginEvent = 'Start',
+        endEvent = 'PlanApproved',
+        tasks = [
+            #beginEvent{name='Start'},
+            #userTask{name='CreatePlan', module=?MODULE},
+            #userTask{name='MethodistReview', module=?MODULE},
+            #userTask{name='ViceApprove', module=?MODULE},
+            #userTask{name='DirectorApprove', module=?MODULE},
+            #serviceTask{name='GenerateSchedule', module=?MODULE},
+            #endEvent{name='PlanApproved'}
+        ],
+        flows = [
+            #sequenceFlow{name='1', source='Start', target='CreatePlan'},
+            #sequenceFlow{name='2', source='CreatePlan', target='MethodistReview'},
+            #sequenceFlow{name='3', source='MethodistReview', 
+                         target='ViceApprove', condition="methodist_ok"},
+            #sequenceFlow{name='4', source='MethodistReview', 
+                         target='CreatePlan', condition="methodist_reject"},
+            #sequenceFlow{name='5', source='ViceApprove', 
+                         target='DirectorApprove', condition="vice_ok"},
+            #sequenceFlow{name='6', source='ViceApprove', 
+                         target='MethodistReview', condition="vice_reject"},
+            #sequenceFlow{name='7', source='DirectorApprove', 
+                         target='GenerateSchedule', condition="director_ok"},
+            #sequenceFlow{name='8', source='GenerateSchedule', target='PlanApproved'}
+        ],
+        roles = [methodist, vice_rector, director]
+    }.
+
+action({userTask, 'CreatePlan'}, Proc) -> {reply, Proc};
+action({userTask, 'MethodistReview'}, Proc) ->
+    case validate_curriculum(Proc) of
+        ok -> {reply, Proc, "methodist_ok"};
+        _  -> {reply, Proc, "methodist_reject"}
+    end;
+
+action({userTask, 'ViceApprove'}, Proc) ->
+    case vice_approval(Proc) of
+        ok -> {reply, Proc, "vice_ok"};
+        _  -> {reply, Proc, "vice_reject"}
+    end;
+
+action({userTask, 'DirectorApprove'}, Proc) ->
+    case director_kep_sign(Proc) of
+        ok -> {reply, Proc, "director_ok"};
+        _  -> {reply, Proc}
+    end;
+
+action({serviceTask, 'GenerateSchedule'}, Proc) ->
+    {reply, Proc};
+
+action(_, Proc) -> {reply, Proc}.
+\end{verbatim}
+
+\subsection{Б.4. Процес генерації розкладу (bpe\_schedule\_generation.erl)}
+\begin{verbatim}
+-module(bpe_schedule_generation).
+-include("bpe.hrl").
+-compile(export_all).
+
+def() ->
+    #process{
+        name = 'Schedule Generation',
+        beginEvent = 'PlanApproved',
+        endEvent = 'SchedulePublished',
+        tasks = [
+            #beginEvent{name='PlanApproved'},
+            #serviceTask{name='LoadPlanAndConstraints', module=?MODULE},
+            #serviceTask{name='GenerateSchedule', module=?MODULE},
+            #userTask{name='ManualAdjustment', module=?MODULE},
+            #userTask{name='ViceDirectorApprove', module=?MODULE},
+            #serviceTask{name='PublishAndNotify', module=?MODULE},
+            #endEvent{name='SchedulePublished'}
+        ],
+        flows = [
+            #sequenceFlow{name='1', source='PlanApproved', target='LoadPlanAndConstraints'},
+            #sequenceFlow{name='2', source='LoadPlanAndConstraints', target='GenerateSchedule'},
+            #sequenceFlow{name='3', source='GenerateSchedule', 
+                         target='ViceDirectorApprove', condition="no_conflicts"},
+            #sequenceFlow{name='4', source='GenerateSchedule', 
+                         target='ManualAdjustment', condition="has_conflicts"},
+            #sequenceFlow{name='5', source='ManualAdjustment', target='GenerateSchedule'},
+            #sequenceFlow{name='6', source='ViceDirectorApprove', 
+                         target='PublishAndNotify', condition="approved"},
+            #sequenceFlow{name='7', source='PublishAndNotify', target='SchedulePublished'}
+        ]
+    }.
+
+action({serviceTask, 'LoadPlanAndConstraints'}, Proc) -> {reply, Proc};
+action({serviceTask, 'GenerateSchedule'}, Proc) ->
+    case generate_schedule_algorithm(Proc) of
+        {ok, Schedule} -> 
+            {reply, Proc#process{docs = [Schedule | Proc#process.docs]}, "no_conflicts"};
+        {error, Conflicts} -> 
+            {reply, Proc#process{docs = [Conflicts | Proc#process.docs]}, "has_conflicts"}
+    end;
+action({userTask, 'ManualAdjustment'}, Proc) -> {reply, Proc};
+action({userTask, 'ViceDirectorApprove'}, Proc) ->
+    case has_valid_kep(Proc) of
+        true -> {reply, Proc, "approved"};
+        false -> {reply, Proc}
+    end;
+action({serviceTask, 'PublishAndNotify'}, Proc) -> {reply, Proc};
+action(_, Proc) -> {reply, Proc}.
+\end{verbatim}
+
+\subsection{Б.5. Модуль валідації порогів оцінок (grade\_validator.erl)}
+\begin{verbatim}
+-module(grade_validator).
+-export([validate/2, validate_thresholds/2]).
+
+validate(GradeTypeCode, Value) ->
+    Thresholds = fetch_thresholds(GradeTypeCode),
+    validate_thresholds(Value, Thresholds).
+
+validate_thresholds(_Value, []) -> ok;
+validate_thresholds(Value, [T|Rest]) ->
+    case check_threshold(Value, T) of
+        ok -> validate_thresholds(Value, Rest);
+        {error, Msg} -> {error, Msg}
+    end.
+
+check_threshold(Value, #grade_threshold{operator = '>=', value = Th}) when Value >= Th -> ok;
+check_threshold(Value, #grade_threshold{operator = '>', value = Th}) when Value > Th -> ok;
+check_threshold(Value, #grade_threshold{operator = '<=', value = Th}) when Value =< Th -> ok;
+check_threshold(_, T) -> {error, T#grade_threshold.message_ua}.
+\end{verbatim}
+
+\end{appendix}
+
+\end{document}
