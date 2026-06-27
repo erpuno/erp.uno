@@ -1,0 +1,344 @@
+Деталізація BPMN для освітніх процесів у проекті ERP/1: Освіта (відповідно до Політик, розділів 3.2, 5.1, 6.1).
+Згідно Політик, Технічне завдання повинно містити BPMN-діаграми (ISO 19510), верифіковані аналітиками. Кожен процес описується в контексті бізнес-правил, use cases (основний + альтернативні/негативні сценарії), ролей, сутностей, станів FSM, критеріїв приймання та Definition of Done.
+1. Загальні принципи моделювання процесів (згідно політики 5.1 та 3.2.1)
+Система ізоморфна FSM + BPMN + Мережі Петрі:
+
+Контекст процесу: Перелік документів/сутностей.
+Стани: Робочі місця користувача або сервіси.
+Переходи: Функції з логікою (валідації, права, бізнес-правила).
+Історія: Кроки + прикріплені документи.
+Учасники: Користувачі з КЕП X.509, ЄДРПОУ, посадами, ролями (ABAC/RBAC).
+
+Основні ролі (приклади):
+
+Адміністратор закладу
+Педагог/Викладач
+Учень/Студент
+Батьки/Представники
+Методист/Завуч
+Директор
+Системний адміністратор
+
+2. Ключові освітні процеси (BPMN-рівень)
+2.1. Процес «Формування та затвердження навчального плану / розкладу» (BPMN Pool: Навчальний відділ)
+
+Start: Запит на семестр (подія Timer + Message від МОН/ЄДЕБО).
+Lane 1 — Методист:
+Створення/імпорт навчального плану (сутність «Навчальний план», SCORM-курси).
+Валідація (відповідність державним стандартам).
+
+Lane 2 — Завуч/Директор:
+Перегляд + затвердження (паралельні гілки погодження).
+Бізнес-правила: перевірка навантаження педагогів (KPI), доступності приміщень.
+
+Gateway: Exclusive — чи є зауваження? (Loop для коригування).
+Lane 3 — Автоматичний сервіс:
+Генерація розкладу (з урахуванням контингенту, кадрів).
+Публікація в електронному журналі.
+
+End: Повідомлення всім учасникам (Email/MQTT), фіксація в історії.
+
+Сутності: Навчальний план, Розклад, Курс (SCORM), Навантаження педагога.
+2.2. Процес «Проведення заняття та фіксація відвідувань/оцінок» (Core навчальний процес)
+
+Start: Початок заняття за розкладом (Timer/Event).
+Lane — Педагог:
+Відкриття електронного журналу (Form з контингентом групи).
+Фіксація відвідувань (Check-in via мобільний/QR).
+Виставлення оцінок/компетенцій (валідація шкали).
+
+Паралельні гілки:
+Учень: доступ до матеріалів курсу, тестування.
+Система: автоматичний контроль знань (онлайн-тести).
+
+Gateway: Оцінка пройдена? → Сертифікація / Повтор.
+End: Запис до історії, сповіщення батькам (при негативних сценаріях), оновлення аналітики.
+
+Альтернативні сценарії: Відсутність інтернету (offline-режим + синхронізація), хвороба учня (академічна відпустка).
+2.3. Процес «Атестація та підвищення кваліфікації педагогів»
+
+Start: Планова атестація (Timer + Message).
+Учасники: Педагог → Методист → Комісія → Директор.
+Кроки:
+Подання особової справи + портфоліо (документ).
+Оцінка KPI (автоматичний розрахунок).
+Погодження (multi-sign via КЕП).
+Рішення комісії.
+
+End: Оновлення штатного розпису, формування наказу, запис до реєстру.
+
+2.4. Процес «Формування звітності для МОН» (інтеграційний)
+
+Автоматичний (на основі даних контингенту, журналів, атестацій).
+BPMN: Data Collection → Validation (відповідність формам МОН) → Signing (КЕП) → Transmission via ЄДЕБО/MQTT.
+Моніторинг статусу доставки.
+
+3. Архітектурні аспекти реалізації BPMN (6.1.2)
+
+Процеси моделюються як послідовність викликів API + BPMN-двигуна (інтеграція з модулем «Процеси» SYNRC).
+Сутності пов’язані через ER-модель (Контингент ↔ Курси ↔ Оцінки).
+Валідації та бізнес-правила — явні, не імпліцитні в коді.
+Інтерфейс: React/Vue-подібний UI з підтримкою WCAG AA, people-centric use cases.
+Масштабування: Erlang/OTP actors для concurrent процесів (тисячі користувачів).
+
+4. Вимоги до ТЗ щодо цих процесів (3.2.1)
+
+Кожна діаграма супроводжується:
+Use Case (основний + альтернативні/негативні).
+Бізнес-правила (джерело, умови, винятки).
+Критерії приймання.
+DoD (реалізація + тести + документація + безпека).
+
+Простежуваність: від Політик → ТВ → ТЗ → реалізація → UAT.
+
+Для повної візуалізації рекомендую інструменти типу Camunda Modeler / Draw.io з експортом у стандартний BPMN XML. Готові діаграми можуть бути інтегровані в ТЗ як артефакти.
+Потрібна деталізація конкретного процесу (наприклад, «Електронний журнал» або «Академічна мобільність»)? Або генерація BPMN XML / опис Use Case для одного з них?
+
+Оновлені Erlang DSL файли з умовними переходами (conditional flows)
+Я додав умовні переходи (condition) у #sequenceFlow{} для ключових процесів, які ми описували раніше. Умови базуються на бізнес-правилах (валідація, КЕП, статус тощо).
+1. bpe_education_assessment.erl (Оцінювання) — з умовними переходами
+erlang-module(bpe_education_assessment).
+-include("bpe.hrl").
+-compile(export_all).
+
+def() ->
+    #process{
+        name = 'Student Assessment',
+        beginEvent = 'StartAssessment',
+        endEvent = 'AssessmentSigned',
+        tasks = [
+            #beginEvent{name='StartAssessment'},
+            #userTask{name='EnterGrades', module=?MODULE},
+            #serviceTask{name='ValidateGrades', module=?MODULE},
+            #serviceTask{name='CalculateCompetences', module=?MODULE},
+            #userTask{name='TeacherSign', module=?MODULE},
+            #userTask{name='ViceCheck', module=?MODULE},
+            #endEvent{name='AssessmentSigned'}
+        ],
+        flows = [
+            #sequenceFlow{name='1', source='StartAssessment', target='EnterGrades'},
+            
+            #sequenceFlow{name='2', 
+                         source='EnterGrades', 
+                         target='ValidateGrades'},
+            
+            #sequenceFlow{name='3', 
+                         source='ValidateGrades', 
+                         target='CalculateCompetences', 
+                         condition="validation_ok"},
+            
+            #sequenceFlow{name='4', 
+                         source='ValidateGrades', 
+                         target='EnterGrades', 
+                         condition="validation_failed"},  % loop back
+            
+            #sequenceFlow{name='5', 
+                         source='CalculateCompetences', 
+                         target='TeacherSign'},
+            
+            #sequenceFlow{name='6', 
+                         source='TeacherSign', 
+                         target='ViceCheck', 
+                         condition="requires_approval"},   % критична оцінка / спірна ситуація
+            
+            #sequenceFlow{name='7', 
+                         source='TeacherSign', 
+                         target='AssessmentSigned', 
+                         condition="no_approval_needed"},
+            
+            #sequenceFlow{name='8', 
+                         source='ViceCheck', 
+                         target='AssessmentSigned', 
+                         condition="vice_approved"}
+        ],
+        roles = [teacher, vice_rector]
+    }.
+
+action({serviceTask, 'ValidateGrades'}, Proc) ->
+    % Логіка повернення умови
+    case validate_grades(Proc) of
+        ok -> {reply, Proc, "validation_ok"};
+        _  -> {reply, Proc, "validation_failed"}
+    end;
+
+action({userTask, 'TeacherSign'}, Proc) ->
+    case requires_vice_approval(Proc) of
+        true -> {reply, Proc, "requires_approval"};
+        false -> {reply, Proc, "no_approval_needed"}
+    end;
+
+action(_, Proc) -> {reply, Proc}.
+2. bpe_education_lesson.erl (Проведення заняття)
+erlang-module(bpe_education_lesson).
+-include("bpe.hrl").
+-compile(export_all).
+
+def() ->
+    #process{
+        name = 'Lesson Execution and Assessment',
+        beginEvent = 'LessonStart',
+        endEvent = 'LessonClosed',
+        tasks = [
+            #beginEvent{name='LessonStart'},
+            #userTask{name='TakeAttendance', module=?MODULE},
+            #userTask{name='AssessStudents', module=?MODULE},
+            #serviceTask{name='CalculateAverages', module=?MODULE},
+            #userTask{name='SignJournal', module=?MODULE},
+            #endEvent{name='LessonClosed'}
+        ],
+        flows = [
+            #sequenceFlow{name='1', source='LessonStart', target='TakeAttendance'},
+            #sequenceFlow{name='2', source='TakeAttendance', target='AssessStudents'},
+            #sequenceFlow{name='3', source='AssessStudents', target='CalculateAverages'},
+            
+            #sequenceFlow{name='4', 
+                         source='CalculateAverages', 
+                         target='SignJournal', 
+                         condition="averages_ok"},
+            
+            #sequenceFlow{name='5', 
+                         source='CalculateAverages', 
+                         target='AssessStudents', 
+                         condition="averages_need_correction"},  % loop
+            
+            #sequenceFlow{name='6', 
+                         source='SignJournal', 
+                         target='LessonClosed', 
+                         condition="kep_signed"}
+        ],
+        events = [#timeoutEvent{name='JournalDeadline', timeout=#timeout{spec={hours,48}}}]
+    }.
+
+action({serviceTask, 'CalculateAverages'}, Proc) ->
+    case averages_valid(Proc) of
+        true -> {reply, Proc, "averages_ok"};
+        false -> {reply, Proc, "averages_need_correction"}
+    end;
+
+action({userTask, 'SignJournal'}, Proc) ->
+    case has_valid_kep(Proc) of
+        true -> {reply, Proc, "kep_signed"};
+        false -> {reply, Proc}  % залишається в поточному стані
+    end;
+
+action(_, Proc) -> {reply, Proc}.
+
+BPMN-процес «Затвердження навчального плану»
+(ERP/1: Освіта, BPE Erlang DSL)
+1. Загальна характеристика процесу
+
+Назва: Curriculum Approval
+Мета: Затвердження навчального плану на семестр/рік з дотриманням всіх бізнес-правил та підписів КЕП.
+Учасники (Lanes): Методист, Завуч, Директор (або Вчена рада).
+Тригер: Створення чернетки плану або початок нового семестру.
+Кінець: План затверджено → запуск генерації розкладу.
+
+2. BPMN-структура (текстовий опис + Mermaid)
+#mermaid-diagram-mermaid-6v38hj1{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#000000;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-diagram-mermaid-6v38hj1 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-diagram-mermaid-6v38hj1 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-diagram-mermaid-6v38hj1 .error-icon{fill:#552222;}#mermaid-diagram-mermaid-6v38hj1 .error-text{fill:#552222;stroke:#552222;}#mermaid-diagram-mermaid-6v38hj1 .edge-thickness-normal{stroke-width:1px;}#mermaid-diagram-mermaid-6v38hj1 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-diagram-mermaid-6v38hj1 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-diagram-mermaid-6v38hj1 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-diagram-mermaid-6v38hj1 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-diagram-mermaid-6v38hj1 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-diagram-mermaid-6v38hj1 .marker{fill:#666;stroke:#666;}#mermaid-diagram-mermaid-6v38hj1 .marker.cross{stroke:#666;}#mermaid-diagram-mermaid-6v38hj1 svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#mermaid-diagram-mermaid-6v38hj1 p{margin:0;}#mermaid-diagram-mermaid-6v38hj1 .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#000000;}#mermaid-diagram-mermaid-6v38hj1 .cluster-label text{fill:#333;}#mermaid-diagram-mermaid-6v38hj1 .cluster-label span{color:#333;}#mermaid-diagram-mermaid-6v38hj1 .cluster-label span p{background-color:transparent;}#mermaid-diagram-mermaid-6v38hj1 .label text,#mermaid-diagram-mermaid-6v38hj1 span{fill:#000000;color:#000000;}#mermaid-diagram-mermaid-6v38hj1 .node rect,#mermaid-diagram-mermaid-6v38hj1 .node circle,#mermaid-diagram-mermaid-6v38hj1 .node ellipse,#mermaid-diagram-mermaid-6v38hj1 .node polygon,#mermaid-diagram-mermaid-6v38hj1 .node path{fill:#eee;stroke:#999;stroke-width:1px;}#mermaid-diagram-mermaid-6v38hj1 .rough-node .label text,#mermaid-diagram-mermaid-6v38hj1 .node .label text,#mermaid-diagram-mermaid-6v38hj1 .image-shape .label,#mermaid-diagram-mermaid-6v38hj1 .icon-shape .label{text-anchor:middle;}#mermaid-diagram-mermaid-6v38hj1 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mermaid-diagram-mermaid-6v38hj1 .rough-node .label,#mermaid-diagram-mermaid-6v38hj1 .node .label,#mermaid-diagram-mermaid-6v38hj1 .image-shape .label,#mermaid-diagram-mermaid-6v38hj1 .icon-shape .label{text-align:center;}#mermaid-diagram-mermaid-6v38hj1 .node.clickable{cursor:pointer;}#mermaid-diagram-mermaid-6v38hj1 .root .anchor path{fill:#666!important;stroke-width:0;stroke:#666;}#mermaid-diagram-mermaid-6v38hj1 .arrowheadPath{fill:#333333;}#mermaid-diagram-mermaid-6v38hj1 .edgePath .path{stroke:#666;stroke-width:2.0px;}#mermaid-diagram-mermaid-6v38hj1 .flowchart-link{stroke:#666;fill:none;}#mermaid-diagram-mermaid-6v38hj1 .edgeLabel{background-color:white;text-align:center;}#mermaid-diagram-mermaid-6v38hj1 .edgeLabel p{background-color:white;}#mermaid-diagram-mermaid-6v38hj1 .edgeLabel rect{opacity:0.5;background-color:white;fill:white;}#mermaid-diagram-mermaid-6v38hj1 .labelBkg{background-color:rgba(255, 255, 255, 0.5);}#mermaid-diagram-mermaid-6v38hj1 .cluster rect{fill:hsl(0, 0%, 98.9215686275%);stroke:#707070;stroke-width:1px;}#mermaid-diagram-mermaid-6v38hj1 .cluster text{fill:#333;}#mermaid-diagram-mermaid-6v38hj1 .cluster span{color:#333;}#mermaid-diagram-mermaid-6v38hj1 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(-160, 0%, 93.3333333333%);border:1px solid #707070;border-radius:2px;pointer-events:none;z-index:100;}#mermaid-diagram-mermaid-6v38hj1 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#000000;}#mermaid-diagram-mermaid-6v38hj1 rect.text{fill:none;stroke-width:0;}#mermaid-diagram-mermaid-6v38hj1 .icon-shape,#mermaid-diagram-mermaid-6v38hj1 .image-shape{background-color:white;text-align:center;}#mermaid-diagram-mermaid-6v38hj1 .icon-shape p,#mermaid-diagram-mermaid-6v38hj1 .image-shape p{background-color:white;padding:2px;}#mermaid-diagram-mermaid-6v38hj1 .icon-shape rect,#mermaid-diagram-mermaid-6v38hj1 .image-shape rect{opacity:0.5;background-color:white;fill:white;}#mermaid-diagram-mermaid-6v38hj1 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}NoYesNoYesNoYesStart: Створення чернетки плануМетодист: Створити / Імпортувати планМетодист: Перевірити відповідність програміВалідація OK?Повернути на доопрацюванняЗавуч: ПогодженняЗавуч затвердив?Директор / Вчена рада: Фінальне затвердженняПідпис КЕП?Підписати КЕПService: Генерація розкладу + оповіщенняEnd: План затверджено
+3. Erlang BPE реалізація (bpe_curriculum_approval.erl)
+erlang-module(bpe_curriculum_approval).
+-include("bpe.hrl").
+-compile(export_all).
+
+def() ->
+    #process{
+        name = 'Curriculum Approval',
+        beginEvent = 'Start',
+        endEvent = 'PlanApproved',
+        tasks = [
+            #beginEvent{name='Start'},
+            #userTask{name='CreatePlan', module=?MODULE},           % Методист
+            #userTask{name='MethodistReview', module=?MODULE},
+            #userTask{name='ViceApprove', module=?MODULE},          % Завуч
+            #userTask{name='DirectorApprove', module=?MODULE},      % Директор
+            #serviceTask{name='GenerateSchedule', module=?MODULE},
+            #endEvent{name='PlanApproved'}
+        ],
+        flows = [
+            #sequenceFlow{name='1', source='Start', target='CreatePlan'},
+            #sequenceFlow{name='2', source='CreatePlan', target='MethodistReview'},
+            
+            #sequenceFlow{name='3', 
+                         source='MethodistReview', 
+                         target='ViceApprove', 
+                         condition="methodist_ok"},
+            
+            #sequenceFlow{name='4', 
+                         source='MethodistReview', 
+                         target='CreatePlan', 
+                         condition="methodist_reject"},
+            
+            #sequenceFlow{name='5', 
+                         source='ViceApprove', 
+                         target='DirectorApprove', 
+                         condition="vice_ok"},
+            
+            #sequenceFlow{name='6', 
+                         source='ViceApprove', 
+                         target='MethodistReview', 
+                         condition="vice_reject"},
+            
+            #sequenceFlow{name='7', 
+                         source='DirectorApprove', 
+                         target='GenerateSchedule', 
+                         condition="director_ok"},
+            
+            #sequenceFlow{name='8', source='GenerateSchedule', target='PlanApproved'}
+        ],
+        roles = [methodist, vice_rector, director]
+    }.
+
+%% Дії
+action({userTask, 'CreatePlan'}, Proc) -> {reply, Proc};
+action({userTask, 'MethodistReview'}, Proc) ->
+    case validate_curriculum(Proc) of
+        ok -> {reply, Proc, "methodist_ok"};
+        _  -> {reply, Proc, "methodist_reject"}
+    end;
+
+action({userTask, 'ViceApprove'}, Proc) ->
+    case vice_approval(Proc) of
+        ok -> {reply, Proc, "vice_ok"};
+        _  -> {reply, Proc, "vice_reject"}
+    end;
+
+action({userTask, 'DirectorApprove'}, Proc) ->
+    case director_kep_sign(Proc) of
+        ok -> {reply, Proc, "director_ok"};
+        _  -> {reply, Proc}
+    end;
+
+action({serviceTask, 'GenerateSchedule'}, Proc) ->
+    % Запуск генерації розкладу та сповіщень
+    {reply, Proc};
+
+action(_, Proc) -> {reply, Proc}.
+4. Бізнес-правила в процесі
+
+Перевірка відповідності кредитів і годин освітній програмі.
+Обов’язковий підпис КЕП на фінальному етапі.
+При відхиленні — обов’язковий коментар.
+Після затвердження автоматичний запуск паралельного процесу генерації розкладу.
+
+Хочете:
+
+Додати parallel approval (Вчена рада)?
+Повний код з обробкою документів?
+Інший процес (наприклад, «Генерація розкладу»)?
+
+Готовий деталізувати.
+
+Як працювати з умовами в BPE
+
+Умова (condition) — атом або string, який повертається з action/2 як третій елемент tuple {reply, Proc, Condition}.
+BPE автоматично обирає гілку, яка відповідає умові.
+Для складних умов можна використовувати rules у #process{} або зовнішні функції.
+
+Ці оновлення повністю відповідають бізнес-правилам (валідація оцінок, КЕП, погодження тощо) і готові до інтеграції в ERP/1: Освіта.
+Хочете:
+
+Додати умовні переходи в інші процеси (атестація, звітність)?
+Приклад з subProcess або parallel flows?
+Повний модуль з обробкою помилок?
+
+Скажіть, який процес доопрацювати наступним.

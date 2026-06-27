@@ -1,0 +1,75 @@
+Деталізація BPMN підпроцесу «Оцінювання» (Електронний журнал, ERP/1: Освіта)
+відповідно до Політик (розділи 5.1 Вимоги до процесів, 3.2.1 Правила до ТЗ, 6.1 Архітектура).
+1. Контекст підпроцесу
+Підпроцес «Оцінювання» є частиною основного бізнес-процесу «Проведення заняття та фіксація результатів» та «Підсумкове оцінювання за період».
+
+Тригер: Завершення теми/уроку/контрольної роботи або кінець періоду (тиждень/місяць/семестр).
+Сутності: Оцінка (Grade), Компетенція, Тема, Учень, Курс, Журнал.
+Ролі (Lanes): Педагог (основний виконавець), Учень (учасник), Завуч (контроль), Система (автоматика).
+Стани (FSM): Чернетка → Зафіксовано → Підписано (КЕП) → Підтверджено → Архів.
+Вихід: Оновлення журналу, розрахунок середнього балу, сповіщення, передача в аналітику.
+
+2. BPMN-діаграма (текстовий опис + структура)
+Pool: Освітній процес
+Процес: Оцінювання
+Основний сценарій (Happy Path)
+#mermaid-diagram-mermaid-m2n51cv{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#000000;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-diagram-mermaid-m2n51cv .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-diagram-mermaid-m2n51cv .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-diagram-mermaid-m2n51cv .error-icon{fill:#552222;}#mermaid-diagram-mermaid-m2n51cv .error-text{fill:#552222;stroke:#552222;}#mermaid-diagram-mermaid-m2n51cv .edge-thickness-normal{stroke-width:1px;}#mermaid-diagram-mermaid-m2n51cv .edge-thickness-thick{stroke-width:3.5px;}#mermaid-diagram-mermaid-m2n51cv .edge-pattern-solid{stroke-dasharray:0;}#mermaid-diagram-mermaid-m2n51cv .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-diagram-mermaid-m2n51cv .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-diagram-mermaid-m2n51cv .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-diagram-mermaid-m2n51cv .marker{fill:#666;stroke:#666;}#mermaid-diagram-mermaid-m2n51cv .marker.cross{stroke:#666;}#mermaid-diagram-mermaid-m2n51cv svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#mermaid-diagram-mermaid-m2n51cv p{margin:0;}#mermaid-diagram-mermaid-m2n51cv .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#000000;}#mermaid-diagram-mermaid-m2n51cv .cluster-label text{fill:#333;}#mermaid-diagram-mermaid-m2n51cv .cluster-label span{color:#333;}#mermaid-diagram-mermaid-m2n51cv .cluster-label span p{background-color:transparent;}#mermaid-diagram-mermaid-m2n51cv .label text,#mermaid-diagram-mermaid-m2n51cv span{fill:#000000;color:#000000;}#mermaid-diagram-mermaid-m2n51cv .node rect,#mermaid-diagram-mermaid-m2n51cv .node circle,#mermaid-diagram-mermaid-m2n51cv .node ellipse,#mermaid-diagram-mermaid-m2n51cv .node polygon,#mermaid-diagram-mermaid-m2n51cv .node path{fill:#eee;stroke:#999;stroke-width:1px;}#mermaid-diagram-mermaid-m2n51cv .rough-node .label text,#mermaid-diagram-mermaid-m2n51cv .node .label text,#mermaid-diagram-mermaid-m2n51cv .image-shape .label,#mermaid-diagram-mermaid-m2n51cv .icon-shape .label{text-anchor:middle;}#mermaid-diagram-mermaid-m2n51cv .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mermaid-diagram-mermaid-m2n51cv .rough-node .label,#mermaid-diagram-mermaid-m2n51cv .node .label,#mermaid-diagram-mermaid-m2n51cv .image-shape .label,#mermaid-diagram-mermaid-m2n51cv .icon-shape .label{text-align:center;}#mermaid-diagram-mermaid-m2n51cv .node.clickable{cursor:pointer;}#mermaid-diagram-mermaid-m2n51cv .root .anchor path{fill:#666!important;stroke-width:0;stroke:#666;}#mermaid-diagram-mermaid-m2n51cv .arrowheadPath{fill:#333333;}#mermaid-diagram-mermaid-m2n51cv .edgePath .path{stroke:#666;stroke-width:2.0px;}#mermaid-diagram-mermaid-m2n51cv .flowchart-link{stroke:#666;fill:none;}#mermaid-diagram-mermaid-m2n51cv .edgeLabel{background-color:white;text-align:center;}#mermaid-diagram-mermaid-m2n51cv .edgeLabel p{background-color:white;}#mermaid-diagram-mermaid-m2n51cv .edgeLabel rect{opacity:0.5;background-color:white;fill:white;}#mermaid-diagram-mermaid-m2n51cv .labelBkg{background-color:rgba(255, 255, 255, 0.5);}#mermaid-diagram-mermaid-m2n51cv .cluster rect{fill:hsl(0, 0%, 98.9215686275%);stroke:#707070;stroke-width:1px;}#mermaid-diagram-mermaid-m2n51cv .cluster text{fill:#333;}#mermaid-diagram-mermaid-m2n51cv .cluster span{color:#333;}#mermaid-diagram-mermaid-m2n51cv div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(-160, 0%, 93.3333333333%);border:1px solid #707070;border-radius:2px;pointer-events:none;z-index:100;}#mermaid-diagram-mermaid-m2n51cv .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#000000;}#mermaid-diagram-mermaid-m2n51cv rect.text{fill:none;stroke-width:0;}#mermaid-diagram-mermaid-m2n51cv .icon-shape,#mermaid-diagram-mermaid-m2n51cv .image-shape{background-color:white;text-align:center;}#mermaid-diagram-mermaid-m2n51cv .icon-shape p,#mermaid-diagram-mermaid-m2n51cv .image-shape p{background-color:white;padding:2px;}#mermaid-diagram-mermaid-m2n51cv .icon-shape rect,#mermaid-diagram-mermaid-m2n51cv .image-shape rect{opacity:0.5;background-color:white;fill:white;}#mermaid-diagram-mermaid-m2n51cv :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}OKStart: Завершення теми/урокуПедагог: Відкрити форму оцінюванняВвести оцінки та компетенціїВалідація бізнес-правилАвтоматичний розрахунок: середній бал, прогресЗберегти в ЧернеткуПедагог: Підписати КЕПСповіщення учню/батькамОновлення аналітики та реєстрівEnd: Оцінка зафіксована
+Детальна структура з гейтвеями та альтернативними сценаріями
+
+Start Event — Message (завершення уроку) або Timer (підсумок періоду).
+Lane: Педагог
+Task: Заповнити оцінки (таблиця: учень, тип роботи, бал, коментар).
+
+Exclusive Gateway — «Всі оцінки введено?»
+No → Loop back + сповіщення педагогу.
+
+Service Task (Система):
+Валідація (див. бізнес-правила нижче).
+Розрахунок середнього балу та компетенцій.
+
+Parallel Gateway:
+Гілка 1: Запис до Журналу.
+Гілка 2: Сповіщення учня/батьків (push/email).
+Гілка 3: Передача даних в модуль Аналітика.
+
+User Task: Підписання КЕП (Педагог).
+Exclusive Gateway: Потребує перевірки завуча?
+Yes (критичні оцінки, спірні випадки) → Lane Завуч: Перегляд та підтвердження.
+No → Продовжити.
+
+End Event — Оцінка підписана, журнал оновлено.
+
+Негативні сценарії (додаткові гілки):
+
+Помилка валідації → Повідомлення + можливість редагування.
+Відсутність КЕП → Перехід у «Очікує підпису» + нагадування (таймер 48 год).
+Масова зміна оцінок → Вимагає додаткового підтвердження завуча + audit-log.
+
+3. Бізнес-правила підпроцесу «Оцінювання» (явні)
+
+Оцінка повинна відповідати шкалі, визначеній у навчальному плані курсу (конфігурується в довіднику).
+Мінімальна/максимальна кількість оцінок за тему (наприклад, не менше 3 поточних).
+Автоматичний розрахунок підсумкової оцінки за формулою (ваги: поточні 60%, контрольні 40% тощо).
+Заборона зміни оцінки після підпису КЕП (крім процедури «Виправлення» з коментарем).
+Учень не може отримати оцінку нижче мінімуму без фіксації додаткових заходів (репетиторство тощо).
+При виставленні «незараховано» — автоматичне створення задачі на повторне проходження.
+Усі дії фіксуються в історії з посиланням на КЕП підписувача.
+Інтеграція: дані оцінки передаються в «Контингент», «Атестацію», «Звітність МОН».
+
+4. Вимоги до реалізації та тестування
+
+API-методи: POST /journal/grade, POST /journal/sign, GET /journal/student/{id} з описом параметрів, відповідей та помилок за шаблоном політики 5.2.
+UI: Інформативні повідомлення про помилки, підтримка WCAG AA, mobile-first.
+Критерії приймання:
+Оцінка зберігається тільки після валідації.
+Підпис КЕП блокує подальші зміни (крім аудитованих).
+Середній бал розраховується коректно та відображається в звітах.
+
+Definition of Done: Реалізовано + unit/integration тести + ручне тестування сценаріїв + UAT з педагогами + документація BPMN + перевірка безпеки.
+
+Цей підпроцес повністю інтегрується з модулями «Розклад», «Контингент», «Аналітика» та «Процеси» (BPMN-двигун).
+Потрібна:
+
+BPMN XML для імпорту в інструмент?
+Деталізація іншого підпроцесу (наприклад, «Підсумкове семестрове оцінювання»)?
+Use Case у табличному форматі?

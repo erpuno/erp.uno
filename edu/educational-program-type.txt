@@ -1,0 +1,83 @@
+Довідник «Типи освітніх програм» (EducationalProgramType)
+ERP/1: Освіта
+1. Загальна інформація
+
+Назва довідника: Типи освітніх програм
+Код: EDUCATIONAL_PROGRAM_TYPE
+Тип: Реєстрова сутність (Dictionary)
+Призначення: Класифікація типів освітніх програм відповідно до Закону України «Про освіту», стандартів спеціальностей та рівнів освіти.
+Використання: Навчальні плани, акредитація, контингент, звітність для МОН, ЄДЕБО.
+
+2. Реквізити (поля) сутності
+
+РеквізитТип данихОбов’язковийОписidUUIDТакУнікальний ідентифікаторcodeString (30)ТакКод типу (наприклад, GENERAL, VOCATIONAL, HIGHER_BACHELOR)name_uaString (300)ТакНазва українськоюname_enString (300)НіНазва англійськоюeducation_levelEnumТакРівень освіти (ДНЗ, ЗСО, ПО, ФПО, ВО, Післядипломна тощо)program_categoryEnumТакКатегорія (Загальна, Профільна, Професійна, Вища, Дуальна)duration_years_minDecimalТакМінімальна тривалість (років)duration_years_maxDecimalНіМаксимальна тривалістьects_minIntegerТакМінімальний обсяг кредитівdescriptionTextНіПовний описis_activeBooleanТакАктивний типorderIntegerТакПорядок сортуванняlegal_basisString / TextНіПосилання на нормативну базуcreated_at, updated_atTimestampТакДатиversionIntegerТакВерсіяmetadataJSONBНіДодаткові параметри (компетенції, вимоги до акредитації)
+
+3. Приклади значень (стандартний набір)
+
+Загальна середня освіта
+code: GENERAL_SECONDARY
+name_ua: «Загальна середня освіта»
+education_level: ЗСО
+program_category: Загальна
+
+Профільна середня освіта
+code: PROFILE_SECONDARY
+name_ua: «Профільна середня освіта»
+education_level: ЗСО
+
+Професійно-технічна освіта
+code: VOCATIONAL
+name_ua: «Професійно-технічна освіта»
+education_level: ПО
+
+Фахова передвища освіта
+code: FACH_PRE_HIGHER
+name_ua: «Фахова передвища освіта»
+education_level: ФПО
+
+Вища освіта (бакалавр)
+code: HIGHER_BACHELOR
+name_ua: «Вища освіта — бакалавр»
+education_level: ВО
+ects_min: 180
+
+Вища освіта (магістр)
+code: HIGHER_MASTER
+name_ua: «Вища освіта — магістр»
+ects_min: 90
+
+Дуальна форма
+code: DUAL
+name_ua: «Дуальна освіта»
+
+
+4. Бізнес-правила
+
+Кожна освітня програма повинна мати один основний тип.
+Валідація: ects_min повинен відповідати рівню освіти.
+При зміні типу — запуск BPMN-процесу перегляду навчальних планів.
+Типи використовуються для автоматичної генерації форм звітності.
+
+5. Erlang Record (приклад)
+erlang-record(educational_program_type, {
+    id,
+    code,
+    name_ua,
+    name_en,
+    education_level,
+    program_category,
+    duration_years_min,
+    duration_years_max,
+    ects_min,
+    description,
+    is_active = true,
+    metadata = #{}
+}).
+6. Зв’язки
+
+EducationalProgram (1:1 або N:1)
+FormOfStudy
+Curriculum
+
+Цей довідник є ключовим для класифікації всіх освітніх програм у системі.
+Хочете структуру ще одного довідника або інтеграцію цього в BPE-процес?

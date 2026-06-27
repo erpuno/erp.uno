@@ -1,0 +1,252 @@
+Деталізація структури «Навчальний план» (Curriculum)
+ERP/1: Освіта
+1. Загальна інформація
+
+Назва сутності: Навчальний план (Curriculum)
+Тип: Реєстрова сутність (основна для організації навчання)
+Призначення: Формування, затвердження та виконання освітньої програми на конкретний період (рік/семестр) для групи/спеціальності.
+Зв’язки: EducationalProgram (1:1), Group (1:N), Course (N:M)
+
+2. Реквізити (поля) сутності
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+РеквізитТип данихОбов’язковийОписidUUIDТакУнікальний ідентифікаторprogram_idUUIDТакFK → EducationalProgramgroup_idUUIDТакFK → Group (або спеціальність)academic_yearIntegerТакНавчальний рік (2025)semesterInteger (1-2)ТакСеместрtotal_creditsDecimalТакЗагальний обсяг ECTStotal_hoursIntegerТакЗагальна кількість годинapproved_byUUIDНіПідписант (КЕП)approved_atTimestampНіДата затвердженняstatusEnumТакЧернетка / На погодженні / Затверджено / Архівнийform_of_study_idUUIDТакFK → FormOfStudylanguageEnumТакМова викладанняis_activeBooleanТакАктивний планcreated_at, updated_atTimestampТакДатиversionIntegerТакВерсіяmetadataJSONBНіДодаткові параметри (компетенції, примітки)
+3. Дочірня сутність — Деталі плану (CurriculumItem)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+РеквізитТип данихОписidUUID—curriculum_idUUIDFKcourse_idUUIDFK → CoursesemesterInteger—hours_lecturesInteger—hours_practiceInteger—hours_labInteger—hours_selfIntegerСамостійна роботаcredits_ectsDecimal—grade_type_idUUIDОсновний тип оцінюванняteacher_idUUIDВикладачorderIntegerПорядок у планіis_mandatoryBooleanОбов’язкова дисципліна
+4. Бізнес-правила
+
+Сума кредитів у плані повинна дорівнювати total_credits програми.
+Загальна кількість годин розраховується автоматично.
+Затвердження плану вимагає КЕП підпису керівника.
+При зміні статусу на «Затверджено» запускається BPMN-процес генерації розкладу.
+Валідація: не можна затвердити план без повного покриття компетенцій програми.
+
+5. Erlang Record (приклад)
+erlang-record(curriculum, {
+    id,
+    program_id,
+    group_id,
+    academic_year,
+    semester,
+    total_credits,
+    total_hours,
+    approved_by,
+    approved_at,
+    status = draft,
+    form_of_study_id,
+    language,
+    is_active = true,
+    metadata = #{}
+}).
+
+-record(curriculum_item, {
+    id,
+    curriculum_id,
+    course_id,
+    semester,
+    hours_lectures,
+    hours_practice,
+    hours_lab,
+    hours_self,
+    credits_ects,
+    grade_type_id,
+    teacher_id,
+    order,
+    is_mandatory = true
+}).
+6. Зв’язки з іншими довідниками
+
+EducationalProgram (головний)
+FormOfStudy
+Course
+GradeType
+Teacher
+
+Ця структура повністю інтегрується з BPE-процесами («Затвердження плану», «Генерація розкладу») та журналом.
+Хочете:
+
+Деталізацію CurriculumItem з прикладами?
+BPMN для процесу затвердження плану?
+DDL-схему або ще один довідник?
+
+Готовий продовжити.

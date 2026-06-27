@@ -1,0 +1,108 @@
+BPMN-процес «Генерація розкладу»
+(ERP/1: Освіта, BPE Erlang DSL)
+1. Загальна характеристика процесу
+
+Назва: Schedule Generation
+Мета: Автоматична / напівавтоматична генерація розкладу занять на основі затвердженого навчального плану з урахуванням обмежень.
+Тригер: Затвердження навчального плану (або ручний запуск).
+Учасники: Система (основний), Методист/Завуч (коригування), Директор (фінальне затвердження).
+Кінець: Розклад сформовано, опубліковано та сповіщено учасників.
+
+2. BPMN-структура (текстовий опис + Mermaid)
+#mermaid-diagram-mermaid-8wpf17m{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#000000;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-diagram-mermaid-8wpf17m .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-diagram-mermaid-8wpf17m .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-diagram-mermaid-8wpf17m .error-icon{fill:#552222;}#mermaid-diagram-mermaid-8wpf17m .error-text{fill:#552222;stroke:#552222;}#mermaid-diagram-mermaid-8wpf17m .edge-thickness-normal{stroke-width:1px;}#mermaid-diagram-mermaid-8wpf17m .edge-thickness-thick{stroke-width:3.5px;}#mermaid-diagram-mermaid-8wpf17m .edge-pattern-solid{stroke-dasharray:0;}#mermaid-diagram-mermaid-8wpf17m .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-diagram-mermaid-8wpf17m .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-diagram-mermaid-8wpf17m .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-diagram-mermaid-8wpf17m .marker{fill:#666;stroke:#666;}#mermaid-diagram-mermaid-8wpf17m .marker.cross{stroke:#666;}#mermaid-diagram-mermaid-8wpf17m svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#mermaid-diagram-mermaid-8wpf17m p{margin:0;}#mermaid-diagram-mermaid-8wpf17m .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#000000;}#mermaid-diagram-mermaid-8wpf17m .cluster-label text{fill:#333;}#mermaid-diagram-mermaid-8wpf17m .cluster-label span{color:#333;}#mermaid-diagram-mermaid-8wpf17m .cluster-label span p{background-color:transparent;}#mermaid-diagram-mermaid-8wpf17m .label text,#mermaid-diagram-mermaid-8wpf17m span{fill:#000000;color:#000000;}#mermaid-diagram-mermaid-8wpf17m .node rect,#mermaid-diagram-mermaid-8wpf17m .node circle,#mermaid-diagram-mermaid-8wpf17m .node ellipse,#mermaid-diagram-mermaid-8wpf17m .node polygon,#mermaid-diagram-mermaid-8wpf17m .node path{fill:#eee;stroke:#999;stroke-width:1px;}#mermaid-diagram-mermaid-8wpf17m .rough-node .label text,#mermaid-diagram-mermaid-8wpf17m .node .label text,#mermaid-diagram-mermaid-8wpf17m .image-shape .label,#mermaid-diagram-mermaid-8wpf17m .icon-shape .label{text-anchor:middle;}#mermaid-diagram-mermaid-8wpf17m .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mermaid-diagram-mermaid-8wpf17m .rough-node .label,#mermaid-diagram-mermaid-8wpf17m .node .label,#mermaid-diagram-mermaid-8wpf17m .image-shape .label,#mermaid-diagram-mermaid-8wpf17m .icon-shape .label{text-align:center;}#mermaid-diagram-mermaid-8wpf17m .node.clickable{cursor:pointer;}#mermaid-diagram-mermaid-8wpf17m .root .anchor path{fill:#666!important;stroke-width:0;stroke:#666;}#mermaid-diagram-mermaid-8wpf17m .arrowheadPath{fill:#333333;}#mermaid-diagram-mermaid-8wpf17m .edgePath .path{stroke:#666;stroke-width:2.0px;}#mermaid-diagram-mermaid-8wpf17m .flowchart-link{stroke:#666;fill:none;}#mermaid-diagram-mermaid-8wpf17m .edgeLabel{background-color:white;text-align:center;}#mermaid-diagram-mermaid-8wpf17m .edgeLabel p{background-color:white;}#mermaid-diagram-mermaid-8wpf17m .edgeLabel rect{opacity:0.5;background-color:white;fill:white;}#mermaid-diagram-mermaid-8wpf17m .labelBkg{background-color:rgba(255, 255, 255, 0.5);}#mermaid-diagram-mermaid-8wpf17m .cluster rect{fill:hsl(0, 0%, 98.9215686275%);stroke:#707070;stroke-width:1px;}#mermaid-diagram-mermaid-8wpf17m .cluster text{fill:#333;}#mermaid-diagram-mermaid-8wpf17m .cluster span{color:#333;}#mermaid-diagram-mermaid-8wpf17m div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(-160, 0%, 93.3333333333%);border:1px solid #707070;border-radius:2px;pointer-events:none;z-index:100;}#mermaid-diagram-mermaid-8wpf17m .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#000000;}#mermaid-diagram-mermaid-8wpf17m rect.text{fill:none;stroke-width:0;}#mermaid-diagram-mermaid-8wpf17m .icon-shape,#mermaid-diagram-mermaid-8wpf17m .image-shape{background-color:white;text-align:center;}#mermaid-diagram-mermaid-8wpf17m .icon-shape p,#mermaid-diagram-mermaid-8wpf17m .image-shape p{background-color:white;padding:2px;}#mermaid-diagram-mermaid-8wpf17m .icon-shape rect,#mermaid-diagram-mermaid-8wpf17m .image-shape rect{opacity:0.5;background-color:white;fill:white;}#mermaid-diagram-mermaid-8wpf17m :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}NoYesYesNoStart: Затвердження навчального плануЗавантажити план та обмеженняService: Генерація розкладу (алгоритм)Конфлікти виявлено?Опублікувати розкладМетодист: Ручне коригуванняПовторна генерація / Затвердження змінЗавуч / Директор: Перевірка та затвердженняЗатверджено?Сповіщення педагогів, учнів, батьківEnd: Розклад активовано
+3. Erlang BPE реалізація (bpe_schedule_generation.erl)
+erlang-module(bpe_schedule_generation).
+-include("bpe.hrl").
+-compile(export_all).
+
+def() ->
+    #process{
+        name = 'Schedule Generation',
+        beginEvent = 'PlanApproved',
+        endEvent = 'SchedulePublished',
+        tasks = [
+            #beginEvent{name='PlanApproved'},
+            #serviceTask{name='LoadPlanAndConstraints', module=?MODULE},
+            #serviceTask{name='GenerateSchedule', module=?MODULE},
+            #userTask{name='ManualAdjustment', module=?MODULE},
+            #userTask{name='ViceDirectorApprove', module=?MODULE},
+            #serviceTask{name='PublishAndNotify', module=?MODULE},
+            #endEvent{name='SchedulePublished'}
+        ],
+        flows = [
+            #sequenceFlow{name='1', source='PlanApproved', target='LoadPlanAndConstraints'},
+            #sequenceFlow{name='2', source='LoadPlanAndConstraints', target='GenerateSchedule'},
+            
+            #sequenceFlow{name='3', 
+                         source='GenerateSchedule', 
+                         target='ViceDirectorApprove', 
+                         condition="no_conflicts"},
+            
+            #sequenceFlow{name='4', 
+                         source='GenerateSchedule', 
+                         target='ManualAdjustment', 
+                         condition="has_conflicts"},
+            
+            #sequenceFlow{name='5', 
+                         source='ManualAdjustment', 
+                         target='GenerateSchedule'},  % повторна генерація
+            
+            #sequenceFlow{name='6', 
+                         source='ViceDirectorApprove', 
+                         target='PublishAndNotify', 
+                         condition="approved"},
+            
+            #sequenceFlow{name='7', source='PublishAndNotify', target='SchedulePublished'}
+        ]
+    }.
+
+%% Дії
+action({serviceTask, 'LoadPlanAndConstraints'}, Proc) ->
+    % Завантаження плану, викладачів, аудиторій, обмежень
+    {reply, Proc};
+
+action({serviceTask, 'GenerateSchedule'}, Proc) ->
+    case generate_schedule_algorithm(Proc) of
+        {ok, Schedule} -> 
+            {reply, Proc#process{docs = [Schedule | Proc#process.docs]}, "no_conflicts"};
+        {error, Conflicts} -> 
+            {reply, Proc#process{docs = [Conflicts | Proc#process.docs]}, "has_conflicts"}
+    end;
+
+action({userTask, 'ManualAdjustment'}, Proc) ->
+    % Ручне коригування
+    {reply, Proc};
+
+action({userTask, 'ViceDirectorApprove'}, Proc) ->
+    case has_valid_kep(Proc) of
+        true -> {reply, Proc, "approved"};
+        false -> {reply, Proc}
+    end;
+
+action({serviceTask, 'PublishAndNotify'}, Proc) ->
+    % Публікація в журналі, сповіщення via MQTT / push
+    {reply, Proc};
+
+action(_, Proc) -> {reply, Proc}.
+4. Основні бізнес-правила (в алгоритмі генерації)
+
+Максимальне навантаження викладача за день/тиждень.
+Уникнення накладок аудиторій та груп.
+Пріоритетність обов’язкових дисциплін.
+Урахування форми навчання (дистанційна — без аудиторії).
+Мінімізація вікон у розкладі для учнів.
+Автоматична перевірка відповідності кредитам і годинам плану.
+
+5. Інтеграція
+
+Запускається автоматично після затвердження навчального плану.
+Використовує довідники: FormOfStudy, EducationalProgram, Teacher, Room.
+Результат зберігається як сутність Schedule.
+
+Хочете:
+
+Детальний алгоритм генерації розкладу (constraint satisfaction)?
+Додати parallel flows (кілька варіантів розкладу)?
+Інтеграцію з іншим процесом?
+
+Готовий розширити.

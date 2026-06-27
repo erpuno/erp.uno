@@ -1,0 +1,138 @@
+Перелік сутностей та їх реквізитів (ERP/1: Освіта)
+відповідно до Політик (розділи 5.1, 2.2, 3.2.1)
+Нижче наведено основні реєстрові сутності системи. Для кожної сутності вказано ключові реквізити з типами даних. Структура відповідає вимогам ТВ/ТЗ: перелік сутностей, реквізитів, операцій та зв’язків.
+1. Core Сутності
+1.1. Учень / Студент (Student)
+
+id — UUID (PK)
+external_id — String (ЄДЕБО ID)
+full_name — String (ПІБ)
+date_of_birth — Date
+gender — Enum (M/F/Інше)
+tax_number — String (РНОКПП, optional)
+address — String / JSON
+phone — String
+email — String
+group_id — UUID (FK → Group)
+status — Enum (Активний, Академвідпустка, Відрахований, Випускник)
+personal_file_id — UUID (FK → Document)
+created_at, updated_at — Timestamp
+kep_cert — X509Certificate (optional)
+
+1.2. Педагог / Викладач (Teacher)
+
+id — UUID
+full_name — String
+position — String (посада)
+qualification — String
+tax_number — String
+phone, email — String
+department_id — UUID
+kep_cert — X509Certificate (обов’язково)
+kpi_score — Decimal
+status — Enum
+personal_file_id — UUID
+
+1.3. Група / Клас (Group)
+
+id — UUID
+code — String (e.g. "11-А")
+course_id — UUID (FK)
+academic_year — Integer
+form_of_study — Enum (Очна, Дистанційна, Змішана)
+student_count — Integer (derived)
+curator_id — UUID (FK → Teacher)
+
+1.4. Курс / Дисципліна (Course)
+
+id — UUID
+name — String
+code — String
+description — Text
+credits — Decimal (ECTS)
+hours — Integer
+scorm_package_id — UUID (optional)
+teacher_id — UUID (основний викладач)
+status — Enum (Активний, Архівний)
+
+1.5. Навчальний план (Curriculum)
+
+id — UUID
+academic_year — Integer
+semester — Integer
+group_id — UUID
+course_id — UUID
+hours_lectures, hours_practice — Integer
+approved_by — UUID + Timestamp + КЕП
+
+1.6. Журнал / Запис оцінювання (JournalRecord)
+
+id — UUID
+student_id — UUID
+course_id — UUID
+lesson_date — Date
+attendance_status — Enum (Присутній, Відсутній, Поважна тощо)
+grade — Decimal / Integer (1-12 або інша шкала)
+grade_type — Enum (Поточна, Контрольна, Підсумкова)
+competence_scores — JSON/Map (ключ-значення компетенцій)
+comment — Text
+signed_by — UUID (КЕП педагога)
+signed_at — Timestamp
+version — Integer (для історії змін)
+
+2. Допоміжні сутності
+2.1. Розклад занять (Schedule)
+
+id, group_id/teacher_id, course_id, room, start_time, end_time, weekday — Enum
+
+2.2. Домашнє завдання (Homework)
+
+id, course_id, topic, description, deadline, attachments (JSON)
+
+2.3. Документ (Document)
+
+id — UUID
+type — Enum (Особова справа, Наказ, Атестаційний лист тощо)
+title, content / file_hash
+signed_by, signed_at (КЕП)
+related_entity_type, related_entity_id
+
+2.4. Роль та Права (Role, Permission)
+
+role_id, name (Педагог, Завуч, Учень, Батько, Адмін)
+scopes — JSON (ABAC rules: department, group, actions)
+
+2.5. Компетенція (Competence)
+
+id, name, standard_code (державний стандарт), weight
+
+2.6. Подія / Історія процесу (ProcessLog)
+
+id, process_type, entity_type, entity_id, action, user_id, kep_info, timestamp
+
+3. Загальні технічні реквізити (для всіх сутностей)
+
+created_by — UUID
+updated_by — UUID
+created_at, updated_at, deleted_at — Timestamp (soft delete)
+version — Integer (optimistic locking)
+metadata — JSON (гнучкі додаткові дані)
+
+4. Типи даних (загальні рекомендації)
+
+UUID — для ідентифікаторів
+String — до 255/1024 символів
+Text — необмежений
+Integer / Decimal — для кількісних показників
+Date / Timestamp — з часовою зоною
+Enum — для статусів
+JSON / JSONB — для гнучких структур (компетенції, attachments)
+X509Certificate / Binary — для КЕП
+
+5. Операції над сутностями (CRUD + специфічні)
+
+Стандартні: Create, Read, Update, Delete (з правами)
+Спеціальні: Sign (КЕП), Archive, CalculateAverage, GenerateReport, SyncWithEDEBO
+
+Цей перелік є основою для Технічних вимог та ТЗ. У ТЗ додаються детальні ER-діаграми, BPMN, повні словники та ABAC-правила.
+Потрібна деталізація реквізитів конкретної сутності (наприклад, розширення JournalRecord) або ER-діаграма у текстовому вигляді?

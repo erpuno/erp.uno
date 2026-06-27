@@ -1,0 +1,117 @@
+Політика доступу ABAC (Attribute-Based Access Control)
+для проекту ERP/1: Освіта
+(відповідно до Політик Технічних вимог, розділи 5.1, 6.1.2, 3.2.1)
+1. Загальні принципи ABAC у системі
+ABAC — основна модель контролю доступу (доповнює RBAC).
+Рішення про доступ приймається динамічно на основі набору атрибутів:
+
+Subject (користувач / суб’єкт)
+Object (сутність / ресурс)
+Action (дія)
+Environment (контекст: час, місце, пристрій тощо)
+Policy Rules (бізнес-правила)
+
+Всі рішення приймаються на рівні сервісу (Policy Decision Point) перед виконанням будь-якої операції.
+2. Основні атрибути
+Атрибути Суб’єкта (User Attributes)
+
+user_id — UUID
+roles — Array (Педагог, Завуч, Директор, Учень, Батько, Адміністратор)
+person_id — UUID (зв’язок з Person)
+department_id — UUID
+groups — Array<UUID> (для учнів — свої групи; для педагогів — групи, де викладає)
+kep_cert_thumbprint — String (валідація КЕП)
+position — String
+qualification_level — Enum
+is_active — Boolean
+
+Атрибути Об’єкта (Resource Attributes)
+
+entity_type — Enum (Student, JournalRecord, Course, Document, Schedule тощо)
+entity_id — UUID
+owner_id — UUID (власник, наприклад, teacher_id для журналу)
+group_id — UUID
+course_id — UUID
+department_id — UUID
+academic_year, semester — Integer
+status — Enum (Чернетка, Підписаний, Архівний)
+sensitivity — Enum (Public, Internal, Confidential)
+
+Атрибути Дії (Action)
+
+action — Enum (read, write, sign, delete, approve, view_grades тощо)
+
+Атрибути Середовища (Environment)
+
+time — Timestamp
+ip_range — String / CIDR
+device_type — Enum (Mobile, Desktop, Trusted)
+network — Enum (Internal, External, VPN)
+session_risk — Low/Medium/High
+
+3. Приклади політик доступу (бізнес-правила)
+Правило 1. Доступ педагога до журналу
+
+Condition:
+subject.roles contains "Teacher" AND
+object.entity_type == "JournalRecord" AND
+(object.teacher_id == subject.person_id OR object.course_id in subject.courses_taught)
+Permit: read, write, sign
+Deny: delete (після підписання)
+
+Правило 2. Доступ учня
+
+Condition:
+subject.roles contains "Student" AND
+object.entity_type == "JournalRecord" AND
+object.student_id == subject.person_id
+Permit: read (тільки свої оцінки)
+Deny: write, sign
+
+Правило 3. Доступ батьків
+
+Condition:
+subject.roles contains "Parent" AND
+object.student_id in subject.children_ids
+Permit: read (обмежений набір полів)
+
+Правило 4. Підписання КЕП
+
+Condition:
+subject.kep_cert_thumbprint is valid AND
+subject.roles contains "Teacher" AND
+object.status == "Чернетка"
+Permit: sign
+
+Правило 5. Адміністративний доступ
+
+Condition: subject.roles contains "Admin" OR "Director"
+Permit: майже всі дії (з обов’язковим логуванням)
+
+Правило 6. Часові обмеження
+
+Журнал можна редагувати тільки в робочий час + протягом 48 годин після уроку (якщо не підписаний).
+
+4. Архітектурна реалізація (відповідно до 6.1.2)
+
+Policy Enforcement Point (PEP): у кожному сервісі / API gateway (KONG).
+Policy Decision Point (PDP): окремий сервіс або вбудований у Erlang/OTP (швидкий розрахунок).
+Policy Information Point (PIP): запит атрибутів з LDAP / БД / КЕП-сервісу.
+Audit: Кожне рішення доступу (успішне чи ні) записується в лог (рівень AUDIT).
+
+5. Вимоги до ТЗ та реалізації
+
+Усі політики описуються явно в ТЗ (не імпліцитно в коді).
+Підтримка RBAC + ABAC (гібрид).
+Обов’язкова валідація КЕП для всіх критичних дій (підпис, затвердження).
+Тестування: сценарії з різними ролями та атрибутами (вкл. негативні).
+Відповідність: КСЗІ, GDPR, Закон «Про освіту», ДСТУ.
+
+Ця ABAC-політика забезпечує мінімальний привілей, контекстну безпеку та аудит усіх дій.
+Потрібен:
+
+Формальний опис конкретної політики у форматі JSON / Rego (OPA)?
+Приклади для іншої сутності (наприклад, Розклад або Документи)?
+Інтеграція з LDAP / KONG?
+
+Готовий деталізувати.

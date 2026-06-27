@@ -1,0 +1,127 @@
+Реалізація валідації порогів (threshold validation) у ERP/1: Освіта
+1. Загальний підхід (згідно Політик)
+Валідація порогів — частина централізованої системи валідацій (розділ 5.1 Політик).
+Вона виконується на рівнях:
+
+Application level (сервіс)
+BPMN-процес (serviceTask)
+База даних (constraints + triggers)
+
+2. Структура довідника для порогів
+Довідник GradeThreshold (пов’язаний з GradeType):
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ПолеТип данихОписidUUID—grade_type_codeStringПосилання на тип оцінкиthreshold_nameString"passing", "excellent", "critical"valueDecimalПорогове значенняoperatorEnum>=, >, <=, =message_uaTextПовідомлення про помилкуis_blockingBooleanБлокуюча валідація (не дозволяє зберегти)requires_approvalBooleanПотребує погодження при порушенні
+3. Реалізація в Erlang (BPE + Core)
+3.1. Основна функція валідації
+erlang-module(grade_validator).
+-export([validate/2, validate_thresholds/2]).
+
+%% Основна точка входу
+validate(GradeTypeCode, Value) ->
+    Thresholds = fetch_thresholds(GradeTypeCode),
+    validate_thresholds(Value, Thresholds).
+
+validate_thresholds(_Value, []) -> ok;
+validate_thresholds(Value, [T|Rest]) ->
+    case check_threshold(Value, T) of
+        ok -> validate_thresholds(Value, Rest);
+        {error, Msg} -> {error, Msg}
+    end.
+
+check_threshold(Value, #grade_threshold{operator = '>=' , value = Th}) 
+    when Value >= Th -> ok;
+check_threshold(Value, #grade_threshold{operator = '>' , value = Th}) 
+    when Value > Th -> ok;
+check_threshold(Value, #grade_threshold{operator = '<=' , value = Th}) 
+    when Value =< Th -> ok;
+check_threshold(_, T) ->
+    {error, T#grade_threshold.message_ua}.
+3.2. Інтеграція в BPE (serviceTask)
+erlangaction({serviceTask, 'ValidateGrades'}, Proc) ->
+    case grade_validator:validate(Proc) of
+        ok ->
+            {reply, Proc, "validation_ok"};
+        {error, Reason} ->
+            {reply, Proc, "validation_failed", Reason}  % умовний перехід
+    end.
+3.3. Приклад порогів для 12-бальної шкали
+
+passing: >= 6 (повідомлення: "Оцінка нижче прохідного балу")
+excellent: >= 10
+critical: < 4 (блокуюча + вимагає апруву)
+
+4. Рівні валідації
+
+Frontend — попередня перевірка (UI feedback).
+Backend (API) — основна валідація перед збереженням.
+BPMN — в контексті процесу (з умовними переходами).
+База — database constraints (CHECK constraints у PostgreSQL).
+
+5. ABAC + Валідація
+
+Тільки користувачі з роллю teacher + owns_course можуть виставляти оцінки.
+При порушенні порогу requires_approval = true — автоматичний перехід до завдання для завуча.
+
+6. Рекомендації реалізації
+
+Зберігати правила в JSONB для гнучкості.
+Кешувати довідник порогів (ETS / Cache).
+Логувати всі порушення (рівень WARN/AUDIT).
+Тестувати: unit-тести + сценарії в BPE.
+
+Хочете:
+
+Повний модуль grade_validator.erl?
+Приклад database constraint?
+Інтеграцію в конкретний процес (наприклад, AssessStudents)?
+
+Готовий надати код.

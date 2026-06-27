@@ -1,0 +1,103 @@
+Деталізація ER-діаграми (Entity-Relationship) для ERP/1: Освіта
+відповідно до Політик (розділи 5.1, 6.1.2 — рівень «Сутності / Resources»)
+1. Загальна структура ER-моделі
+Основні сутності та ключові зв’язки (1:1, 1:N, N:M):
+
+Person (базова сутність для Учень, Педагог, Батько)
+Student → Group (N:1)
+Teacher → Department (N:1)
+Course ↔ Group (N:M через Curriculum)
+JournalRecord → Student (N:1) + Course (N:1) + Teacher (N:1)
+Schedule → Group/Course/Teacher/Room (N:1)
+Document (поліморфний) пов’язаний з будь-якою сутністю
+
+2. Детальна ER-діаграма (текстовий опис + Mermaid)
+#mermaid-diagram-mermaid-9fmugy6{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#000000;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-diagram-mermaid-9fmugy6 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-diagram-mermaid-9fmugy6 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-diagram-mermaid-9fmugy6 .error-icon{fill:#552222;}#mermaid-diagram-mermaid-9fmugy6 .error-text{fill:#552222;stroke:#552222;}#mermaid-diagram-mermaid-9fmugy6 .edge-thickness-normal{stroke-width:1px;}#mermaid-diagram-mermaid-9fmugy6 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-diagram-mermaid-9fmugy6 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-diagram-mermaid-9fmugy6 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-diagram-mermaid-9fmugy6 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-diagram-mermaid-9fmugy6 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-diagram-mermaid-9fmugy6 .marker{fill:#666;stroke:#666;}#mermaid-diagram-mermaid-9fmugy6 .marker.cross{stroke:#666;}#mermaid-diagram-mermaid-9fmugy6 svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#mermaid-diagram-mermaid-9fmugy6 p{margin:0;}#mermaid-diagram-mermaid-9fmugy6 .entityBox{fill:#eee;stroke:#999;}#mermaid-diagram-mermaid-9fmugy6 .relationshipLabelBox{fill:hsl(-160, 0%, 93.3333333333%);opacity:0.7;background-color:hsl(-160, 0%, 93.3333333333%);}#mermaid-diagram-mermaid-9fmugy6 .relationshipLabelBox rect{opacity:0.5;}#mermaid-diagram-mermaid-9fmugy6 .labelBkg{background-color:rgba(237.9999999999, 237.9999999999, 237.9999999999, 0.5);}#mermaid-diagram-mermaid-9fmugy6 .edgeLabel .label{fill:#999;font-size:14px;}#mermaid-diagram-mermaid-9fmugy6 .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#000000;}#mermaid-diagram-mermaid-9fmugy6 .edge-pattern-dashed{stroke-dasharray:8,8;}#mermaid-diagram-mermaid-9fmugy6 .node rect,#mermaid-diagram-mermaid-9fmugy6 .node circle,#mermaid-diagram-mermaid-9fmugy6 .node ellipse,#mermaid-diagram-mermaid-9fmugy6 .node polygon{fill:#eee;stroke:#999;stroke-width:1px;}#mermaid-diagram-mermaid-9fmugy6 .relationshipLine{stroke:#666;stroke-width:1;fill:none;}#mermaid-diagram-mermaid-9fmugy6 .marker{fill:none!important;stroke:#666!important;stroke-width:1;}#mermaid-diagram-mermaid-9fmugy6 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}isisbelongs_tohasincludesforofbyforofbyrelated_toPERSONuuididPKstringfull_namedatedate_of_birthstringtax_numberstringemailstringphonejsonaddressx509kep_certSTUDENTuuididPKuuidperson_idFKuuidgroup_idFKstringexternal_idЄДЕБОenumstatusTEACHERuuididPKuuidperson_idFKstringpositiondecimalkpi_scoreenumstatusGROUPuuididPKstringcode11-Аuuidcurriculum_idFKintacademic_yearenumform_of_studyCOURSEuuididPKstringnamestringcodedecimalcreditsuuidscorm_idCURRICULUMuuididPKuuidgroup_idFKuuidcourse_idFKintsemesterinthours_lecturesinthours_practicetimestampapproved_atJOURNAL_RECORDuuididPKuuidstudent_idFKuuidcourse_idFKuuidteacher_idFKdatelesson_dateenumattendancedecimalgradeenumgrade_typejsoncompetence_scorestextcommentuuidsigned_byFKtimestampsigned_atintversionSCHEDULEuuididPKuuidgroup_idFKuuidcourse_idFKuuidteacher_idFKstringroomtimestampstart_timetimestampend_timeenumweekdayDOCUMENTuuididPKstringtitleenumdoc_typestringfile_hashuuidrelated_idstringrelated_typepolymorphicuuidsigned_byFKtimestampsigned_at
+3. Ключові зв’язки та кардинальність
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Сутність AЗв’язокСутність BКардинальністьПриміткаStudentbelongs toGroupN:1Основна групаGrouphasCurriculum1:NПлан на семестрCurriculumincludesCourseN:MЧерез проміжну таблицюJournalRecordforStudentN:1Оцінки учняJournalRecordbyTeacherN:1Автор оцінкиScheduleforGroup/CourseN:1РозкладDocumentrelated_toAny Entity1:NПоліморфний
+4. Додаткові вимоги до ER-моделі (згідно політики)
+
+Ідентифікація: UUID + external_id (державні реєстри).
+Історія змін: version + audit log (ProcessLog).
+Soft Delete: deleted_at.
+Валідації: На рівні бази (constraints) + application level.
+Інтеграція: Синхронізація з ЄДЕБО через зовнішні ключі.
+Безпека: ABAC на рівні рядків (Row Level Security) + КЕП для підписів.
+Продуктивність: Індекси на FK, lesson_date, group_id тощо.
+
+5. Рекомендації реалізації
+
+База даних: PostgreSQL (JSONB для гнучких полів) або Mnesia/Erlang-native stores.
+ORM: Ecto (Elixir) або аналог для Erlang/OTP.
+Міграції: Версіоновані, з урахуванням сумісності.
+Документування: Повна ER-діаграма в інструменті (dbdiagram.io / Draw.io) + експорт у ТЗ.
+
+Ця ER-модель забезпечує простежуваність від Політик → ТВ → ТЗ → реалізація.
+Потрібна:
+
+Деталізація окремих таблиць (DDL)?
+JSON-схема для конкретної сутності?
+Розширення для модуля «Атестація» чи «Звітність»?
+
+Готовий уточнити будь-яку частину.
