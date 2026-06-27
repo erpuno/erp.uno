@@ -77,7 +77,7 @@
 
 \section{Загальні відомості про засіб інформатизації}
 
-\subsection{1.1. Найменування та підстави для розробки}
+\subsection{Найменування та підстави для розробки}
 \textbf{Найменування засобу інформатизації:} Підсистема «ERP/1: Облік» (далі --- Модуль «Облік»).
 \\
 \textbf{Відомості про замовника:} ТОВ "Системи Електронного Урядування" в ТОВ "Криптографічні телесистеми".
@@ -89,7 +89,7 @@
     \item Постанова Кабінету Міністрів України від 21 лютого 2025 року № 205 «Деякі питання створення, адміністрування та забезпечення функціонування засобу інформатизації».
 \end{itemize}
 
-\subsection{1.2. Призначення та цілі створення засобу}
+\subsection{Призначення та цілі створення засобу}
 Модуль «Облік» призначений для комплексної автоматизації фінансової та господарської діяльності з можливістю багатовимірного аналітичного обліку, розрахунку заробітної плати та складання регламентованих звітів.
 \\
 \textbf{Цілі створення засобу:}
@@ -102,7 +102,7 @@
     \item Забезпечення автентифікації та підписання відомостей за допомогою КЕП (CAdES-X Long).
 \end{itemize}
 
-\subsection{1.3. План-графік виконання етапів робіт}
+\subsection{План-графік виконання етапів робіт}
 \begin{enumerate}
     \item \textbf{Етап 1: Проектування та погодження архітектури} --- розробка та погодження UML/Figma специфікацій. (1 місяць).
     \item \textbf{Етап 2: Створення схем даних} --- реалізація Erlang records, створення таблиць Mnesia та RocksDB сховищ. (1.5 місяці).
@@ -114,9 +114,9 @@
 \newpage
 \section{Відомості про робочий процес та умови експлуатації}
 
-\subsection{2.1. Опис бізнес-процесів (BPMN / FSM)}
+\subsection{Опис бізнес-процесів (BPMN / FSM)}
 
-\subsubsection{2.1.1. Процес проводки первинного документа}
+\subsubsection{Процес проводки первинного документа}
 \begin{enumerate}
     \item \textbf{StartPosting:} Створення проекту документа бухгалтером.
     \item \textbf{EnterData:} Введення реквізитів (сума, рахунки дебету/кредиту, код КЕКВ).
@@ -127,7 +127,7 @@
     \item \textbf{PostingCompleted:} Фіксація проводки.
 \end{enumerate}
 
-\subsubsection{2.1.2. Процес розрахунку заробітної плати}
+\subsubsection{Процес розрахунку заробітної плати}
 \begin{enumerate}
     \item \textbf{StartPayroll:} Запуск розрахункового періоду за місяць.
     \item \textbf{CollectTimesheets:} Завантаження та затвердження табелів робочого часу працівників.
@@ -138,7 +138,7 @@
     \item \textbf{PayrollCompleted:} Закриття періоду.
 \end{enumerate}
 
-\subsubsection{2.1.3. Процес планування закупівель}
+\subsubsection{Процес планування закупівель}
 \begin{enumerate}
     \item \textbf{StartProcurement:} Запуск процедури планування закупівлі ТМЦ.
     \item \textbf{DraftRequest:} Створення заявки на закупівлю із зазначенням кодів ТМЦ та КЕКВ.
@@ -148,7 +148,7 @@
     \item \textbf{ProcurementCompleted:} Завершення етапу планування.
 \end{enumerate}
 
-\subsubsection{2.1.4. Процес підготовки та подання звітності}
+\subsubsection{Процес підготовки та подання звітності}
 \begin{enumerate}
     \item \textbf{StartReporting:} Запуск формування звітного періоду (місяць, квартал, рік).
     \item \textbf{RunConstructor:} Збирання даних з Головної книги та кадрового обліку.
@@ -158,7 +158,7 @@
     \item \textbf{ReportAccepted:} Отримання квитанції про успішне прийняття звіту.
 \end{enumerate}
 
-\subsection{2.2. Опис ролей та прав доступу (ABAC)}
+\subsection{Опис ролей та прав доступу (ABAC)}
 \begin{itemize}
     \item \textbf{Правило 1 (Бухгалтер):}
     $$\text{subject.roles contains 'Accountant'} \land \text{object.entity\_type == 'PrimaryDocument'}$$
@@ -178,7 +178,7 @@
     $$\rightarrow \text{Permit: approve.}$$
 \end{itemize}
 
-\subsection{2.3. Умови експлуатації}
+\subsection{Умови експлуатації}
 \begin{itemize}
     \item Середовище виконання: Erlang/OTP версії 26 та вище.
     \item База даних: Erlang Mnesia як єдине native транзакційне сховище. Використання реляційних SQL баз даних не допускається.
@@ -188,7 +188,7 @@
 \newpage
 \section{Інформаційне та програмне забезпечення}
 
-\subsection{3.1. Інформаційне забезпечення (Реквізити)}
+\subsection{Інформаційне забезпечення (Реквізити)}
 Усі об'єкти описуються Erlang-рекордами:
 \begin{verbatim}
 -record(primary_document, {
@@ -236,9 +236,9 @@
 
 \paragraph{Повнотекстові специфікації реквізитів:} наведено в додатку А до Технічних вимог (див. [acc.tex](file:///Users/tonpa/depot/erpuno/erp.uno/acc/acc.tex)).
 
-\subsection{3.2. Програмне забезпечення (Реалізація)}
+\subsection{Програмне забезпечення (Реалізація)}
 
-\subsubsection{3.2.1. bpe\_bookkeeping\_posting.erl (Процес проведення документа)}
+\subsubsection{bpe\_bookkeeping\_posting.erl (Процес проведення документа)}
 \begin{verbatim}
 -module(bpe_bookkeeping_posting).
 -include("bpe.hrl").
@@ -284,7 +284,7 @@ action({serviceTask, 'ValidateDoubleEntry'}, Proc) ->
 action(_, Proc) -> {reply, Proc}.
 \end{verbatim}
 
-\subsubsection{3.2.2. bpe\_payroll\_calculation.erl (Процес розрахунку ЗП)}
+\subsubsection{bpe\_payroll\_calculation.erl (Процес розрахунку ЗП)}
 \begin{verbatim}
 -module(bpe_payroll_calculation).
 -include("bpe.hrl").
@@ -322,7 +322,7 @@ def() ->
 action(_, Proc) -> {reply, Proc}.
 \end{verbatim}
 
-\subsubsection{3.2.3. bpe\_procurement\_planning.erl (Процес планування закупівель)}
+\subsubsection{bpe\_procurement\_planning.erl (Процес планування закупівель)}
 \begin{verbatim}
 -module(bpe_procurement_planning).
 -include("bpe.hrl").
@@ -359,7 +359,7 @@ def() ->
 action(_, Proc) -> {reply, Proc}.
 \end{verbatim}
 
-\subsubsection{3.2.4. acc\_validator.erl (Модуль бізнес-валідацій)}
+\subsubsection{acc\_validator.erl (Модуль бізнес-валідацій)}
 \begin{verbatim}
 -module(acc_validator).
 -export([validate_posting/1, check_budget_limit/3]).
@@ -384,7 +384,7 @@ check_budget_limit(KEKV, Amount, AvailableLimit) ->
 \newpage
 \section{Вимоги до засобу за ISO/IEC/IEEE 29148}
 
-\subsection{4.1. Функціональні вимоги}
+\subsection{Функціональні вимоги}
 \begin{itemize}
     \item \textbf{[REQ-ACC-FUN-001]} Модуль «Облік» повинен забезпечувати ведення плану рахунків, класифікації КЕКВ та довідників ТМЦ.
     \item \textbf{[REQ-ACC-FUN-002]} Модуль «Облік» повинен виконувати автоматичну перевірку балансу дебету та кредиту для кожної господарської проводки.
@@ -398,14 +398,14 @@ check_budget_limit(KEKV, Amount, AvailableLimit) ->
     \item \textbf{[REQ-ACC-FUN-010]} Модуль «Облік» повинен експортувати фінансові звіти до системи «Є-Звітність» за допомогою інтеграційного HTTPS REST API.
 \end{itemize}
 
-\subsection{4.2. Вимоги до інтерфейсів та дизайну}
+\subsection{Вимоги до інтерфейсів та дизайну}
 \begin{itemize}
     \item \textbf{[REQ-ACC-UI-001]} Користувацький інтерфейс повинен бути сумісним зі стандартом веб-доступності WCAG 2.1 AA.
     \item \textbf{[REQ-ACC-UI-002]} Інтерфейс користувача повинен функціонувати як Single Page Application (SPA), забезпечуючи оновлення фінансових моніторів через Secure WebSockets (WSS).
     \item \textbf{[REQ-ACC-UI-003]} Обмін даними між веб-клієнтом та сервером повинен використовувати архітектурний шаблон Data-on-Wire з передачею об'єктів у форматі JSON.
 \end{itemize}
 
-\subsection{4.3. Вимоги до безпеки та захисту інформації}
+\subsection{Вимоги до безпеки та захисту інформації}
 \begin{itemize}
     \item \textbf{[REQ-ACC-SEC-001]} Автентифікація всіх користувачів підсистеми повинна здійснюватися виключно за допомогою кваліфікованого електронного підпису (КЕП) X.509.
     \item \textbf{[REQ-ACC-SEC-002]} Будь-які запити на читання та запис фінансових даних повинні перевірятися підсистемою контролю доступу на основі ABAC-атрибутів суб'єкта та об'єкта.
@@ -414,14 +414,14 @@ check_budget_limit(KEKV, Amount, AvailableLimit) ->
     \item \textbf{[REQ-ACC-SEC-005]} Персональні дані працівників (особові справи, розрахунки ЗП) повинні бути захищені від несанкціонованого доступу згідно із Законом України «Про захист персональних даних».
 \end{itemize}
 
-\subsection{4.4. Вимоги до продуктивності}
+\subsection{Вимоги до продуктивності}
 \begin{itemize}
     \item \textbf{[REQ-ACC-PERF-001]} Час розрахунку та відображення оборотного балансу по 50,000 операцій не повинен перевищувати 500 мс.
     \item \textbf{[REQ-ACC-PERF-002]} Пропускна здатність підсистеми Mnesia повинна бути не менше 500 фінансових проводок на секунду на один серверний вузол.
     \item \textbf{[REQ-ACC-PERF-003]} Час відкриття та відображення реєстру документів на 1000 записів на клієнті не повинен перевищувати 1 секунди.
 \end{itemize}
 
-\subsection{4.5. Вимоги до логування, тестування та супроводу}
+\subsection{Вимоги до логування, тестування та супроводу}
 \begin{itemize}
     \item \textbf{[REQ-ACC-LOG-001]} Усі операції зміни фінансових станів, коригування проводок та входу користувачів повинні реєструватися у захищеному журналі аудиту (Audit Log).
     \item \textbf{[REQ-ACC-LOG-002]} Логи аудиту повинні передаватися у форматі JSON до Elasticsearch (стек ELK) в режимі реального часу.
