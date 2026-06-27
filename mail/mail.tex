@@ -1,0 +1,377 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{helvet}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{eso-pic}
+\usepackage{fancyhdr}
+\usepackage{parskip}
+\usepackage{microtype}
+\usepackage[english, ukrainian]{babel}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{titlesec}
+
+\definecolor{nato}{HTML}{293757}
+\definecolor{footergray}{gray}{0.65}
+
+\geometry{a4paper,left=3cm,right=3cm,top=3cm,bottom=3cm}
+\renewcommand{\familydefault}{\sfdefault}
+\setcounter{secnumdepth}{3}
+
+\titleformat{\section}
+  {\color{nato}\Huge\bfseries}{\thesection.}{1em}{}
+\titlespacing*{\section}{0pt}{30pt}{12pt}
+
+\titleformat{\subsection}
+  {\color{nato}\LARGE\bfseries}{\thesubsection.}{1em}{}
+\titlespacing*{\subsection}{0pt}{20pt}{8pt}
+
+\titleformat{\subsubsection}
+  {\color{nato}\Large\bfseries}{\thesubsubsection.}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{6pt}
+
+\fancyhf{}
+\fancyhead[R]{\small\color{footergray} 27 червня 2026}
+\fancyfoot[L]{\small\color{footergray} Технічні вимоги ERP/1. Модуль Документи}
+\fancyfoot[R]{\small\color{footergray}\thepage}
+
+\newcommand\HUGE[1]{\fontsize{40}{40}\selectfont #1}
+
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\footrule}{\color{footergray}\hrule width \textwidth height 0.4pt}
+
+\begin{document}
+
+\pagestyle{fancy}
+
+\begin{titlepage}
+  \AddToShipoutPictureBG*{\AtPageLowerLeft{\color{nato}\rule{\paperwidth}{\paperheight}}}
+  \color{white}\thispagestyle{empty}\vspace*{3cm}\centering
+  {\Huge  \textbf{ERP/1: Документи} \par} \vspace{1.5cm}
+  {\HUGE  \textbf{Технічні вимоги} \par} \vspace{1.5cm}
+  {\LARGE \textbf{до системи електронного документообігу \\ та автоматизації діловодства \\ в установах і міжвідомчого обміну} \par} \vspace{1.5cm}
+  {\large Адаптовано на основі N2O.DEV \\ та нормативно-технічних вимог МВС України \par}
+  \vfill
+  {\large 2026 \copyright\ Системи Електронного Урядування \par}
+\end{titlepage}
+
+\newpage
+
+\begin{center}
+  {\Huge\color{nato}\bfseries Зміст\par}
+\end{center}
+\vspace{40pt}
+\tableofcontents
+
+\newpage
+
+\section{Умовні скорочення та визначення}
+
+\begin{longtable}{p{3.5cm}p{10.5cm}}
+\toprule
+\textbf{Термін / Абревіатура} & \textbf{Визначення} \\
+\midrule
+СЕД & Система електронного документообігу. \\
+СЕВ ОВВ & Система електронної взаємодії органів виконавчої влади. \\
+КЕП & Кваліфікований електронний підпис (X.509 CAdES-X Long). \\
+КЕПч & Кваліфікована електронна печатка установи. \\
+РМК & Реєстраційно-моніторингова картка документа. \\
+ОШС & Організаційно-штатна структура установи. \\
+НДІ & Нормативно-довідкова інформація (довідники, класифікатори). \\
+BPE & Business Process Engine (асинхронне ядро бізнес-процесів). \\
+N2O & Протокол та веб-фреймворк для реактивної взаємодії через WebSockets. \\
+ABAC & Attribute-Based Access Control (контроль доступу на основі атрибутів). \\
+MHS X.420 & Message Handling System (протокол поштових конвертів ISO 10021-6). \\
+X.422.3 & Протокол телекомунікаційного обміну службовими повідомленнями СЕВ. \\
+\bottomrule
+\end{longtable}
+
+\section{Загальні відомості}
+
+\subsection{Передумови розробки}
+Створення підсистеми «ERP/1: Документи» обумовлене необхідністю переходу державних органів та установ України на високопродуктивну, безпечну та відмовостійку хмарну веб-платформу. Система повністю покриває вимоги Постанови КМУ № 55 щодо документування управлінської діяльності та організації міжвідомчого документообігу на Erlang/OTP технологіях.
+
+\subsection{Законодавча та нормативна основа}
+Підсистема розробляється та функціонує відповідно до таких законодавчих та підзаконних нормативно-правових актів України:
+
+\subsubsection{Загальне законодавство України}
+\begin{itemize}
+    \item Закон України «Про інформацію» (№ 2657-XII);
+    \item Закон України «Про Національну програму інформатизації» (№ 74/98-ВР);
+    \item Закон України «Про електронні документи та електронний документообіг» (№ 851-IV);
+    \item Закон України «Про електронні довірчі послуги» (№ 2155-VIII);
+    \item Закон України «Про звернення громадян» (№ 393/96-ВР);
+    \item Закон України «Про доступ до публічної інформації» (№ 2939-VI);
+    \item Розпорядження КМУ від 15 травня 2013 р. № 386-р «Про схвалення Стратегії розвитку інформаційного суспільства в Україні»;
+    \item Постанова КМУ від 26 травня 2006 р. № 373 «Про затвердження Правил забезпечення захисту інформації в інформаційних, телекомунікаційних та інформаційно-телекомунікаційних системах».
+\end{itemize}
+
+\subsubsection{Законодавство у сфері електронного документообігу та КЕП}
+\begin{itemize}
+    \item Постанова Кабінету Міністрів України від 17 січня 2018 р. № 55 «Деякі питання документування управлінської діяльності»;
+    \item Наказ Міністерства юстиції України від 1600/5 «Про затвердження Порядку роботи з електронними документами через систему електронної взаємодії органів виконавчої влади з використанням електронного цифрового підпису»;
+    \item Постанова Кабінету Міністрів України від 7 листопада 2018 р. № 749 «Про затвердження Порядку використання електронних довірчих послуг в органах державної влади, органах місцевого самоврядування, підприємствах, установах та організаціях державної форми власності»;
+    \item Наказ Міністерства цифрової трансформації України та Адміністрації ДССЗЗІ № 140/614 щодо експертизи засобів захисту;
+    \item Наказ Міністерства освіти і науки, молоді та спорту України від 1207 «Про вимоги до форматів даних електронного документообігу в органах державної влади. Формат електронного повідомлення»;
+    \item Наказ Міністерства юстиції України від 1886/5 «Про затвердження Порядку роботи з електронними документами у діловодстві та їх підготовки до передавання на архівне зберігання»;
+    \item Наказ ДП «УкрНДНЦ» від № 144 про прийняття та скасування національних стандартів ДСТУ 4163:2020 та ДСТУ 9031:2020.
+\end{itemize}
+
+\subsubsection{Законодавство для спеціалізованих додаткових модулів}
+\begin{itemize}
+    \item \textbf{Модуль Провадження (Прокуратура/Суд):} Кримінальний процесуальний кодекс України (№ 4651-VI); Наказ Офісу Генерального прокурора № 298 «Про затвердження Положення про Єдиний реєстр досудових розслідувань, порядок його формування та ведення».
+    \item \textbf{Модуль Закупівлі:} Закон України «Про публічні закупівлі» (№ 922-19); Постанова КМУ № 169 та Постанова КМУ № 1178; Закон України «Про оборонні закупівлі» (№ 808-20); Постанови КМУ № 1275, № 1070, № 224, № 710, № 544, № 1495; Накази Мінекономіки № 708 та № 1749.
+    \item \textbf{Модуль Зброя:} Проекти Законів про право на цивільну вогнепальну зброю (№ 5708, № 5709) та інструкції МВС щодо Єдиного реєстру зброї.
+\end{itemize}
+
+\section{Призначення та цілі впровадження}
+Модуль «Документи» призначений для організації проходження та автоматизації життєвого циклу електронних документів, візування, підписання КЕП, контролю за виконанням завдань, а також міжвідомчого поштового обміну за стандартами X.420 / X.422.3.
+\\
+\textbf{Цілі створення засобу:}
+\begin{itemize}
+    \item Скорочення часу обробки та реєстрації вхідних, вихідних та внутрішніх документів;
+    \item Забезпечення прозорості та повного аудиту дій над документами (Audit Log);
+    \item Економія матеріальних ресурсів установи на паперовий обіг;
+    \item Забезпечення юридичної сили за допомогою накладання КЕП та КЕПч;
+    \item Оперативний пошук та побудова аналітичної звітності виконавської дисципліни.
+\end{itemize}
+
+\section{Класифікація вимог}
+
+\subsection{Функціональні вимоги}
+
+\subsubsection{Словникова та довідникова система}
+Платформа повинна підтримувати та використовувати ієрархічні класифікатори (Дерева) та словники:
+\begin{itemize}
+    \item \textbf{ІНСТРУКЦІЯ:} Довідник нормативно-методологічних правил діловодства.
+    \item \textbf{КОАТУУ:} Класифікатор об'єктів адміністративно-територіального устрою України.
+    \item \textbf{ПРОЦЕСИ:} Довідник бізнес-процесів та маршрутів документів.
+    \item \textbf{СЛОВНИКИ:} Загальні класифікатори (наприклад, типи звернень громадян, види контролю).
+\end{itemize}
+
+\subsubsection{Опис реєстрових сутностей (ERP-Схема даних)}
+Доменна модель системи повинна включати такі сутності:
+\begin{itemize}
+    \item \textbf{ORGANIZATION:} Установа, контрагент (ЄДРПОУ, юридична адреса).
+    \item \textbf{BRANCH:} Філія, територіальний орган чи структурний підрозділ.
+    \item \textbf{EMPLOYEE:} Співробітник (посада, підрозділ, контактні дані).
+    \item \textbf{PERSON:} Фізична особа (ПІБ, ІПН, сертифікати КЕП).
+    \item \textbf{SIGNATURE:} Реквізити електронного підпису (підписувач, сертифікат, TSP мітка часу).
+    \item \textbf{ABAC:} Об'єкт прав доступу (суб'єкт, дія, контекстні обмеження).
+    \item \textbf{FILEDESC:} Специфікація медіа-файлу (хеш SHA-256, назва, розмір, RocksDB посилання).
+    \item \textbf{PROJECT:} Картка проекту документа на етапі погодження.
+    \item \textbf{POSITION:} Штатна посада користувача.
+    \item \textbf{ADDRESS:} Поштові та фізичні адреси установ та контрагентів.
+    \item \textbf{LOCATION:} Географічні координати.
+    \item \textbf{DEED:} Справа архівного зберігання (номенклатурна папка).
+    \item \textbf{CATDOC:} Категорії та види документів.
+    \item \textbf{CATDEED:} Класифікатор справ.
+    \item \textbf{NOMDEED:} Номенклатура справ на рік.
+\end{itemize}
+
+\subsubsection{Опис бізнес-процесів (BPE Flows)}
+Усі процеси моделюються як FSM автомати в ядрі BPE:
+\begin{itemize}
+    \item \textbf{INPUT:} Обробка вхідних документів від реєстрації до виконання.
+    \item \textbf{OUTPUT:} Створення, візування, підписання КЕП та відправка вихідного листа.
+    \item \textbf{INTERNAL:} Обробка внутрішніх документів (службові записки, накази).
+    \item \textbf{ORG:} Підготовка та доведення організаційно-розпорядчих документів.
+    \item \textbf{CONTROLTASK:} Контроль виконання доручень.
+    \item \textbf{EXECTASK:} Виконання завдань співвиконавцями.
+    \item \textbf{ADMISSION:} Реєстрація та контроль розгляду звернень громадян.
+    \item \textbf{ADDITIONAL:} Додаткові асинхронні бізнес-процеси.
+\end{itemize}
+
+\subsubsection{Опис типів документів}
+Система повинна опрацьовувати такі типи документів (категорії РМК):
+\begin{itemize}
+    \item \textbf{INPUT:} Вхідний лист від установи чи фізичної особи.
+    \item \textbf{OUTPUT:} Вихідний лист або відповідь на звернення.
+    \item \textbf{INTERNAL:} Внутрішній документ (заява, доповідна записка).
+    \item \textbf{ORG:} Наказ керівника установи з основної діяльності.
+    \item \textbf{CITIZEN:} Звернення громадянина відповідно до ЗУ «Про звернення громадян».
+    \item \textbf{ESQUIRE:} Адвокатський запит (скорочений термін розгляду до 5 робочих днів).
+    \item \textbf{PUBLIC:} Запит на публічну інформацію (термін розгляду до 5 робочих днів).
+    \item \textbf{TASK \& SUBTASK:} Доручення (резолюція) та підлеглі підзадачі виконавцям.
+    \item \textbf{ADDITIONAL:} Додаткові супровідні документи.
+\end{itemize}
+
+\subsubsection{Опис сторінок інтерфейсу клієнта (Controllers)}
+Клієнтський SPA-додаток на базі N2O/Nitro повинен містити такі сторінки:
+\begin{itemize}
+    \item \textbf{LDAP:} Дерево підрозділів, пошук та перегляд профілів співробітників.
+    \item \textbf{HELP:} Контекстна довідкова система для користувачів.
+    \item \textbf{KVS:} Інспектор сховища RocksDB/Mnesia для адміністраторів системи.
+    \item \textbf{BPE:} Панель керування активними FSM процесами.
+    \item \textbf{CRM:} Головна робоча область із реєстрами документів.
+    \item \textbf{RMK:} Екран перегляду та редагування РМК конкретного документа.
+    \item \textbf{ROLES:} Управління правами доступу користувачів.
+    \item \textbf{ROUTES:} Маршрутна карта переходів інтерфейсу.
+\end{itemize}
+
+\subsubsection{Елементи інтерфейсу та Комболукапи}
+Для швидкого автозаповнення та рендерингу складних форм використовуються Nitro-компоненти:
+\begin{itemize}
+    \item \textbf{Комболукапи:} ADDRESS, DEPUTY, DICT, EMPLOYEE, BRANCH, SEARCH, SEV, ROLE, ORG, LOCATION, PLACE, POSITION.
+    \item \textbf{Елементи інтерфейсу:} ABAC (права), BPE (процеси), CRM (реєстр), SEARCH (динамічний пошук), UPLOAD (завантаження файлів), ATTACH (асоціація додатків), RMK (картка), DOCS (документи), FILES (файли), MONITOR (моніторинг), ROLE (ролі), TABLE (таблиця), TREE (дерева).
+    \item \textbf{Міні-редактори:} DICT, EMPLOYEE, PLACE, BRANCH, ORG, FILE, EDIT, MONITOR, PROCESS, TRACE.
+    \item \textbf{Автентифікаційні форми:} ACTIVATION (активація КЕП), KEY (вибір носія), FILE (завантаження ключа), ANY (інші методи), PROFILE (профіль), ERROR (помилки).
+\end{itemize}
+
+\subsubsection{Шаблони документів}
+Автоматична генерація файлів за затвердженими бланками установи:
+\begin{itemize}
+    \item \textbf{ЛИСТ:} Шаблон офіційного вихідного листа.
+    \item \textbf{БЛАНК:} Загальний бланк установи для наказів та рішень колегії.
+    \item \textbf{ЗАПИСКА:} Шаблон внутрішньої службової записки.
+    \item \textbf{ВІДПОВІДЬ:} Шаблон відповіді на звернення чи запит.
+\end{itemize}
+
+\subsubsection{Галузеві додаткові модулі}
+\begin{itemize}
+    \item \textbf{МІА: Провадження (Судочинство):} облік судових та кримінальних проваджень, клопотань та ухвал суду.
+    \item \textbf{МІА: Закупівлі:} облік публічних закупівель (договори, процедури за Постановами КМУ № 169/1178).
+    \item \textbf{МІА: Зброя:} інтеграція з Єдиним реєстром зброї, облік дозволів та власників.
+\end{itemize}
+
+\subsubsection{СЕВ ОВВ Інтеграція}
+Обмін документами між державними органами через СЕВ ОВВ здійснюється за допомогою:
+\begin{itemize}
+    \item \textbf{ДОКУМЕНТ:} Реквізити обміну електронного документа.
+    \item \textbf{НПА:} Реквізити нормативно-правового акту.
+    \item \textbf{ЗАДАЧА:} Синхронізація завдань та звітів виконання між відомствами.
+    \item Передача через поштові конверти \textbf{MHS X.420} та транспортний протокол \textbf{X.422.3}.
+\end{itemize}
+
+\subsubsection{Автентифікація та КЕП}
+Вхід здійснюється за допомогою X.509 сертифікатів КЕП. Підписання документів виконується у форматі CAdES-X Long (із вбудованою позначкою часу TSP).
+
+\subsection{Нефункціональні вимоги}
+
+\subsubsection{Вимоги до архітектури}
+\begin{itemize}
+    \item \textbf{Модульність:} Система повинна містити чітко розмежовані сервіси та модулі (близько 100 модулів).
+    \item \textbf{База даних:} Native Erlang Mnesia + RocksDB (без реляційного SQL) для максимальної швидкості транзакцій.
+    \item \textbf{Клієнт-Сервер:} WebSocket транспорт N2O з Data-on-Wire JSON передачею.
+\end{itemize}
+
+\subsubsection{Вимоги до безпеки}
+\begin{itemize}
+    \item Накладання КЕПч установи на всі файли, що надсилаються через СЕВ ОВВ.
+    \item Перевірка сертифікатів через OCSP/CRL.
+    \item Захист сесій через Secure Cookie та перевірка ABAC правил доступу.
+\end{itemize}
+
+\subsubsection{Вимоги до продуктивності}
+\begin{itemize}
+    \item Рендеринг РМК --- до 500 мс.
+    \item Підтримка до 10,000 користувачів одночасно.
+\end{itemize}
+
+\subsubsection{Вимоги до логування}
+\begin{itemize}
+    \item Кожна дія над документом (перегляд, зміна статусу, КЕП підпис) повинна фіксуватися в Audit Log у форматі JSON.
+    \item Передача логів до стеку ELK в реальному часі.
+\end{itemize}
+
+\newpage
+\appendix
+\section{Специфікація реквізитів сутностей}
+
+\begin{longtable}{p{3cm}p{3cm}p{2cm}p{6cm}}
+\caption{Реквізити картки вхідного документа (INPUT)} \\
+\toprule
+\textbf{Поле} & \textbf{Тип даних} & \textbf{Обов'язкове} & \textbf{Опис призначення} \\
+\midrule
+\texttt{id} & UUID & Так & Унікальний ідентифікатор РМК. \\
+\texttt{doc\_number} & String & Так & Реєстраційний номер. \\
+\texttt{doc\_date} & Date & Так & Дата реєстрації документа. \\
+\texttt{correspondent} & UUID & Так & Посилання на організацію-відправника (ЄДРПОУ). \\
+\texttt{subject} & Text & Так & Тема (короткий зміст) листа. \\
+\texttt{urgent} & Boolean & Так & Ознака терміновості розгляду. \\
+\texttt{due\_date} & Date & Ні & Контрольний строк виконання. \\
+\texttt{files} & List(UUID) & Так & Список прикріплених файлів (FileDesc). \\
+\texttt{status} & Enum & Так & Поточний стан (draft, registered, archived). \\
+\bottomrule
+\end{longtable}
+
+\begin{longtable}{p{3cm}p{3cm}p{2cm}p{6cm}}
+\caption{Реквізити Задачі / Резолюції (Task)} \\
+\toprule
+\textbf{Поле} & \textbf{Тип даних} & \textbf{Обов'язкове} & \textbf{Опис призначення} \\
+\midrule
+\texttt{id} & UUID & Так & Унікальний ідентифікатор задачі. \\
+\texttt{rmk\_id} & UUID & Так & Посилання на РМК документа. \\
+\texttt{author\_id} & UUID & Так & Керівник, який наклав резолюцію. \\
+\texttt{chief\_executor} & UUID & Так & Головний відповідальний виконавець. \\
+\texttt{executors} & List(UUID) & Так & Список співвиконавців. \\
+\texttt{description} & Text & Так & Текст доручення. \\
+\texttt{due\_date} & Date & Так & Термін виконання. \\
+\texttt{status} & Enum & Так & Стан (waiting, active, completed, cancelled). \\
+\bottomrule
+\end{longtable}
+
+\section{Технічні деталі реалізації процесів та валідацій}
+
+\subsection{Erlang Records для СЕД}
+Базові записи збереження даних документообігу:
+\begin{verbatim}
+-record(document_rmk, {
+    id,
+    doc_number,
+    doc_date,
+    doc_type,
+    correspondent_id,
+    subject,
+    author_id,
+    files = [],
+    status = draft
+}).
+
+-record(document_task, {
+    id,
+    parent_id,
+    rmk_id,
+    author_id,
+    executors = [],
+    chief_executor,
+    description,
+    due_date,
+    status = waiting
+}).
+\end{verbatim}
+
+\subsection{Модуль валідації електронних підписів kep\_validator.erl}
+Код Erlang-модуля для перевірки довіри до КЕП:
+\begin{verbatim}
+-module(kep_validator).
+-export([validate_signature/2, verify_time_stamp/1]).
+
+validate_signature(FileHash, SignatureBytes) ->
+    case ca_client:verify_signature(FileHash, SignatureBytes) of
+        {ok, SignerCert} ->
+            case ca_client:check_cert_status(SignerCert) of
+                valid -> ok;
+                expired -> {error, cert_expired};
+                revoked -> {error, cert_revoked}
+            end;
+        Error -> Error
+    end.
+
+verify_time_stamp(TimeStampToken) ->
+    case ca_client:verify_tsp(TimeStampToken) of
+        true -> ok;
+        false -> {error, invalid_tsp}
+    end.
+\end{verbatim}
+
+\end{document}
