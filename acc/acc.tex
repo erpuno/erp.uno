@@ -1,0 +1,447 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{helvet}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{eso-pic}
+\usepackage{fancyhdr}
+\usepackage{parskip}
+\usepackage{microtype}
+\usepackage[english, ukrainian]{babel}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{titlesec}
+
+\definecolor{nato}{HTML}{293757}
+\definecolor{footergray}{gray}{0.65}
+
+\geometry{a4paper,left=3cm,right=3cm,top=3cm,bottom=3cm}
+\renewcommand{\familydefault}{\sfdefault}
+\setcounter{secnumdepth}{3}
+
+\titleformat{\section}
+  {\color{nato}\Huge\bfseries}{\thesection.}{1em}{}
+\titlespacing*{\section}{0pt}{30pt}{12pt}
+
+\titleformat{\subsection}
+  {\color{nato}\LARGE\bfseries}{\thesubsection.}{1em}{}
+\titlespacing*{\subsection}{0pt}{20pt}{8pt}
+
+\titleformat{\subsubsection}
+  {\color{nato}\Large\bfseries}{\thesubsubsection.}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{6pt}
+
+\fancyhf{}
+\fancyhead[R]{\small\color{footergray} 27 червня 2026}
+\fancyfoot[L]{\small\color{footergray} Технічні вимоги ERP/1. Модуль Облік}
+\fancyfoot[R]{\small\color{footergray}\thepage}
+
+\newcommand\HUGE[1]{\fontsize{40}{40}\selectfont #1}
+
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\footrule}{\color{footergray}\hrule width \textwidth height 0.4pt}
+
+\begin{document}
+
+\pagestyle{fancy}
+
+\begin{titlepage}
+  \AddToShipoutPictureBG*{\AtPageLowerLeft{\color{nato}\rule{\paperwidth}{\paperheight}}}
+  \color{white}\thispagestyle{empty}\vspace*{4cm}\centering
+  {\Huge  \textbf{ERP/1: Облік} \par} \vspace{1.5cm}
+  {\HUGE  \textbf{Технічні вимоги} \par} \vspace{1.5cm}
+  {\LARGE \textbf{до підсистеми бухгалтерського, \\ фінансового та кадрового обліку} \par} \vspace{1.5cm}
+  {\large Версія 1.1 \par}
+  \vfill
+  {\large 2026 \copyright\ Системи Електронного Урядування \par}
+\end{titlepage}
+
+\newpage
+
+\begin{center}
+  {\Huge\color{nato}\bfseries Зміст\par}
+\end{center}
+\vspace{40pt}
+\tableofcontents
+
+\newpage
+
+\section{Умовні скорочення та визначення}
+У цьому документі використано такі скорочення та поняття:
+\begin{description}
+    \item[ERP] (Enterprise Resource Planning) --- інтегрована система управління ресурсами підприємства.
+    \item[PKI] (Public Key Infrastructure) --- інфраструктура відкритих ключів.
+    \item[КЕП] --- кваліфікований електронний підпис (відповідно до законодавства України).
+    \item[Є-Казна] --- система електронної взаємодії з Державною казначейською службою України.
+    \item[ДПС] --- Державна податкова служба України.
+    \item[ПФУ] --- Пенсійний фонд України.
+    \item[П(С)БО] --- Національні положення (стандарти) бухгалтерського обліку.
+    \item[КЕКВ] --- Класифікація економічних видатків бюджету.
+    \item[BPE] (Business Process Engine) --- рушій автоматизації бізнес-процесів SYNRC.
+    \item[FSM] (Finite State Machine) --- скінченний автомат для управління станами сутностей.
+    \item[ABAC] (Attribute-Based Access Control) --- управління доступом на основі атрибутів.
+    \item[ТМЦ] --- товарно-матеріальні цінності.
+    \item[ПДФО] --- Податок на доходи фізичних осіб (базова ставка 18\%).
+    \item[ВЗ] --- Військовий збір (базова ставка 1.5\%).
+    \item[ЄСВ] --- Єдиний внесок на загальнообов'язкове державне соціальне страхування (базова ставка 22\%).
+    \item[SPA] (Single Page Application) --- односторінковий додаток з оновленням даних в реальному часі.
+\end{description}
+
+\section{Загальні відомості}
+
+\subsection{2.1. Передумови розробки}
+Створення підсистеми «ERP/1: Облік» обумовлене необхідністю переведення комерційних і державних установ України на сучасну високопродуктивну ERP-платформу, що забезпечує автоматичний розрахунок зарплати, табелювання, бюджетний контроль та ведення подвійного запису. Використання рішень на базі Erlang/OTP гарантує надійність при паралельній роботі тисяч віддалених балансових одиниць та підрозділів.
+
+\subsection{2.2. Законодавча основа}
+Підсистема розробляється відповідно до таких нормативно-правових актів:
+\begin{itemize}
+    \item Бюджетний кодекс України;
+    \item Закон України «Про бухгалтерський облік та фінансову звітність в Україні»;
+    \item Кодекс законів про працю (КЗпП) України;
+    \item Податковий кодекс України;
+    \item Накази Міністерства фінансів України щодо застосування плану рахунків в державному секторі та КЕКВ.
+\end{itemize}
+
+\section{Призначення та цілі впровадження}
+«ERP/1: Облік» призначений для комплексної автоматизації фінансової та господарської діяльності підприємства.
+\\
+\textbf{Цілі впровадження системи:}
+\begin{itemize}
+    \item Забезпечення повного циклу бухгалтерського обліку (первинні документи, проводки, книга);
+    \item Контроль виконання кошторисів та фінансових планів за КЕКВ в реальному часі;
+    \item Автоматизація кадрового діловодства та розрахунку заробітної плати (нарахування, утримання);
+    \item Управління матеріально-технічним постачанням та складськими запасами;
+    \item Автоматична валідація, формування та подання регламентованої звітності до державних органів (Є-Звітність, ДПС, ПФУ).
+\end{itemize}
+
+\section{Класифікація вимог}
+
+\subsection{3.1. Функціональні вимоги}
+
+\subsubsection{3.1.1. Опис довідників}
+Система повинна підтримувати ведення та використання таких нормативно-довідкових даних:
+\begin{itemize}
+    \item \textbf{План рахунків бухгалтерського обліку:} ієрархічний довідник рахунків для відображення господарських операцій.
+    \item \textbf{КЕКВ:} бюджетна класифікація економічних видатків.
+    \item \textbf{Каталог ТМЦ:} довідник матеріально-технічних цінностей та послуг.
+    \item \textbf{Штатний розпис та посади:} довідник посад, окладів та структурних підрозділів.
+\end{itemize}
+
+\subsubsection{3.1.2. Опис реєстрових сутностей та їх станів}
+Основними сутностями системи є:
+\begin{itemize}
+    \item \textbf{PrimaryDocument (Первинний документ):} договір, акт, накладна. Стани: \texttt{draft} (чернетка), \texttt{pending\_approval} (на погодженні), \texttt{approved} (затверджено), \texttt{posted} (проведено), \texttt{archived}.
+    \item \textbf{JournalPosting (Проводка):} дебет-кредит запис у журналі господарських операцій. Стани: \texttt{draft}, \texttt{posted}.
+    \item \textbf{EmployeeRecord (Особова справа працівника):} особова картка працівника. Стани: \texttt{active}, \texttt{on\_leave} (у відпустці), \texttt{terminated} (звільнений).
+    \item \textbf{TimesheetEntry (Запис табелю):} облік робочого часу за день/місяць. Стани: \texttt{draft}, \texttt{approved}.
+    \item \textbf{PayrollLine (Розрахунковий рядок):} розрахунок нарахувань та утримань. Стани: \texttt{calculated}, \texttt{approved}, \texttt{paid}.
+    \item \textbf{PayrollPayment (Платіж ЗП):} реєстр виплат. Стани: \texttt{Pending}, \texttt{Paid}, \texttt{Deposited}.
+    \item \textbf{SupplyContract (Договір постачання):} договір з постачальником. Стани: \texttt{draft}, \texttt{active}, \texttt{completed}, \texttt{expired}.
+    \item \textbf{WarehouseItem (Складський залишок):} залишки ТМЦ.
+    \item \textbf{StockMovement (Рух ТМЦ):} прихід, розхід, переміщення та списання.
+    \item \textbf{CatalogItem (Каталог ТМЦ):} позиція номенклатури.
+    \item \textbf{ProcurementLine (Рядок закупівлі):} позиція плану закупівель.
+    \item \textbf{ReportEntry (Звітний запис):} метадані звітів.
+    \item \textbf{ReportTemplate (Шаблон звіту):} конфігурація форми звітів.
+    \item \textbf{GeneratedReport (Згенерований звіт):} готовий файл звіту.
+    \item \textbf{ValidationResult (Результат перевірки):} статус автоматичного контролю звітів.
+    \item \textbf{SubmissionRecord (Запис подачі):} лог відправки на державні сервіси.
+    \item \textbf{AccDocument (Фінансовий документ кошторису):} асигнування та ліміти.
+    \item \textbf{AdjustmentRequest (Коригування лімітів):} запити змін кошторису.
+    \item \textbf{FundManagerNode (Вузол розпорядника):} ієрархія фінансування.
+\end{itemize}
+
+\subsubsection{3.1.3. Опис бізнес-процесів}
+Реалізуються за допомогою BPE DSL скінченних автоматів:
+\begin{enumerate}
+    \item \textbf{Проводка первинного документа:} Створення $\rightarrow$ Введення реквізитів $\rightarrow$ Перевірка подвійного запису $\rightarrow$ Погодження КЕП $\rightarrow$ Проведення по Головній книзі.
+    \item \textbf{Розрахунок заробітної плати:} Формування табеля $\rightarrow$ Затвердження робочого часу $\rightarrow$ Нарахування окладу та премій $\rightarrow$ Розрахунок податків (ПДФО, Військовий збір, ЄСВ) $\rightarrow$ Накладання КЕП на відомість $\rightarrow$ Створення платіжних документів (Є-Казна).
+    \item \textbf{Управління закупівлями:} Заявка на закупівлю $\rightarrow$ Погодження кошторису $\rightarrow$ Укладання договору $\rightarrow$ Отримання ТМЦ $\rightarrow$ Відображення на складі та в балансі.
+    \item \textbf{Формування та подання звітності:} Генерація звіту $\rightarrow$ Валідація показників $\rightarrow$ Підписання КЕП $\rightarrow$ Відправка до державного порталу $\rightarrow$ Отримання квитанції.
+\end{enumerate}
+
+\subsubsection{3.1.4. Опис модулів інтерфейсу клієнта}
+Клієнтський інтерфейс системи є багатомодульним та реалізує такі функції відповідно до MVP-фасаду:
+\begin{enumerate}
+    \item \textbf{Dashboard (Робочий стіл):}
+    \begin{itemize}
+        \item Відображення KPI метрик: виконання кошторису (\%), касові видатки, нарахована заробітна плата, залишки на рахунках.
+        \item Монітор сповіщень: перевищення лімітів за кодами КЕКВ (наприклад, КЕКВ 2210), документи на підпис, готовність до відправки в Є-Казна.
+        \item Віджет динаміки фінансування та розподілу видатків за КЕКВ.
+        \item Таблиця останніх первинних документів, що потребують уваги.
+    \end{itemize}
+    \item \textbf{Finance (Фінанси):}
+    \begin{itemize}
+        \item \emph{Реєстр асигнувань (Appropriations Register):} облік фінансових планів, статусів виконання та лімітів.
+        \item \emph{Коригування лімітів (Plan Adjustments):} створення та обробка запитів на перерозподіл коштів.
+        \item \emph{Плани фінансування (Financing Plan):} деталізація планів по КЕКВ 2210 (послуги та матеріали) та КЕКВ 3110 (капітальні видатки).
+        \item \emph{Мережа розпорядників (Fund Managers Network):} управління ієрархією підпорядкованих установ.
+        \item \emph{Аналітика:} порівняльний аналіз фактичних та планових показників.
+    \end{itemize}
+    \item \textbf{Bookkeeping (Бухгалтерія):}
+    \begin{itemize}
+        \item \emph{Реєстр первинних документів (Primary Documents):} створення, редагування та проведення актів, накладних, ордерів.
+        \item \emph{Журнал проводок (Journal Postings):} відображення дебету/кредиту, КЕКВ, підрозділу для кожної операції.
+        \item \emph{Головна книга (General Ledger):} оборотно-сальдова відомість по всіх бухгалтерських рахунках.
+        \item \emph{Баланс (Balance Sheet):} формування активів та пасивів підприємства.
+        \item \emph{Аналітичний облік (Analytical Accounting):} субконто та багатовимірні розрізи.
+    \end{itemize}
+    \item \textbf{Payroll (Кадри та Зарплата):}
+    \begin{itemize}
+        \item \emph{Табелі обліку часу (Timesheets):} реєстрація явок, неявок, лікарняних та понаднормових годин.
+        \item \emph{Нарахування (Accruals):} автоматичний розрахунок окладів, премій та податків згідно з тарифікацією.
+        \item \emph{Реєстр виплат (Payment Register):} підготовка платіжних документів для виплати через банківські картки або касу.
+        \item \emph{Особові рахунки (Personal Accounts):} особові картки працівників, накази, оклади та історія змін.
+    \end{itemize}
+    \item \textbf{Supply \& Warehouse (Постачання та Склад):}
+    \begin{itemize}
+        \item \emph{Реєстр договорів (Contracts):} ведення угод з постачальниками, графіків етапів та оплат.
+        \item \emph{Залишки на складі (Warehouse):} кількісно-сумовий облік ТМЦ, рівні запасів (норма, низький, критичний).
+        \item \emph{Каталог ТМЦ:} довідник стандартизованої номенклатури.
+        \item \emph{Планування закупівель (Procurement):} формування заявок на придбання та лімітування витрат за КЕКВ.
+    \end{itemize}
+    \item \textbf{Reporting (Звітність):}
+    \begin{itemize}
+        \item \emph{Реєстр звітів (Reports Register):} перелік регламентованих форм (Форма №1 Баланс, Форма №2 Фінансові результати, Податкова декларація з ПДВ, Звіт з ЄСВ тощо).
+        \item \emph{Конструктор звітів (Constructor):} налаштування та зміна структури звітних форм.
+        \item \emph{Архів звітів (Archive):} збереження підписаних версій документів у PDF/XML.
+        \item \emph{Центр валідації (Validation):} автоматичний перехресний контроль показників.
+        \item \emph{Подання звітності (Submission):} моніторинг статусів відправки та квитанцій з державних порталів (Є-Звітність, ПФУ, ДПС).
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{3.1.5. API та протоколи взаємодії}
+Обмін даними між веб-клієнтом (Swift/Web) та ядром системи здійснюється через:
+\begin{itemize}
+    \item REST API (JSON) для отримання довідників та аналітики.
+    \item WebSockets (WSS) для оновлення балансових звітів та моніторів у реальному часі.
+    \item API інтеграції з державними системами (Є-Казна, ДПС, ПФУ).
+\end{itemize}
+
+\subsubsection{3.1.6. Рольова модель та ABAC правила}
+Доступ до фінансової інформації обмежується на базі атрибутів (ABAC):
+\begin{itemize}
+    \item \textbf{Бухгалтер:} Дозволено створювати та проводити документи свого підрозділу.
+    \item \textbf{Головний Бухгалтер:} Повний доступ до проводок, планів та звітів, право підпису відомостей.
+    \item \textbf{Кадровик:} Доступ до особових справ, табелів обліку часу. Заборонено доступ до бухгалтерських рахунків та проводок.
+    \item \textbf{Складський комірник:} Доступ до складських ордерів та довідника ТМЦ.
+\end{itemize}
+
+\subsubsection{3.1.7. Опис валідацій}
+Система повинна забезпечувати обов'язкову автоматичну перевірку:
+\begin{itemize}
+    \item \textbf{Контроль подвійного запису:} Сума за дебетом повинна точно дорівнювати сумі за кредитом для кожної проводки.
+    \item \textbf{Кошторисний контроль:} Сума видатків за КЕКВ не повинна перевищувати затверджені ліміти фінансового плану.
+    \item \textbf{Валідація табеля:} Кількість відпрацьованих днів не повинна перевищувати норму робочого часу за календарний місяць.
+\end{itemize}
+
+\subsubsection{3.1.8. Шаблони сповіщень та документів}
+\begin{itemize}
+    \item Генерація друкованих форм первинних документів (Акт, Накладна, Розрахунковий листок) у форматах PDF/XLSX.
+    \item Автоматичні MQTT сповіщення Головному бухгалтеру про перевищення ліміту кошторису за КЕКВ.
+\end{itemize}
+
+\subsubsection{3.1.9. Вимоги до серіалізації}
+Усі дані передаються в JSON форматі та зберігаються в базі даних Mnesia як Erlang-рекорди з використанням вкладених структур (Maps).
+
+\subsubsection{3.1.10. Вимоги до транспорту}
+Безпечна взаємодія через HTTPS/WSS/MQTT з використанням протоколу шифрування TLS 1.3.
+
+\subsection{3.2. Нефункціональні вимоги}
+
+\subsubsection{3.2.1. Вимоги до архітектури}
+Архітектура системи будується на базі фреймворку SYNRC:
+\begin{itemize}
+    \item \textbf{Ядро:} розробка на Erlang/OTP для відмовостійкості.
+    \item \textbf{База даних:} вбудована розподілена база даних Erlang Mnesia. Не допускається використання SQL баз даних.
+    \item \textbf{Сховище ТМЦ та файлів документів:} KVS бібліотека з RocksDB та S3-сумісним сховищем.
+\end{itemize}
+
+\subsubsection{3.2.2. Вимоги до безпеки}
+\begin{itemize}
+    \item Автентифікація користувачів виключно через КЕП (X.509 CAdES-X Long).
+    \item Захист від атак OWASP Top 10 на прикладному рівні.
+    \item Відповідність вимогам закону «Про захист персональних даних» (GDPR сумісність).
+\end{itemize}
+
+\subsubsection{3.2.3. Вимоги до продуктивності}
+\begin{itemize}
+    \item Час формування оборотного балансу --- до 500 мс при 100,000 операцій.
+    \item Пропускна здатність системи --- не менше 500 запитів/с.
+    \item Latency передачі даних в реальному часі --- < 150 мс.
+\end{itemize}
+
+\subsubsection{3.2.4. Вимоги до функціональності логування}
+Ведення Audit Log у форматі JSON з експортом до стеку ELK (Filebeat, Logstash, Elasticsearch, Kibana).
+
+\subsubsection{3.2.5. Тестування та супровід}
+\begin{itemize}
+    \item Покриття автоматичними Unit/Integration тестами не менше 80\%.
+    \item Передача всіх майнових прав інтелектуальної власності Замовнику.
+\end{itemize}
+
+\newpage
+\appendix
+\section{Додаток А. Специфікація реквізитів сутностей (для ТЗ)}
+
+\paragraph{Первинний документ (PrimaryDocument)}
+\begin{longtable}{p{3.5cm}p{3cm}p{2cm}p{5.5cm}}
+\toprule
+\textbf{Реквізит} & \textbf{Тип даних} & \textbf{Обов'язковий} & \textbf{Опис} \\
+\midrule
+id & UUID & Так & Унікальний ідентифікатор \\
+date & Date & Так & Дата створення документа \\
+document\_number & String (50) & Так & Номер документа \\
+type & String (30) & Так & Тип (Акт, Накладна тощо) \\
+counterparty & String (200) & Так & Контрагент (назва/ЄДРПОУ) \\
+debit\_account & String (20) & Так & Рахунок дебету \\
+credit\_account & String (20) & Так & Рахунок кредиту \\
+amount & Decimal & Так & Сума операції \\
+vat & Decimal & Так & ПДВ (сума) \\
+status & Enum & Так & Поточний стан життєвого циклу \\
+\bottomrule
+\end{longtable}
+
+\paragraph{Особова справа працівника (EmployeeRecord)}
+\begin{longtable}{p{3.5cm}p{3cm}p{2cm}p{5.5cm}}
+\toprule
+\textbf{Реквізит} & \textbf{Тип даних} & \textbf{Обов'язковий} & \textbf{Опис} \\
+\midrule
+id & UUID & Так & Унікальний ідентифікатор \\
+fullName & String (300) & Так & Прізвище, Ім'я, По батькові \\
+personnelNumber & String (20) & Так & Табельний номер \\
+department & String (150) & Так & Структурний підрозділ \\
+position & String (150) & Так & Посада працівника \\
+hireDate & Date & Так & Дата прийняття на роботу \\
+salary & Decimal & Так & Посадовий оклад \\
+status & Enum & Так & Стан (Active, On Leave, Terminated) \\
+\bottomrule
+\end{longtable}
+
+\paragraph{Запис табелю (TimesheetEntry)}
+\begin{longtable}{p{3.5cm}p{3.5cm}p{2cm}p{5cm}}
+\toprule
+\textbf{Реквізит} & \textbf{Тип даних} & \textbf{Обов'язковий} & \textbf{Опис} \\
+\midrule
+id & UUID & Так & Унікальний ідентифікатор \\
+employeeName & String (300) & Так & Прізвище та ініціали \\
+department & String (150) & Так & Підрозділ \\
+daysWorked & Integer & Так & Кількість відпрацьованих днів \\
+daysAbsent & Integer & Так & Кількість днів відсутності \\
+overtimeHours & Decimal & Так & Надурочні години \\
+totalHours & Decimal & Так & Загальна кількість годин \\
+status & String (30) & Так & Статус затвердження табелю \\
+\bottomrule
+\end{longtable}
+
+\paragraph{Розрахунковий рядок ЗП (PayrollLine)}
+\begin{longtable}{p{3.5cm}p{3.5cm}p{2cm}p{5cm}}
+\toprule
+\textbf{Реквізит} & \textbf{Тип даних} & \textbf{Обов'язковий} & \textbf{Опис} \\
+\midrule
+id & UUID & Так & Унікальний ідентифікатор \\
+employeeName & String (300) & Так & Прізвище та ініціали \\
+department & String (150) & Так & Підрозділ \\
+position & String (150) & Так & Посада \\
+grossPay & Decimal & Так & Нараховано (брутто) \\
+pit & Decimal & Так & Утримано ПДФО (18\%) \\
+militaryTax & Decimal & Так & Утримано військовий збір (1.5\%) \\
+pensionFund & Decimal & Так & Відрахування до ПФ \\
+otherDeductions & Decimal & Так & Інші утримання \\
+netPay & Decimal & Так & До виплати (нетто) \\
+status & String (30) & Так & Статус розрахунку \\
+\bottomrule
+\end{longtable}
+
+\paragraph{Договір постачання (SupplyContract)}
+\begin{longtable}{p{3.5cm}p{3.5cm}p{2cm}p{5cm}}
+\toprule
+\textbf{Реквізит} & \textbf{Тип даних} & \textbf{Обов'язковий} & \textbf{Опис} \\
+\midrule
+id & UUID & Так & Унікальний ідентифікатор \\
+contractNumber & String (50) & Так & Номер договору \\
+date & Date & Так & Дата укладання \\
+supplier & String (200) & Так & Постачальник \\
+totalValue & Decimal & Так & Сума договору \\
+executedAmount & Decimal & Так & Виконано на суму \\
+stagesCompleted & Integer & Так & Пройдено етапів \\
+totalStages & Integer & Так & Всього етапів \\
+endDate & Date & Так & Дата завершення дії \\
+status & String (30) & Так & Статус виконання \\
+kekv & String (10) & Так & Код КЕКВ договору \\
+\bottomrule
+\end{longtable}
+
+\paragraph{Складський залишок (WarehouseItem)}
+\begin{longtable}{p{3.5cm}p{3.5cm}p{2cm}p{5cm}}
+\toprule
+\textbf{Реквізит} & \textbf{Тип даних} & \textbf{Обов'язковий} & \textbf{Опис} \\
+\midrule
+id & UUID & Так & Унікальний ідентифікатор \\
+code & String (30) & Так & Номенклатурний номер \\
+name & String (200) & Так & Найменування ТМЦ \\
+unit & String (20) & Так & Одиниця виміру \\
+quantity & Decimal & Так & Кількість на складі \\
+price & Decimal & Так & Облікова ціна за одиницю \\
+totalValue & Decimal & Так & Загальна вартість \\
+minStock & Decimal & Так & Мінімальний ліміт запасу \\
+warehouse & String (100) & Так & Назва складу зберігання \\
+stockLevel & String (20) & Так & Рівень запасу (normal, low, critical) \\
+\bottomrule
+\end{longtable}
+
+\paragraph{Звітний запис (ReportEntry)}
+\begin{longtable}{p{3.5cm}p{3.5cm}p{2cm}p{5cm}}
+\toprule
+\textbf{Реквізит} & \textbf{Тип даних} & \textbf{Обов'язковий} & \textbf{Опис} \\
+\midrule
+id & UUID & Так & Унікальний ідентифікатор \\
+name & String (200) & Так & Назва звітної форми \\
+formCode & String (20) & Так & Код регламентованої форми \\
+frequency & String (30) & Так & Періодичність \\
+lastGenerated & Date & Ні & Дата останньої генерації \\
+nextDue & Date & Так & Граничний термін подачі \\
+status & String (30) & Так & Поточний статус форми \\
+owner & String (100) & Так & Відповідальний виконавець \\
+reportType & String (50) & Так & Категорія звітності \\
+\bottomrule
+\end{longtable}
+
+\section{Додаток Б. Технічні деталі реалізації процесів та валідацій}
+
+\paragraph{Опис Erlang records}
+\begin{verbatim}
+-record(primary_document, {
+    id, document_number, date, type, counterparty,
+    debit_account, credit_account, amount, vat, status = draft
+}).
+
+-record(employee_record, {
+    id, full_name, personnel_number, department, position,
+    hire_date, salary, status = active
+}).
+\end{verbatim}
+
+\paragraph{Алгоритм валідації подвійного запису (acc\_validator.erl)}
+\begin{verbatim}
+-module(acc_validator).
+-export([validate_posting/1]).
+
+validate_posting(Postings) ->
+    DebitSum = lists:foldl(fun(P, Acc) -> Acc + P#posting.debit_amount end, 0.0, Postings),
+    CreditSum = lists:foldl(fun(P, Acc) -> Acc + P#posting.credit_amount end, 0.0, Postings),
+    case DebitSum == CreditSum of
+        true -> ok;
+        false -> {error, balance_mismatch}
+    end.
+\end{verbatim}
+
+\end{document}

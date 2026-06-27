@@ -1,0 +1,432 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{helvet}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{eso-pic}
+\usepackage{fancyhdr}
+\usepackage{parskip}
+\usepackage{microtype}
+\usepackage[english, ukrainian]{babel}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{titlesec}
+
+\definecolor{nato}{HTML}{293757}
+\definecolor{footergray}{gray}{0.65}
+
+\geometry{a4paper,left=3cm,right=3cm,top=3cm,bottom=3cm}
+\renewcommand{\familydefault}{\sfdefault}
+\setcounter{secnumdepth}{3}
+
+\titleformat{\section}
+  {\color{nato}\Huge\bfseries}{\thesection.}{1em}{}
+\titlespacing*{\section}{0pt}{30pt}{12pt}
+
+\titleformat{\subsection}
+  {\color{nato}\LARGE\bfseries}{\thesubsection.}{1em}{}
+\titlespacing*{\subsection}{0pt}{20pt}{8pt}
+
+\titleformat{\subsubsection}
+  {\color{nato}\Large\bfseries}{\thesubsubsection.}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{6pt}
+
+\fancyhf{}
+\fancyhead[R]{\small\color{footergray} 27 червня 2026}
+\fancyfoot[L]{\small\color{footergray} Техноробочий проект ERP/1. Модуль Облік}
+\fancyfoot[R]{\small\color{footergray}\thepage}
+
+\newcommand\HUGE[1]{\fontsize{40}{40}\selectfont #1}
+
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\footrule}{\color{footergray}\hrule width \textwidth height 0.4pt}
+
+\begin{document}
+
+\pagestyle{fancy}
+
+\begin{titlepage}
+  \AddToShipoutPictureBG*{\AtPageLowerLeft{\color{nato}\rule{\paperwidth}{\paperheight}}}
+  \color{white}\thispagestyle{empty}\vspace*{3cm}\centering
+  {\Huge  \textbf{ERP/1: Облік} \par} \vspace{1.5cm}
+  {\HUGE  \textbf{Техноробочий проект} \par} \vspace{1.5cm}
+  {\LARGE \textbf{на розробку та впровадження \\ підсистеми обліку, кадрів \\  та заробітної плати} \par} \vspace{1.5cm}
+  {\large Відповідно до ДСТУ 34.201-89 та Постанови КМУ № 205 від 21.02.2025 \par}
+  {\large Формалізація вимог за стандартом ISO/IEC/IEEE 29148:2018 \par}
+  \vfill
+  {\large 2026 \copyright\ Системи Електронного Урядування \par}
+\end{titlepage}
+
+\newpage
+
+\begin{center}
+  {\Huge\color{nato}\bfseries Зміст\par}
+\end{center}
+\vspace{40pt}
+\tableofcontents
+
+\newpage
+
+\section{Загальні відомості про засіб інформатизації}
+
+\subsection{1.1. Найменування та підстави для розробки}
+\textbf{Найменування засобу інформатизації:} Підсистема «ERP/1: Облік» (далі --- Модуль «Облік»).
+\\
+\textbf{Відомості про замовника:} ТОВ "Системи Електронного Урядування" в ТОВ "Криптографічні телесистеми".
+\\
+\textbf{Підстави для виконання робіт:}
+\begin{itemize}
+    \item Бюджетний кодекс України;
+    \item Закон України «Про бухгалтерський облік та фінансову звітність в Україні»;
+    \item Постанова Кабінету Міністрів України від 21 лютого 2025 року № 205 «Деякі питання створення, адміністрування та забезпечення функціонування засобу інформатизації».
+\end{itemize}
+
+\subsection{1.2. Призначення та цілі створення засобу}
+Модуль «Облік» призначений для комплексної автоматизації фінансової та господарської діяльності з можливістю багатовимірного аналітичного обліку, розрахунку заробітної плати та складання регламентованих звітів.
+\\
+\textbf{Цілі створення засобу:}
+\begin{itemize}
+    \item Автоматизація ведення Головної книги та бухгалтерських проводок;
+    \item Складання оборотного балансу та фінансових звітів у реальному часі;
+    \item Розрахунок заробітної плати та податків з особових рахунків працівників;
+    \item Управління матеріально-технічним забезпеченням, закупівлями та складом ТМЦ;
+    \item Контроль виконання кошторисів за кодами КЕКВ;
+    \item Забезпечення автентифікації та підписання відомостей за допомогою КЕП (CAdES-X Long).
+\end{itemize}
+
+\subsection{1.3. План-графік виконання етапів робіт}
+\begin{enumerate}
+    \item \textbf{Етап 1: Проектування та погодження архітектури} --- розробка та погодження UML/Figma специфікацій. (1 місяць).
+    \item \textbf{Етап 2: Створення схем даних} --- реалізація Erlang records, створення таблиць Mnesia та RocksDB сховищ. (1.5 місяці).
+    \item \textbf{Етап 3: Розробка бізнес-процесів} --- реалізація BPE DSL для ЗП, проводок та закупівель. (2 місяці).
+    \item \textbf{Етап 4: Інтеграційні сервіси} --- налаштування обміну з Є-Казна, ДПС, ПФУ. (1.5 місяці).
+    \item \textbf{Етап 5: Верифікація та тестування} --- Unit, Integration тестування, UAT приймання. (1 місяць).
+\end{enumerate}
+
+\newpage
+\section{Відомості про робочий процес та умови експлуатації}
+
+\subsection{2.1. Опис бізнес-процесів (BPMN / FSM)}
+
+\subsubsection{2.1.1. Процес проводки первинного документа}
+\begin{enumerate}
+    \item \textbf{StartPosting:} Створення проекту документа бухгалтером.
+    \item \textbf{EnterData:} Введення реквізитів (сума, рахунки дебету/кредиту, код КЕКВ).
+    \item \textbf{ValidateDoubleEntry:} Автоматична перевірка валідатором подвійного запису. У разі успіху --- перехід до \texttt{CheckBudget}, інакше --- повернення до \texttt{EnterData}.
+    \item \textbf{CheckBudget:} Автоматичний контроль відповідності лімітам видатків за КЕКВ.
+    \item \textbf{SignDoc:} Накладання КЕП бухгалтера на первинний документ.
+    \item \textbf{PostToLedger:} Автоматичне проведення суми по рахунках Головної книги.
+    \item \textbf{PostingCompleted:} Фіксація проводки.
+\end{enumerate}
+
+\subsubsection{2.1.2. Процес розрахунку заробітної плати}
+\begin{enumerate}
+    \item \textbf{StartPayroll:} Запуск розрахункового періоду за місяць.
+    \item \textbf{CollectTimesheets:} Завантаження та затвердження табелів робочого часу працівників.
+    \item \textbf{CalculateTaxes:} Автоматичний розрахунок нарахувань, утримань ПДФО, військового збору та ЄСВ.
+    \item \textbf{ApproveRegister:} Погодження відомості розрахунку Головним бухгалтером.
+    \item \textbf{QESSign:} Накладання КЕП керівника закладу на відомість виплати.
+    \item \textbf{DisburseFunds:} Формування платіжного реєстру для відправки в Є-Казна / банк.
+    \item \textbf{PayrollCompleted:} Закриття періоду.
+\end{enumerate}
+
+\subsubsection{2.1.3. Процес планування закупівель}
+\begin{enumerate}
+    \item \textbf{StartProcurement:} Запуск процедури планування закупівлі ТМЦ.
+    \item \textbf{DraftRequest:} Створення заявки на закупівлю із зазначенням кодів ТМЦ та КЕКВ.
+    \item \textbf{VerifyFunds:} Автоматична перевірка наявності кошторисних асигнувань.
+    \item \textbf{ApproveByChief:} Погодження закупівлі керівництвом.
+    \item \textbf{GenerateContract:} Автоматичне формування договору в реєстрі укладених угод.
+    \item \textbf{ProcurementCompleted:} Завершення етапу планування.
+\end{enumerate}
+
+\subsubsection{2.1.4. Процес підготовки та подання звітності}
+\begin{enumerate}
+    \item \textbf{StartReporting:} Запуск формування звітного періоду (місяць, квартал, рік).
+    \item \textbf{RunConstructor:} Збирання даних з Головної книги та кадрового обліку.
+    \item \textbf{ValidateData:} Контроль взаємозв'язку показників форм звітності.
+    \item \textbf{QESSignReport:} Накладання КЕП посадових особ.
+    \item \textbf{SubmitToPortal:} Відправка звіту через інтеграційне API до казначейського або податкового порталу.
+    \item \textbf{ReportAccepted:} Отримання квитанції про успішне прийняття звіту.
+\end{enumerate}
+
+\subsection{2.2. Опис ролей та прав доступу (ABAC)}
+\begin{itemize}
+    \item \textbf{Правило 1 (Бухгалтер):}
+    $$\text{subject.roles contains 'Accountant'} \land \text{object.entity\_type == 'PrimaryDocument'}$$
+    $$\land\ \text{object.department\_id == subject.department\_id} \land \text{object.status == 'draft'}$$
+    $$\rightarrow \text{Permit: read, write, sign.}$$
+    \item \textbf{Правило 2 (Кадровик):}
+    $$\text{subject.roles contains 'HR'} \land (\text{object.entity\_type == 'EmployeeRecord'} \lor \text{object.entity\_type == 'TimesheetEntry'})$$
+    $$\rightarrow \text{Permit: read, write, sign. Deny: delete.}$$
+    \item \textbf{Правило 3 (Комірник):}
+    $$\text{subject.roles contains 'Storekeeper'} \land \text{object.entity\_type == 'WarehouseItem'}$$
+    $$\rightarrow \text{Permit: read, write (тільки прибуткові/видаткові ордери).}$$
+    \item \textbf{Правило 4 (Контроль подвійного запису):}
+    $$\text{object.entity\_type == 'JournalPosting'} \land \text{debit\_sum == credit\_sum}$$
+    $$\rightarrow \text{Permit: post.}$$
+    \item \textbf{Правило 5 (Кошторисний контроль):}
+    $$\text{object.entity\_type == 'PrimaryDocument'} \land \text{object.amount} \le \text{budget.available\_limit}$$
+    $$\rightarrow \text{Permit: approve.}$$
+\end{itemize}
+
+\subsection{2.3. Умови експлуатації}
+\begin{itemize}
+    \item Середовище виконання: Erlang/OTP версії 26 та вище.
+    \item База даних: Erlang Mnesia як єдине native транзакційне сховище. Використання реляційних SQL баз даних не допускається.
+    \item Сховище медіа-об'єктів (первинних скан-копій): S3-сумісне сховище або RocksDB через бібліотеку KVS.
+\end{itemize}
+
+\newpage
+\section{Інформаційне та програмне забезпечення}
+
+\subsection{3.1. Інформаційне забезпечення (Реквізити)}
+Усі об'єкти описуються Erlang-рекордами:
+\begin{verbatim}
+-record(primary_document, {
+    id, date, document_number, type, counterparty,
+    debit_account, credit_account, amount, vat, status = draft
+}).
+
+-record(journal_posting, {
+    id, date, document_number, description, debit_account,
+    credit_account, amount, kekv, department, status = draft
+}).
+
+-record(ledger_account, {
+    id, code, name, opening_balance, debit_turnover,
+    credit_turnover, closing_balance
+}).
+
+-record(employee_record, {
+    id, full_name, personnel_number, department, position,
+    hire_date, salary, status = active
+}).
+
+-record(timesheet_entry, {
+    id, employee_name, department, days_worked, days_absent,
+    overtime_hours, total_hours, status = draft
+}).
+
+-record(payroll_line, {
+    id, employee_name, department, position, gross_pay,
+    pit, military_tax, pension_fund, other_deductions,
+    net_pay, status = calculated
+}).
+
+-record(supply_contract, {
+    id, contract_number, date, supplier, total_value,
+    executed_amount, stages_completed, total_stages,
+    end_date, status = draft, kekv
+}).
+
+-record(warehouse_item, {
+    id, code, name, unit, quantity, price, total_value,
+    min_stock, warehouse, stock_level = normal
+}).
+\end{verbatim}
+
+\paragraph{Повнотекстові специфікації реквізитів:} наведено в додатку А до Технічних вимог (див. [acc.tex](file:///Users/tonpa/depot/erpuno/erp.uno/acc/acc.tex)).
+
+\subsection{3.2. Програмне забезпечення (Реалізація)}
+
+\subsubsection{3.2.1. bpe\_bookkeeping\_posting.erl (Процес проведення документа)}
+\begin{verbatim}
+-module(bpe_bookkeeping_posting).
+-include("bpe.hrl").
+-compile(export_all).
+
+def() ->
+    #process{
+        name = 'Primary Document Posting',
+        beginEvent = 'StartPosting',
+        endEvent = 'PostingCompleted',
+        tasks = [
+            #beginEvent{name='StartPosting'},
+            #userTask{name='EnterData', module=?MODULE},
+            #serviceTask{name='ValidateDoubleEntry', module=?MODULE},
+            #serviceTask{name='CheckBudget', module=?MODULE},
+            #userTask{name='SignDoc', module=?MODULE},
+            #serviceTask{name='PostToLedger', module=?MODULE},
+            #endEvent{name='PostingCompleted'}
+        ],
+        flows = [
+            #sequenceFlow{name='1', source='StartPosting', target='EnterData'},
+            #sequenceFlow{name='2', source='EnterData', 
+                         target='ValidateDoubleEntry'},
+            #sequenceFlow{name='3', source='ValidateDoubleEntry', 
+                         target='CheckBudget', condition="validation_ok"},
+            #sequenceFlow{name='4', source='ValidateDoubleEntry', 
+                         target='EnterData', condition="validation_failed"},
+            #sequenceFlow{name='5', source='CheckBudget', 
+                         target='SignDoc', condition="budget_ok"},
+            #sequenceFlow{name='6', source='CheckBudget', 
+                         target='EnterData', condition="budget_overlimit"},
+            #sequenceFlow{name='7', source='SignDoc', target='PostToLedger'},
+            #sequenceFlow{name='8', source='PostToLedger', 
+                         target='PostingCompleted'}
+        ]
+    }.
+
+action({serviceTask, 'ValidateDoubleEntry'}, Proc) ->
+    case acc_validator:validate_posting(Proc) of
+        ok -> {reply, Proc, "validation_ok"};
+        _  -> {reply, Proc, "validation_failed"}
+    end;
+action(_, Proc) -> {reply, Proc}.
+\end{verbatim}
+
+\subsubsection{3.2.2. bpe\_payroll\_calculation.erl (Процес розрахунку ЗП)}
+\begin{verbatim}
+-module(bpe_payroll_calculation).
+-include("bpe.hrl").
+-compile(export_all).
+
+def() ->
+    #process{
+        name = 'Monthly Payroll Calculation',
+        beginEvent = 'StartPayroll',
+        endEvent = 'PayrollCompleted',
+        tasks = [
+            #beginEvent{name='StartPayroll'},
+            #serviceTask{name='CollectTimesheets', module=?MODULE},
+            #serviceTask{name='CalculateTaxes', module=?MODULE},
+            #userTask{name='ApproveRegister', module=?MODULE},
+            #userTask{name='QESSign', module=?MODULE},
+            #serviceTask{name='DisburseFunds', module=?MODULE},
+            #endEvent{name='PayrollCompleted'}
+        ],
+        flows = [
+            #sequenceFlow{name='1', source='StartPayroll', 
+                         target='CollectTimesheets'},
+            #sequenceFlow{name='2', source='CollectTimesheets', 
+                         target='CalculateTaxes'},
+            #sequenceFlow{name='3', source='CalculateTaxes', 
+                         target='ApproveRegister'},
+            #sequenceFlow{name='4', source='ApproveRegister', 
+                         target='QESSign'},
+            #sequenceFlow{name='5', source='QESSign', 
+                         target='DisburseFunds'},
+            #sequenceFlow{name='6', source='DisburseFunds', 
+                         target='PayrollCompleted'}
+        ]
+    }.
+action(_, Proc) -> {reply, Proc}.
+\end{verbatim}
+
+\subsubsection{3.2.3. bpe\_procurement\_planning.erl (Процес планування закупівель)}
+\begin{verbatim}
+-module(bpe_procurement_planning).
+-include("bpe.hrl").
+-compile(export_all).
+
+def() ->
+    #process{
+        name = 'Procurement Planning',
+        beginEvent = 'StartProcurement',
+        endEvent = 'ProcurementCompleted',
+        tasks = [
+            #beginEvent{name='StartProcurement'},
+            #userTask{name='DraftRequest', module=?MODULE},
+            #serviceTask{name='VerifyFunds', module=?MODULE},
+            #userTask{name='ApproveByChief', module=?MODULE},
+            #serviceTask{name='GenerateContract', module=?MODULE},
+            #endEvent{name='ProcurementCompleted'}
+        ],
+        flows = [
+            #sequenceFlow{name='1', source='StartProcurement', 
+                         target='DraftRequest'},
+            #sequenceFlow{name='2', source='DraftRequest', 
+                         target='VerifyFunds'},
+            #sequenceFlow{name='3', source='VerifyFunds', 
+                         target='ApproveByChief', condition="funds_available"},
+            #sequenceFlow{name='4', source='VerifyFunds', 
+                         target='DraftRequest', condition="insufficient_funds"},
+            #sequenceFlow{name='5', source='ApproveByChief', 
+                         target='GenerateContract'},
+            #sequenceFlow{name='6', source='GenerateContract', 
+                         target='ProcurementCompleted'}
+        ]
+    }.
+action(_, Proc) -> {reply, Proc}.
+\end{verbatim}
+
+\subsubsection{3.2.4. acc\_validator.erl (Модуль бізнес-валідацій)}
+\begin{verbatim}
+-module(acc_validator).
+-export([validate_posting/1, check_budget_limit/3]).
+
+-record(posting, {debit_amount = 0.0, credit_amount = 0.0}).
+
+validate_posting(Postings) ->
+    DebitSum = lists:foldl(fun(P, Acc) -> Acc + P#posting.debit_amount end, 0.0, Postings),
+    CreditSum = lists:foldl(fun(P, Acc) -> Acc + P#posting.credit_amount end, 0.0, Postings),
+    case DebitSum == CreditSum of
+        true -> ok;
+        false -> {error, balance_mismatch}
+    end.
+
+check_budget_limit(KEKV, Amount, AvailableLimit) ->
+    case Amount =< AvailableLimit of
+        true -> ok;
+        false -> {error, {budget_overlimit, KEKV}}
+    end.
+\end{verbatim}
+
+\newpage
+\section{Вимоги до засобу за ISO/IEC/IEEE 29148}
+
+\subsection{4.1. Функціональні вимоги}
+\begin{itemize}
+    \item \textbf{[REQ-ACC-FUN-001]} Модуль «Облік» повинен забезпечувати ведення плану рахунків, класифікації КЕКВ та довідників ТМЦ.
+    \item \textbf{[REQ-ACC-FUN-002]} Модуль «Облік» повинен виконувати автоматичну перевірку балансу дебету та кредиту для кожної господарської проводки.
+    \item \textbf{[REQ-ACC-FUN-003]} Модуль «Облік» повинен підтримувати кошторисний контроль --- блокувати проведення первинних документів, якщо сума видатків за кодом КЕКВ перевищує ліміт асигнувань.
+    \item \textbf{[REQ-ACC-FUN-004]} Модуль «Облік» повинен забезпечувати автоматичний розрахунок заробітної плати працівників за місяць на основі затверджених табелів обліку робочого часу.
+    \item \textbf{[REQ-ACC-FUN-005]} Модуль «Облік» повинен автоматично розраховувати суми утримань ПДФО (18\%), військового збору (1.5\%) та нарахувань ЄСВ (22\%) згідно з чинним законодавством України.
+    \item \textbf{[REQ-ACC-FUN-006]} Модуль «Облік» повинен підтримувати підписання розрахункових та платіжних відомостей за допомогою КЕП CAdES-X Long.
+    \item \textbf{[REQ-ACC-FUN-007]} Модуль «Облік» повинен забезпечувати автоматичний розрахунок оборотного балансу та відображення залишків по Головній книзі в режимі реального часу.
+    \item \textbf{[REQ-ACC-FUN-008]} Модуль «Облік» повинен забезпечувати ведення особових справ співробітників, враховуючи кадрові накази та штатні оклади.
+    \item \textbf{[REQ-ACC-FUN-009]} Модуль «Облік» повинен генерувати первинні документи (Акт, Накладна, Розрахунковий листок) у форматах PDF та XLSX згідно з регламентованими формами.
+    \item \textbf{[REQ-ACC-FUN-010]} Модуль «Облік» повинен експортувати фінансові звіти до системи «Є-Звітність» за допомогою інтеграційного HTTPS REST API.
+\end{itemize}
+
+\subsection{4.2. Вимоги до інтерфейсів та дизайну}
+\begin{itemize}
+    \item \textbf{[REQ-ACC-UI-001]} Користувацький інтерфейс повинен бути сумісним зі стандартом веб-доступності WCAG 2.1 AA.
+    \item \textbf{[REQ-ACC-UI-002]} Інтерфейс користувача повинен функціонувати як Single Page Application (SPA), забезпечуючи оновлення фінансових моніторів через Secure WebSockets (WSS).
+    \item \textbf{[REQ-ACC-UI-003]} Обмін даними між веб-клієнтом та сервером повинен використовувати архітектурний шаблон Data-on-Wire з передачею об'єктів у форматі JSON.
+\end{itemize}
+
+\subsection{4.3. Вимоги до безпеки та захисту інформації}
+\begin{itemize}
+    \item \textbf{[REQ-ACC-SEC-001]} Автентифікація всіх користувачів підсистеми повинна здійснюватися виключно за допомогою кваліфікованого електронного підпису (КЕП) X.509.
+    \item \textbf{[REQ-ACC-SEC-002]} Будь-які запити на читання та запис фінансових даних повинні перевірятися підсистемою контролю доступу на основі ABAC-атрибутів суб'єкта та об'єкта.
+    \item \textbf{[REQ-ACC-SEC-003]} Система повинна передавати дані виключно через протокол шифрування TLS 1.3 з використанням безпечних криптографічних алгоритмів.
+    \item \textbf{[REQ-ACC-SEC-004]} Оскільки реляційні SQL бази даних не використовуються, ризик SQL-ін'єкцій повністю відсутній.
+    \item \textbf{[REQ-ACC-SEC-005]} Персональні дані працівників (особові справи, розрахунки ЗП) повинні бути захищені від несанкціонованого доступу згідно із Законом України «Про захист персональних даних».
+\end{itemize}
+
+\subsection{4.4. Вимоги до продуктивності}
+\begin{itemize}
+    \item \textbf{[REQ-ACC-PERF-001]} Час розрахунку та відображення оборотного балансу по 50,000 операцій не повинен перевищувати 500 мс.
+    \item \textbf{[REQ-ACC-PERF-002]} Пропускна здатність підсистеми Mnesia повинна бути не менше 500 фінансових проводок на секунду на один серверний вузол.
+    \item \textbf{[REQ-ACC-PERF-003]} Час відкриття та відображення реєстру документів на 1000 записів на клієнті не повинен перевищувати 1 секунди.
+\end{itemize}
+
+\subsection{4.5. Вимоги до логування, тестування та супроводу}
+\begin{itemize}
+    \item \textbf{[REQ-ACC-LOG-001]} Усі операції зміни фінансових станів, коригування проводок та входу користувачів повинні реєструватися у захищеному журналі аудиту (Audit Log).
+    \item \textbf{[REQ-ACC-LOG-002]} Логи аудиту повинні передаватися у форматі JSON до Elasticsearch (стек ELK) в режимі реального часу.
+    \item \textbf{[REQ-ACC-ADM-001]} Покриття вихідного коду автоматичними Unit-тестами та інтеграційними тестами надійності повинно бути не менше ніж 80\%.
+    \item \textbf{[REQ-ACC-ADM-002]} Поставка програмного забезпечення повинна містити повний пакет супровідної документації (Настанова користувача, Настанова адміністратора) згідно з ДСТУ 3008:2015.
+\end{itemize}
+
+\end{document}
