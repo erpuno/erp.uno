@@ -1,0 +1,257 @@
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="IAS — Служба ідентифікації та авторизації: керування цифровими ідентичностями, сертифікатами та політиками безпеки для інфраструктури Zencrypted." />
+    <meta name="author" content="Maxim Sokhatsky" />
+    <title>ERP/1: Авторизація</title>
+    <link rel="stylesheet" href="../index.css" />
+    <link rel="apple-touch-icon" sizes="180x180" href="../img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../img/favicon-16x16.png">
+    <link rel="manifest" href="../img/site.webmanifest">
+</head>
+
+<body>
+
+    <nav class="sticky">
+        <div class="nav-container">
+            <a href="https://erp.uno/" class="logo">ERP/1</a>
+            <ul class="nav-links">
+                <li><a href="https://zencrypted.github.io/ias/">Розробникам</a></li>
+            </ul>
+            <div class="lang-group">
+                <div class="lang-switcher">
+                    <a href="index.html" class="lang-btn active">UA</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header>
+        <div class="hero-content">
+            <h1
+                style="background: linear-gradient(135deg, #ffffff 0%, #a0a5aa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Авторизація</h1>
+            <p class="hero-subtitle"
+                style="font-size: 1.15rem; line-height: 1.6; color: rgba(255,255,255,0.8); max-width: 800px; margin: 1rem auto 0 auto;">
+                <strong>ERP/1: Авторизація (zencrypted/ias)</strong> — служба керування цифровими ідентичностями, сертифікатами, політиками безпеки та рішеннями авторизації для інфраструктури Zencrypted.
+            </p>
+        </div>
+    </header>
+    <main>
+        <section class="section-products">
+            <h2>Опис</h2>
+            <div>
+                <p style="margin-bottom: 1rem; line-height: 1.6;">
+                    <strong>ERP/1 IAS (Identity and Authorization Service)</strong> координує життєвий цикл цифрових ідентичностей, сертифікатів та дозволів, об'єднуючи користувачів, пристрої та профілі безпеки в єдиний керований граф відношень. IAS виступає як інтегрована адміністративна консоль, що взаємодіє з Центром сертифікації (CA) для підписання сертифікатів та шлюзами VPN для застосування правил авторизації.
+                </p>
+                <p style="line-height: 1.6;">
+                    Система спроектована згідно з принципом <strong>наскрізної простежуваності вимог (traceability)</strong> від високорівневих корпоративних політик безпеки до конкретних елементів реалізації. Завдяки розділенню обов'язків, приватні ключі генеруються та зберігаються виключно локально на клієнтських пристроях, а доставка дозволів до VPN-шлюзів здійснюється у вигляді односторонніх транзакційних команд через розподілений Erlang RPC.
+                </p>
+            </div>
+            <figure>
+                <center><img width=100% src="https://authority.erp.uno/priv/design/ca-shaders.png"></center>
+            </figure>
+        </section>
+
+        <section class="section-solutions">
+            <h2>Ключові можливості та специфікації</h2>
+            <div class="solutions-grid" style="gap: 1.5rem;">
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 1rem;">Керування ідентичностями</h4>
+                    <ul style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">
+                        <li>Граф зв'язків User $\rightarrow$ Device $\rightarrow$ Certificate</li>
+                        <li>Стійке транзакційне сховище Mnesia / KVS</li>
+                        <li>Реактивний інтерфейс N2O/NITRO</li>
+                    </ul>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 1rem;">Життєвий цикл сертифікатів</h4>
+                    <ul style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">
+                        <li>Автоматичний випуск (EST / CMP)</li>
+                        <li>Локальна генерація CSR (приватний ключ не передається)</li>
+                        <li>Перевірка та відкликання за списками CRL/OCSP</li>
+                    </ul>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 1rem;">Політики доступу (ABAC)</h4>
+                    <ul style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">
+                        <li>Контроль доступу на основі атрибутів</li>
+                        <li>Оцінка довіри пристрою (Ready/Blocked/Degraded)</li>
+                        <li>Двофакторна автентифікація та EUDI Wallet</li>
+                    </ul>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 1rem;">Провіженінг та реконсиляція</h4>
+                    <ul style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">
+                        <li>Односторонній Distributed Erlang RPC</li>
+                        <li>Фоновий моніторинг та виявлення сирітських профілів</li>
+                        <li>Аудит ревізій та логування інцидентів</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-solutions">
+            <h2>Контролі безпеки та комплаєнс (NIST SP 800-53)</h2>
+            <div style="margin-bottom: 2rem; line-height: 1.6;">
+                Модуль IAS забезпечує виконання вимог технічного захисту інформації (КСЗІ рівня Г3) та мапінгу безпекових контролів NIST:
+            </div>
+            <div class="solutions-grid" style="gap: 1.5rem; grid-template-columns: repeat(2, 1fr);">
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">Керування обліковими записами та доступом (AC-2, AC-3)</h4>
+                    <ul style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.6; padding-left: 1.2rem;">
+                        <li><strong>Життєвий цикл записів (AC-2)</strong>: Автоматизоване створення, модифікація, блокування та видалення ідентичностей користувачів і пристроїв на основі корпоративних правил.</li>
+                        <li><strong>Принцип найменших привілеїв (AC-3)</strong>: Авторизація запитів та операцій здійснюється виключно відповідно до моделі ABAC (контроль доступу на рівні атрибутів).</li>
+                    </ul>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">Ідентифікація та автентифікація (IA-2, IA-4, IA-5)</h4>
+                    <ul style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.6; padding-left: 1.2rem;">
+                        <li><strong>Mutual автентифікація (IA-2(11,12))</strong>: Обов'язкова двостороння автентифікація пристроїв та шлюзів на базі криптографічних сертифікатів.</li>
+                        <li><strong>Керування автентифікаторами (IA-5)</strong>: Централізована координація термінів дії сертифікатів, CRL та OCSP статусів.</li>
+                    </ul>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">Управління ключами (SC-12, SC-17)</h4>
+                    <ul style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.6; padding-left: 1.2rem;">
+                        <li><strong>Автоматичний випуск (SC-12)</strong>: Використання протоколів CMP та EST для безпечного отримання сертифікатів без передачі приватного ключа мережею.</li>
+                        <li><strong>Перевірка криптографічних матеріалів (SC-17)</strong>: Автоматичний контроль відповідності CSR та виданого CA сертифіката.</li>
+                    </ul>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">Аудит та невідкликаність (AU-10, SC-28)</h4>
+                    <ul style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.6; padding-left: 1.2rem;">
+                        <li><strong>Журнал змін (AU-10(5))</strong>: Фіксація дій операторів та рішень провіженінгу із застосуванням міток часу (TSP) та цифрового підпису ноди.</li>
+                        <li><strong>Захист у спокої (SC-28)</strong>: Безпечне шифрування бази даних і метаданих сертифікатів у сховищі KVS.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-solutions">
+            <h2>Переваги виконання на Erlang/OTP</h2>
+            <div style="margin-bottom: 2rem; line-height: 1.6;">
+                Використання віртуальної машини <strong>BEAM (Erlang)</strong> забезпечує надійність та стійкість Модуля IAS під час критичних навантажень:
+            </div>
+            <div class="solutions-grid" style="gap: 1.5rem; grid-template-columns: repeat(3, 1fr);">
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">Стійке сховище KVS</h4>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">База даних інтегрується безпосередньо з Mnesia, забезпечуючи миттєве відновлення зв'язків графу (rehydration) після перезапусків ноди.</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">Ізоляція процесів Майстра</h4>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">Кожен wizard-процес випуску або транзакція провіженінгу виконується в окремому легкому Erlang-процесі з нульовим ризиком взаємного впливу.</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, background 0.2s;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(255,255,255,0.04)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.02)';">
+                    <h4 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1em;">Стійкі Supervision Trees</h4>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.95em; line-height: 1.5;">Автоматичне перепідключення CMP/EST клієнтів та Event Bridge сповіщень у разі тимчасової втрати зв'язку із зовнішніми CA чи VPN нодами.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-standards">
+            <h2>Нормативні стандарти та регламенти</h2>
+            <div>
+                Модуль IAS розробляється відповідно до державних та міжнародних вимог проектування високотехнологічних систем:
+            </div>
+            <div class="solutions-grid" style="margin-top: 2rem;">
+                <div>
+                    <h4>Нормативне проектування</h4>
+                    <ul>
+                        <li><strong>Постанова КМУ № 205 від 21.02.2025</strong> — Порядок використання засобів інформатизації</li>
+                        <li><strong>ДСТУ 3008:2015</strong> — Документація на розроблення програмних засобів</li>
+                        <li><strong>ДСТУ 34.201-89</strong> — Вимоги до структури та оформлення ТЗ на створення систем</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Міжнародна стандартизація</h4>
+                    <ul>
+                        <li><strong>ISO/IEC/IEEE 29148:2018</strong> — Systems and software engineering — Life cycle processes — Requirements engineering</li>
+                        <li><strong>ISO/IEC/IEEE 42010:2018</strong> — Systems and software engineering — Architecture description</li>
+                        <li><strong>ДСТУ 4145-2002</strong> — Вітчизняний криптографічний стандарт цифрового підпису</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="footer-columns">
+            <div> &nbsp;
+            </div>
+            <div>
+                <h4>Системні продукти</h4>
+                <ul>
+                    <li><a href="../ca/index.html">Сертифікати</a></li>
+                    <li><a href="../vpn/index.html">Тунелі</a></li>
+                    <li><a href="../chat/index.html">Комунікатор</a></li>
+                    <li><a href="ias/index.html">Авторизація</a></li>
+                    <li><a href="../ldap/index.html">Директорія</a></li>
+                    <li><a href="../bpmn/index.html">Процеси</a></li>
+                    <li><a href="https://mqtt.erp.uno">Брокер</a></li>
+                    <li><a href="https://kvs.n2o.dev">Сховище</a></li>
+                    <li><a href="https://ws.n2o.dev">Фреймворк</a></li>
+                    <li><a href="https://form.n2o.dev">Форми</a></li>
+                    <li><a href="https://asn1.zencrypted.uk">Компілятор</a></li>
+                    <li><a href="https://abac.erp.uno">Контроль</a></li>
+                </ul>
+                <br>
+                <h4>Корпоративні продукти</h4>
+                <ul>
+                    <li><a href="../edu/index.html">Освіта</a></li>
+                    <li><a href="../health/index.html">Здоров'я</a></li>
+                    <li><a href="../cart/index.html">Реєстри</a></li>
+                    <li><a href="../mail/index.html">Документи</a></li>
+                    <li><a href="../acc/index.html">Облік</a></li>
+                    <li><a href="../warehouse/index.html">Склад</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Завантаження</h4>
+                <ul>
+                    <li><a href="https://x509.chat/bdfl.pdf">Кафедральний собор</a></li>
+                    <li><a href="https://x509.chat/encryption.pdf">Архітектура шифрування</a></li>
+                    <li><a href="https://books.axiosis.top/erp/erp.pdf">Навчальний посібник</a></li>
+                    <li><a href="https://protocol.zencrypted.uk">Регламент взаємодії</a></li>
+                    <li><a href="https://n2o.dev">Фреймворк підприємства</a></li>
+                    <li><a href="../man/ua/1.htm">Керівництво виконавця ERP/1</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Контакти</h4>
+                <p><a href="mailto:ceo@erp.uno">ceo@erp.uno</a></p>
+                <p>2026 © <a href="https://erp.uno/">ERP.UNO</a></p>
+                <p>2026 © <a href="https://synrc.com/">SYNRC.COM</a></p>
+                <br>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
