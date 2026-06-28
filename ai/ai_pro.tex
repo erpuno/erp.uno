@@ -1,0 +1,338 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage{helvet}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{eso-pic}
+\usepackage{fancyhdr}
+\usepackage{parskip}
+\usepackage{microtype}
+\usepackage[english, ukrainian]{babel}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{titlesec}
+
+% Define brand colors
+\definecolor{primary}{HTML}{293757}
+\definecolor{footergray}{gray}{0.65}
+
+\geometry{a4paper,left=3cm,right=3cm,top=3cm,bottom=3cm}
+\renewcommand{\familydefault}{\sfdefault}
+\setcounter{secnumdepth}{3}
+
+% Font shapes for T2A/Helvetica (mapping to cmss for Cyrillic support)
+\DeclareFontFamily{T2A}{phv}{}
+\DeclareFontShape{T2A}{phv}{m}{n}{<->ssub * cmss/m/n}{}
+\DeclareFontShape{T2A}{phv}{bx}{n}{<->ssub * cmss/bx/n}{}
+\DeclareFontShape{T2A}{phv}{m}{it}{<->ssub * cmss/m/it}{}
+\DeclareFontShape{T2A}{phv}{bx}{it}{<->ssub * cmss/bx/it}{}
+
+\titleformat{\section}
+  {\color{primary}\Huge\bfseries}{\thesection.}{1em}{}
+\titlespacing*{\section}{0pt}{30pt}{12pt}
+\titleformat{\subsection}
+  {\color{primary}\LARGE\bfseries}{\thesubsection.}{1em}{}
+\titlespacing*{\subsection}{0pt}{20pt}{8pt}
+\titleformat{\subsubsection}
+  {\color{primary}\Large\bfseries}{\thesubsubsection.}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{6pt}
+
+\fancyhf{}
+\fancyhead[R]{\small\color{footergray} 29 червня 2026}
+\fancyfoot[L]{\small\color{footergray} Техноробочий проект ERP/1. Модуль Істотність}
+\fancyfoot[R]{\small\color{footergray}\thepage}
+
+\newcommand\HUGE[1]{\fontsize{38}{38}\selectfont #1}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\footrule}{\color{footergray}\hrule width \textwidth height 0.4pt}
+
+\begin{document}
+\pagestyle{fancy}
+
+\begin{titlepage}
+\AddToShipoutPictureBG*{\AtPageLowerLeft{\color{primary}\rule{\paperwidth}{\paperheight}}}
+\color{white}\thispagestyle{empty}\vspace*{3cm}\centering
+  {\Huge \textbf{ERP/1: Істотність} \par} \vspace{1.5cm}
+  {\HUGE \textbf{Техноробочий проект} \par} \vspace{1.5cm}
+  {\LARGE \textbf{на створення та впровадження модуля «Істотність» \\ (локальної ШІ-інфраструктури)} \par} \vspace{1.5cm}
+  {\large Згідно з ДСТУ 34.201-89 та Порядком використання засобів інформатизації \par}
+  {\large Формалізація вимог за стандартом ISO/IEC/IEEE 29148:2018 \par}
+  \vfill
+  {\large 2026 \copyright\ Системи Електронного Урядування \par}
+\end{titlepage}
+
+\newpage
+\begin{center}
+  {\Huge\color{primary}\bfseries Зміст\par}
+\end{center}
+\vspace{40pt}
+\tableofcontents
+
+\newpage
+\section{Загальні відомості про засіб інформатизації}
+
+\subsection{Найменування та підстави для розробки}
+\textbf{Найменування засобу інформатизації:} Модуль «Істотність» (локальна ШІ-інфраструктура) у складі інформаційної системи управління підприємством ERP/1.
+
+\textbf{Підстави для виконання робіт:}
+\begin{itemize}
+    \item Закон України «Про захист персональних даних»;
+    \item Закон України «Про захист інформації в інформаційно-комунікаційних системах»;
+    \item Порядок використання засобів інформатизації (Постанова КМУ № 205 від 21.02.2025);
+    \item Програма модернізації обчислювальної IT-інфраструктури ЄСІКС.
+\end{itemize}
+
+\subsection{Призначення та цілі створення засобу}
+Модуль призначений для розгортання локальних інтелектуальних сервісів аналізу та семантичного пошуку з використанням великих мовних моделей (LLM) та векторних баз даних (RAG) безпосередньо on-premises на базі споживчих GPU NVIDIA RTX 4070 Ti.
+
+\textbf{Основні цілі створення:}
+\begin{itemize}
+    \item Забезпечення повного циклу локального інференсу LLM (Llama-3-8B-Instruct) із квантуванням ваг.
+    \item Організація семантичного RAG-пошуку через RocksDB та FAISS.
+    \item Автоматизація знеособлення вхідних документів (NER-маскування).
+    \item Побудова оркестрованого контуру управління 600+ периферійними вузлами через K8s та Rancher за методологією GitOps.
+    \item Реалізація відмовостійкості через CPU Fallback та Peer-to-Peer failover.
+\end{itemize}
+
+\subsection{План-графік виконання етапів робіт}
+Розробка та впровадження модуля «Істотність» розділяється на такі етапи:
+\begin{enumerate}
+    \item \textbf{Етап 1: Технічне проектування} --- погодження UX/UI макетів, вибір цільових моделей ШІ, розробка схем даних. (1 місяць).
+    \item \textbf{Етап 2: Реалізація сховища даних та RAG} --- налаштування RocksDB та індексів FAISS, розробка API-інтеграції з Erlang/OTP. (1.5 місяці).
+    \item \textbf{Етап 3: Розробка NER та знеособлення} --- реалізація локального мікросервісу розпізнавання сутностей та маскування. (1 місяць).
+    \item \textbf{Етап 4: Налаштування оркестрації K8s та GitOps} --- побудова кластера K8s, інтеграція GPU плагінів, оновлень. (1.5 місяці).
+    \item \textbf{Етап 5: Державна експертиза КСЗІ} --- аудит безпеки, перевірка контролів NIST SP 800-53 та отримання атестату. (2 місяці).
+\end{enumerate}
+
+\newpage
+\section{Відомості про робочий процес та умови експлуатації}
+
+\subsection{Опис бізнес-процесів (BPMN / FSM)}
+Всі процеси керування та роботи ШІ-сервісів формалізуються у вигляді кінцевих автоматів (FSM) та виконуються рушієм процесів BPE:
+
+\subsubsection{Процес локального інференсу та RAG (ai\_inference.erl)}
+Цей процес відповідає за обробку запиту користувача до великої мовної моделі з додаванням RAG-контексту:
+\begin{enumerate}
+    \item \textbf{StartInference:} Користувач надсилає текстовий запит (промпт) або документ.
+    \item \textbf{AnonymizePrompt:} Фоновий процес NER-фільтрації знеособлює чутливі дані, замінюючи їх на токени.
+    \item \textbf{GenerateEmbeddings:} Створення векторного представлення (ембедінгу) запиту через модель \texttt{e5-large}.
+    \item \textbf{VectorSearch:} Пошук відповідних фрагментів документів у FAISS за косинусною близькістю.
+    \item \textbf{BuildRAGPrompt:} Формування підсумкового промпту для LLM, де знеособлений запит поєднується зі знайденим контекстом.
+    \item \textbf{ExecuteInference:} Надсилання промпту до локального сервера \texttt{llama.cpp} на GPU RTX 4070 Ti.
+    \item \textbf{DeanonymizeResponse:} Зворотне відновлення персональних даних у згенерованій відповіді на базі локальної RocksDB таблиці відповідностей.
+    \item \textbf{InferenceCompleted:} Завершення процесу, повернення відповіді користувачу.
+\end{enumerate}
+
+\subsubsection{Процес нічного оновлення моделей (ai\_deployment.erl)}
+Забезпечує автоматизоване GitOps-оновлення ваг моделей:
+\begin{enumerate}
+    \item \textbf{TriggerUpdate:} Спрацювання cron-задачі о 01:00.
+    \item \textbf{CheckRemoteCatalog:} Перевірка наявності нових версій моделей у центральному сховищі Scality RING.
+    \item \textbf{VerifyDiskSpace:} Перевірка вільного місця на NVMe накопичувачі локального сервера.
+    \item \textbf{PullModelWeights:} Асинхронне скачування GGUF файлу ваг із обмеженням швидкості.
+    \item \textbf{VerifyChecksum:} Перевірка цілісності файлу за MD5/SHA256 хешами.
+    \item \textbf{RolloutBlueGreen:} Оновлення поду в K8s зі зміною монтування на новий файл моделі.
+    \item \textbf{VerificationTest:} Виконання тестового інференсу, перевірка GPU-метрик.
+    \item \textbf{DeploymentCompleted:} Фіксація успішного оновлення.
+\end{enumerate}
+
+\subsection{Опис ролей та прав доступу (ABAC)}
+Доступ до управління периферійними вузлами ШІ та перегляду журналів інференсу обмежується на базі ABAC:
+\begin{verbatim}
+allow(User, Action, Node) ->
+    UserRole = maps:get(role, User),
+    UserRegion = maps:get(region, User),
+    NodeRegion = maps:get(region, Node),
+    
+    IsCDTO = (UserRole == cdto_admin),
+    MatchesRegion = (UserRegion == NodeRegion),
+    
+    case {IsCDTO, Action} of
+        {true, _} -> true;
+        {false, view_metrics} -> MatchesRegion;
+        {false, query_inference} -> true;
+        _ -> false
+    end.
+\end{verbatim}
+
+\subsection{Умови експлуатації та системне середовище}
+Робочі станції ШІ-серверів експлуатуються в приміщеннях канцелярій чи комутаційних шафах установ. Завдяки Midi-Tower корпусу та активному повітряному охолодженню RTX 4070 Ti, додаткове кондиціонування не є обов'язковим. Системне середовище включає Ubuntu LTS 24.04, драйвери NVIDIA 550+, CUDA 12.x та Docker/K8s runtime.
+
+\newpage
+\section{Інформаційне та програмне забезпечення}
+
+\subsection{Інформаційне забезпечення (Схеми та Дані)}
+
+\subsubsection{Визначення структур даних (Erlang Records)}
+Всі ключові сутності модуля описуються у вигляді рекорді Erlang:
+\begin{verbatim}
+-record(ai_node_status, {
+    node_id,                    % UUID вузла (PK)
+    hostname,                   % Текстове ім'я хоста
+    ip_address,                 % IP-адреса вузла
+    gpu_temp = 0,               % Температура GPU RTX 4070 Ti в градусах
+    vram_used = 0,              % Зайнято відеопам'яті (MB)
+    vram_free = 0,              % Вільно відеопам'яті (MB)
+    power_limit_pct = 80,       % Power Limit у відсотках (80% за замовчуванням)
+    status = offline,           % online | offline | degraded | cooling_down
+    last_seen_at = 0            % Timestamp останнього пінгу
+}).
+
+-record(ai_model_config, {
+    model_id,                   % UUID моделі (PK)
+    name,                       % Назва моделі (напр. Llama-3-8B-Instruct)
+    quant_type,                 % Тип квантування (q4_k_m | q8_0)
+    file_path,                  % Шлях до GGUF файлу на NVMe
+    checksum_sha256,            % Контрольна сума файлу
+    context_window = 8192,      % Максимальний контекст (токенів)
+    is_active = false,          % Чи завантажена модель у пам'ять GPU
+    updated_at = 0
+}).
+
+-record(ai_anonymization_dictionary, {
+    dict_id,                    % UUID словника (PK)
+    mapping_table = #{},        % Таблиця відповідностей {Token -> OriginalValue}
+    created_at = 0,
+    updated_at = 0
+}).
+
+-record(ai_inference_task, {
+    task_id,                    % UUID задачі (PK)
+    user_id,                    % UUID користувача, що надіслав запит
+    node_id,                    % UUID обчислювального вузла, який виконав запит
+    prompt_hash,                % SHA256 хеш промпту
+    response_hash,              % SHA256 хеш згенерованої відповіді
+    tokens_generated = 0,       % Кількість згенерованих токенів
+    time_taken_ms = 0,          % Час виконання запиту в мілісекундах
+    status = pending,           % pending | processing | completed | failed
+    created_at = 0
+}).
+
+-record(ai_rag_index_state, {
+    index_id,                   % UUID індексу (PK)
+    num_vectors = 0,            % Кількість векторів
+    file_path,                  % Шлях до FAISS HNSW індексу
+    last_sync_at = 0,           % Час останньої синхронізації з Scality RING
+    status = active             % active | syncing | stale
+}).
+\end{verbatim}
+
+\subsection{Програмне забезпечення (Реалізація)}
+
+\subsubsection{ai\_inference.erl (DSL процесу RAG інференсу)}
+\begin{verbatim}
+-module(ai_inference).
+-include("bpe.hrl").
+-compile(export_all).
+
+def() ->
+    #process{
+        name = 'AI Inference and RAG Workflow',
+        beginEvent = 'StartInference',
+        endEvent = 'InferenceCompleted',
+        tasks = [
+            #beginEvent{name='StartInference'},
+            #serviceTask{name='AnonymizePrompt', module=?MODULE},
+            #serviceTask{name='GenerateEmbeddings', module=?MODULE},
+            #serviceTask{name='VectorSearch', module=?MODULE},
+            #serviceTask{name='BuildRAGPrompt', module=?MODULE},
+            #serviceTask{name='ExecuteInference', module=?MODULE},
+            #serviceTask{name='DeanonymizeResponse', module=?MODULE},
+            #endEvent{name='InferenceCompleted'}
+        ],
+        flows = [
+            #sequenceFlow{name='1', source='StartInference', target='AnonymizePrompt'},
+            #sequenceFlow{name='2', source='AnonymizePrompt', target='GenerateEmbeddings'},
+            #sequenceFlow{name='3', source='GenerateEmbeddings', target='VectorSearch'},
+            #sequenceFlow{name='4', source='VectorSearch', target='BuildRAGPrompt'},
+            #sequenceFlow{name='5', source='BuildRAGPrompt', target='ExecuteInference'},
+            #sequenceFlow{name='6', source='ExecuteInference', target='DeanonymizeResponse'},
+            #sequenceFlow{name='7', source='DeanonymizeResponse', target='InferenceCompleted'}
+        ],
+        roles = [operator, system]
+    }.
+
+action({serviceTask, 'AnonymizePrompt'}, Proc) ->
+    % Виклик локального мікросервісу знеособлення NER
+    {reply, Proc};
+action({serviceTask, 'VectorSearch'}, Proc) ->
+    % Пошук у локальному індексі FAISS
+    {reply, Proc};
+action({serviceTask, 'ExecuteInference'}, Proc) ->
+    % Інференс на GPU RTX 4070 Ti через llama.cpp
+    {reply, Proc};
+action(_, Proc) -> {reply, Proc}.
+\end{verbatim}
+
+\subsubsection{ai\_validator.erl (Модуль валідації ШІ вузла)}
+\begin{verbatim}
+-module(ai_validator).
+-export([validate_model_hash/2, check_gpu_temperature/1]).
+
+validate_model_hash(FilePath, ExpectedHash) ->
+    case file:read_file(FilePath) of
+        {ok, Binary} ->
+            Calculated = crypto:hash(sha256, Binary),
+            case Calculated of
+                ExpectedHash -> ok;
+                _ -> {error, checksum_mismatch}
+            end;
+        _ -> {error, file_not_found}
+    end.
+
+check_gpu_temperature(GpuTemp) ->
+    MaxAllowed = 80,
+    if
+        GpuTemp > MaxAllowed -> {error, overheating};
+        true -> ok
+    end.
+\end{verbatim}
+
+\newpage
+\section{Вимоги до засобу за ISO/IEC/IEEE 29148}
+
+\subsection{Функціональні вимоги}
+Модуль «Істотність» повинен виконувати аналіз завантажених документів, генерувати семантичні ембедінги, проводити знеособлення даних, здійснювати пошук контексту у RocksDB/FAISS та забезпечувати інференс мовної моделі.
+
+\subsection{Вимоги до інтерфейсів та дизайну}
+\begin{itemize}
+    \item Веб-інтерфейс адміністратора вузла повинен базуватися на фреймворку N2O/NITRO.
+    \item Панель моніторингу повинна виводити статус GPU (температура, VRAM) та кількість активних сесій.
+    \item Дизайн інтерфейсів має повністю відповідати стилю ERP/1 (Sleek Dark Mode).
+\end{itemize}
+
+\subsection{Вимоги до безпеки та захисту інформації}
+\begin{itemize}
+    \item Шифрування розділів NVMe накопичувачів на базі LUKS з інтеграцією апаратного модуля TPM 2.0.
+    \item Ізоляція мережевого трафіку ШІ від загального контуру LAN за допомогою Network Policies в CNI-плагіні Cilium.
+    \item Заборона передачі будь-яких даних за межі локальної фізичної мережі установи (Air-Gapped режим).
+\end{itemize}
+
+\subsection{Вимоги до продуктивності та надійності}
+\begin{itemize}
+    \item Середній показник доступності (SLA) периферійного сервера не менше 99.9\%.
+    \item Час відповіді на RAG-пошук (векторизація + FAISS) не більше 250 мс.
+    \item Максимальний час перемикання на CPU при виході з ладу GPU не більше 15 секунд.
+\end{itemize}
+
+\subsection{Вимоги до логування та аудиту}
+\begin{itemize}
+    \item Логування кожного запиту: ідентифікатор користувача, час, хеш промпту, хеш відповіді, згенеровані токени.
+    \item Журнал аудиту повинен бути захищений від змін та автоматично передаватися на центральний сервер логування в нічний час.
+\end{itemize}
+
+\subsection{Адміністративні та юридичні вимоги}
+\begin{itemize}
+    \item Всі компоненти ПЗ поставляються з відкритими ліцензіями (MIT/Apache 2.0).
+    \item Застосування споживчих GPU RTX 4070 Ti у судах та офісних приміщеннях не підпадає під заборону використання GeForce у ЦОД (Datacenters) згідно з EULA NVIDIA, оскільки вузли є робочими станціями (Workstations) або крайовими пристроями (Edge Devices).
+\end{itemize}
+
+\end{document}

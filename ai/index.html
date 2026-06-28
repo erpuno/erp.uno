@@ -1,0 +1,105 @@
+<html><head><meta charset="utf-8" /><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Істотність - Локальна ШІ-інфраструктура для інтелектуальних сервісів аналізу та оцінки інформації" />
+<meta name="author" content="Maxim Sokhatsky" />
+<title>ERP/1: Істотність</title>
+    <link rel="stylesheet" href="../index.css?v=15"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="../img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../img/favicon-16x16.png">
+    <link rel="manifest" href="../img/site.webmanifest">
+</head><body><nav class="sticky">
+    <div class="nav-container">
+        <a href="https://erp.uno" class="logo">ERP/1</a>
+        <div class="lang-group">
+            <div class="lang-switcher">
+                <a href="index.html" class="lang-btn">UA</a>
+            </div>
+        </div>
+    </div>
+</nav><header>
+    <div class="hero-content">
+        <h1>Істотність</h1>
+        <p class="hero-subtitle">Локальна ШІ-інфраструктура для інтелектуальних сервісів аналізу, семантичного пошуку та оцінки істотності інформації у документах та реєстрах.</p>
+    </div>
+</header><main>
+    <section class="section-products">
+        <h2>Опис</h2>
+        <div>Сучасна інтелектуальна платформа ШІ, розгорнута в локальному захищеному контурі підприємства або установи. Забезпечує децентралізоване виконання квантованих великих мовних моделей (LLM) та семантичного пошуку без передачі даних у сторонні хмари. Модуль розроблено на базі високопродуктивних споживчих GPU NVIDIA GeForce RTX 4070 Ti, оркеструється через промисловий Kubernetes (K8s) за методологією GitOps та повністю інтегрується з екосистемою ERP/1.</div>
+    </section>
+
+    <section class="section-solutions">
+        <h2>Ключові модулі</h2>
+        <div class="solutions-grid">
+            <div>Локальний інференс: виконання моделей Llama-3 (8B) та Phi-3 на локальних графічних прискорювачах із квантуванням ваг.</div>
+            <div>Семантичний RAG-контур: пошук контексту в RocksDB та FAISS для точних відповідей та усунення галюцинацій LLM.</div>
+            <div>Знеособлення даних: автоматична NER-фільтрація та маскування персональних даних перед передачею в мовну модель.</div>
+            <div>Оркестрація вузлів: централізоване керування 600+ вузлами периферійних обчислень через K8s та Rancher.</div>
+            <div>Відмовостійкість (Failover): автоматичний перехід на CPU (AVX-512/AMX) при збоях GPU та балансування між вузлами.</div>
+            <div>Моніторинг та телеметрія: відстеження температур, VRAM та завантаження GPU в реальному часі через Prometheus та Grafana.</div>
+            <div>Інтеграція з екосистемою: робота з модулями «Документи», «Реєстри» та «Процеси» через захищений Erlang RPC.</div>
+        </div>
+    </section>
+
+    <section class="section-standards">
+        <h2>Переваги</h2>
+        <ul class="standards-list">
+            <li>Повна конфіденційність: локальна обробка даних on-premises усуває ризики витоку інформації.</li>
+            <li>Відповідність стандартам безпеки: сумісність із КСЗІ України, вимогами NIST SP 800-53 та профілем NIST AI 600-1.</li>
+            <li>Економічна ефективність (TCO): зниження витрат більш ніж у 2.5 рази порівняно з хмарними API чи серверними ЦОД.</li>
+            <li>Висока живучість: працездатність ШІ-сервісів в автономному режимі (Air-Gapped) при відсутності інтернету.</li>
+            <li>Самовідновлення та SLA: автоматичне керування життєвим циклом інференс-контейнерів у кластері K8s.</li>
+            <li>Юридична чистота: використання open-source моделей та комплаєнс із ліцензією NVIDIA GeForce EULA.</li>
+            <li>Оцінка якості: інтегрований автоматичний контроль за метриками RAG-Triad та Legal Benchmark Dataset (LBD-UA).</li>
+        </ul>
+    </section>
+
+</main>
+<footer>
+    <div class="footer-columns">
+        <div> &nbsp;
+        </div>
+        <div>
+            <h4>Системні продукти</h4>
+            <ul>
+                <li><a href="../ca/index.html">Сертифікати</a></li>
+                <li><a href="../chat/index.html">Комунікатор</a></li>
+                <li><a href="../ldap/index.html">Директорія</a></li>
+                <li><a href="../bpmn/index.html">Процеси</a></li>
+            </ul>
+            <br>
+            <h4>Корпоративні Продукти</h4>
+            <ul>
+                <li><a href="../edu/index.html">Освіта</a></li>
+                <li><a href="../health/index.html">Здоров'я</a></li>
+                <li><a href="../cart/index.html">Реєстри</a></li>
+                <li><a href="../mail/index.html">Документи</a></li>
+                <li><a href="../acc/index.html">Облік</a></li>
+                <li><a href="../warehouse/index.html">Склад</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Завантаження</h4>
+            <ul>
+                <li><a href="https://x509.chat/bdfl.pdf">BDFL Cathedral</a></li>
+                <li><a href="https://x509.chat/encryption.pdf">Encryption Architecture</a></li>
+                <li><a href="https://protocol.zencrypted.uk">Buddha Protocol</a></li>
+                <li><a href="../man/ua/1.htm">ERP/1: Підприємство</a></li>
+                <li><a href="ai.pdf">ERP/1: Істотність (ТВ)</a></li>
+                <li><a href="ai_pro.pdf">ERP/1: Істотність (ТРП/ТЗ)</a></li>
+                <li><a href="https://axiosis.github.io/books/erp/erp.pdf">ERP/1: Навчальний посібник</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Контакти</h4>
+            <p><a href="mailto:ceo@erp.uno">ceo@erp.uno</a></p>
+            <p>2026 © <a href="https://erp.uno/">ERP.UNO</a></p>
+            <p>2026 © <a href="https://synrc.com/">SYNRC.COM</a></p>
+            <hr>
+            <p>2026 © ТОВ «СЕУ» (46207985)</p>
+            <p>2026 © ТОВ «Криптографічні Телесистеми» (46226772)</p>
+            <br>
+        </div>
+    </div>
+</footer></body>
+</html>

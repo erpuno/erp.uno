@@ -1,0 +1,237 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage{helvet}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{eso-pic}
+\usepackage{fancyhdr}
+\usepackage{parskip}
+\usepackage{microtype}
+\usepackage[english, ukrainian]{babel}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{titlesec}
+
+% Define brand colors
+\definecolor{primary}{HTML}{293757}
+\definecolor{footergray}{gray}{0.65}
+
+\geometry{a4paper,left=3cm,right=3cm,top=3cm,bottom=3cm}
+\renewcommand{\familydefault}{\sfdefault}
+\setcounter{secnumdepth}{3}
+
+% Font shapes for T2A/Helvetica (mapping to cmss for Cyrillic support)
+\DeclareFontFamily{T2A}{phv}{}
+\DeclareFontShape{T2A}{phv}{m}{n}{<->ssub * cmss/m/n}{}
+\DeclareFontShape{T2A}{phv}{bx}{n}{<->ssub * cmss/bx/n}{}
+\DeclareFontShape{T2A}{phv}{m}{it}{<->ssub * cmss/m/it}{}
+\DeclareFontShape{T2A}{phv}{bx}{it}{<->ssub * cmss/bx/it}{}
+
+\titleformat{\section}
+  {\color{primary}\Huge\bfseries}{\thesection.}{1em}{}
+\titlespacing*{\section}{0pt}{30pt}{12pt}
+\titleformat{\subsection}
+  {\color{primary}\LARGE\bfseries}{\thesubsection.}{1em}{}
+\titlespacing*{\subsection}{0pt}{20pt}{8pt}
+\titleformat{\subsubsection}
+  {\color{primary}\Large\bfseries}{\thesubsubsection.}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{6pt}
+
+\fancyhf{}
+\fancyhead[R]{\small\color{footergray} 29 червня 2026}
+\fancyfoot[L]{\small\color{footergray} Технічні вимоги ERP/1. Модуль Істотність}
+\fancyfoot[R]{\small\color{footergray}\thepage}
+
+\newcommand\HUGE[1]{\fontsize{38}{38}\selectfont #1}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\footrule}{\color{footergray}\hrule width \textwidth height 0.4pt}
+
+\begin{document}
+\pagestyle{fancy}
+
+\begin{titlepage}
+\AddToShipoutPictureBG*{\AtPageLowerLeft{\color{primary}\rule{\paperwidth}{\paperheight}}}
+\color{white}\thispagestyle{empty}\vspace*{4cm}\centering
+  {\Huge \textbf{ERP/1: Істотність} \par} \vspace{2cm}
+  {\HUGE \textbf{Технічні вимоги} \par} \vspace{2.5cm}
+  {\LARGE \textbf{до локальної ШІ-інфраструктури аналізу \\ та оцінки істотності інформації} \par} \vspace{2.5cm}
+\vfill
+  {\large 2026 \copyright\ Системи Електронного Урядування \par}
+\end{titlepage}
+
+\newpage
+\begin{center}
+  {\Huge\color{primary}\bfseries Зміст\par}
+\end{center}
+\vspace{40pt}
+\tableofcontents
+
+\newpage
+\begin{abstract}
+У цьому документі наведено детальні технічні вимоги до підсистеми ERP/1: Істотність, яка розробляється як сучасний інтелектуальний сервіс локального аналізу, семантичного пошуку та оцінки інформації на базі штучного інтелекту (ШІ). Платформа передбачає використання децентралізованих обчислювальних вузлів з споживчими GPU (NVIDIA GeForce RTX 4070 Ti) для локального виконання квантованих великих мовних моделей (LLM) та семантичного RAG-пошуку. Вимоги визначають архітектуру апаратного забезпечення, програмний стек, вимоги безпеки (КСЗІ, LUKS, TPM 2.0, Cilium), комплаєнс із стандартами NIST SP 800-53 та NIST AI 600-1, а також метрики оцінки якості та відмовостійкості системи в периферійному контурі.
+\end{abstract}
+
+\newpage
+\section{Умовні скорочення та визначення}
+
+Терміни та скорочення, що використовуються в цьому документі:
+
+\begin{longtable}{p{4cm}p{10cm}}
+\toprule
+\textbf{Термін / Скорочення} & \textbf{Значення} \\
+\midrule
+LLM & Large Language Model (Велика мовна модель) \\
+GPU & Graphics Processing Unit (Графічний процесор / відеокарта) \\
+RAG & Retrieval-Augmented Generation (Генерація з доповненням пошуку) \\
+VRAM & Video Random Access Memory (Відеопам'ять) \\
+K8s & Kubernetes (Платформа оркестрації контейнерів) \\
+TCO & Total Cost of Ownership (Сукупна вартість володіння) \\
+NER & Named Entity Recognition (Розпізнавання іменованих сутностей) \\
+TPM & Trusted Platform Module (Апаратний модуль безпеки) \\
+КСЗІ & Комплексна система захисту інформації \\
+ЄСІКС & Єдина судова інформаційно-комунікаційна система \\
+\bottomrule
+\end{longtable}
+
+\newpage
+\section{Загальні відомості}
+
+\subsection{Передумови}
+Сучасний етап цифровізації державних та корпоративних систем вимагає впровадження інтелектуальних інструментів для аналізу великих масивів документів, автоматизованого реферування та підготовки проектів рішень. Водночас, специфіка обробки конфіденційної інформації та персональних даних накладає суворі обмеження на архітектуру обчислювальних засобів:
+\begin{enumerate}
+\item \textbf{Конфіденційність (КСЗІ)}: Відповідно до законодавства України, інформація з обмеженим доступом не може передаватися до сторонніх публічних хмарних сервісів (OpenAI, Anthropic, Google тощо). Обробка повинна відбуватися виключно в захищеному периметрі системи.
+\item \textbf{Живучість}: Можливі блекаути, пошкодження каналів зв'язку та кібератаки вимагають повної автономності (Air-Gapped режим) ШІ-сервісів на місцях.
+\item \textbf{Мінімізація затримок}: Локальний інференс безпосередньо в локальній мережі (LAN) усуває затримки передачі великих обсягів текстових документів.
+\end{enumerate}
+
+Для вирішення цих завдань пропонується впровадити децентралізовані вузли обчислень у кожній установі на базі робочих станцій, інтегрованих у загальний контур ERP/1.
+
+\subsection{Питання, що вирішуються}
+Впровадження локальної ШІ-інфраструктури вирішує такі ключові завдання:
+\begin{itemize}
+    \item Організація локального інференсу моделей надвисокої швидкості без ризику витоку інформації.
+    \item Усунення галюцинацій мовної моделі через технологію локального семантичного RAG-пошуку.
+    \item Автоматичне NER-знеособлення персональних даних перед передачею в мовну модель.
+    \item Забезпечення централізованого управління великою кількістю периферійних вузлів.
+\end{itemize}
+
+\subsection{Вимоги законодавства та міжнародних стандартів}
+Система повинна розроблятися та функціонувати відповідно до:
+\begin{itemize}
+    \item Закону України «Про захист персональних даних»;
+    \item Закону України «Про захист інформації в інформаційно-комунікаційних системах»;
+    \item Стандарту безпеки NIST SP 800-53 Rev. 5 (контролі SC-28, SC-8, AC-3, AU-2);
+    \item Рекомендацій профілю безпеки Generative AI Profile (NIST AI 600-1).
+\end{itemize}
+
+\section{Призначення та цілі впровадження}
+Основною метою впровадження модуля є надання користувачам (наприклад, суддям, помічникам, аудиторам) інтелектуального асистента для аналізу документів, виявлення істотних зв'язків та автоматичної підготовки проектів рішень без загрози витоку конфіденційної інформації та з дотриманням вимог щодо безпеки on-premises обчислень.
+
+\newpage
+\section{Класифікація вимог}
+
+\subsection{Функціональні вимоги}
+
+\subsubsection{Вимоги до локального RAG-контуру та RocksDB/FAISS}
+Система повинна підтримувати локальний RAG (Retrieval-Augmented Generation) контур:
+\begin{itemize}
+    \item Векторизація документів за допомогою моделі ембедінгів (\texttt{multilingual-e5-large}).
+    \item Швидкий локальний пошук найближчих векторів у HNSW-індексах за допомогою бібліотеки FAISS.
+    \item Зберігання метаданих та повних текстів рішень у швидкому локальному сховищі RocksDB.
+    \item Асинхронна нічна синхронізація локальних баз із центральним об'єктним сховищем.
+\end{itemize}
+
+\subsubsection{Вимоги до автоматизованого знеособлення даних}
+Перед відправкою тексту до ембедінг-моделі та збереженням уRocksDB/FAISS, матеріали справи проходять обов'язковий етап локального знеособлення:
+\begin{itemize}
+    \item NER-фільтрація: виявлення в тексті ПІБ фізичних осіб, адрес проживання, номерів телефонів, державних номерів автомобілів тощо.
+    \item Маскування даних: заміна конфіденційних сутностей на узагальнені токени (\texttt{[ОСОБА\_1]}, \texttt{[АДРЕСА\_1]}).
+    \item Локальне збереження таблиць відповідності в зашифрованій RocksDB під захистом TPM 2.0.
+\end{itemize}
+
+\subsubsection{Вимоги до оцінки якості та метрик RAG-Triad}
+Для оцінки точності ШІ-сервісів система повинна вимірювати показники за трьома критеріями:
+\begin{itemize}
+    \item \textbf{Context Relevance}: відповідність знайденого RAG-контексту запиту користувача.
+    \item \textbf{Groundedness}: відсутність у генерованій відповіді тверджень, не підтверджених контекстом (боротьба з галюцинаціями).
+    \item \textbf{Answer Relevance}: відповідність відповіді мовної моделі вихідному запиту користувача.
+\end{itemize}
+
+\subsection{Нефункціональні вимоги}
+
+\subsubsection{Апаратні вимоги (NVIDIA GeForce RTX 4070 Ti)}
+В якості периферійного апаратного прискорювача використовуються споживчі GPU NVIDIA GeForce RTX 4070 Ti (або RTX 4070 Ti Super). Технічні параметри наведено в таблиці:
+
+\begin{center}
+\small
+\begin{longtable}{p{4cm} p{5cm} p{5cm}}
+\toprule
+\textbf{Параметр} & \textbf{RTX 4070 Ti} & \textbf{RTX 4070 Ti Super} \\
+\midrule
+Об'єм VRAM & 12 GB GDDR6X & 16 GB GDDR6X \\
+Шина пам'яті & 192-bit & 256-bit \\
+Пропускна здатність & 504 GB/s & 672 GB/s \\
+CUDA-ядра & 7680 & 8448 \\
+Тензорні ядра & 240 (4-gen) & 264 (4-gen) \\
+Енергоспоживання & 285 W & 285 W \\
+\bottomrule
+\end{longtable}
+\end{center}
+
+\subsubsection{Вимоги до програмного стеку}
+Локальний сервер функціонує під управлінням Linux-дистрибутива корпоративного класу (наприклад, Ubuntu LTS 24.04).
+Програмне забезпечення інференсу базується на:
+\begin{itemize}
+    \item NVIDIA Proprietary Driver версії 550+ та CUDA Toolkit 12.x;
+    \item Інференс-сервері \texttt{llama.cpp} або \texttt{Ollama} з низькорівневою оптимізацією під архітектуру Ada Lovelace;
+    \item Бекенді на базі Erlang/Elixir для взаємодії через Port Drivers або локальний HTTP/gRPC API.
+\end{itemize}
+
+\subsubsection{Вимоги до продуктивності та паралельного інференсу}
+Система повинна забезпечувати такі показники швидкості інференсу:
+\begin{itemize}
+    \item Швидкість генерації для Llama-3-8B-Instruct (при Q4\_K\_M) --- не менше 70 токенів/сек.
+    \item Швидкість генерації для Llama-3-8B-Instruct (при Q8\_0) --- не менше 45 токенів/сек.
+    \item Підтримка технології \texttt{continuous batching} для обслуговування одночасно від 5 до 8 активних користувачів на одну робочу станцію з RTX 4070 Ti без відчутного просідання швидкості.
+\end{itemize}
+
+\subsubsection{Вимоги до безпеки та захисту інформації (NIST SP 800-53)}
+Захист інформації забезпечується на базі таких контролів:
+\begin{itemize}
+    \item \textbf{SC-28 (Protection of Information at Rest)}: шифрування дискових накопичувачів NVMe за допомогою LUKS (AES-256) та зберігання ключів у апаратному TPM 2.0.
+    \item \textbf{SC-8 (Transmission Confidentiality and Integrity)}: шифрування LAN-трафіку за допомогою HTTPS/gRPC з TLS 1.3.
+    \item \textbf{AC-3 (Access Enforcement)}: інтеграція з доменною службою Active Directory/LDAP та розмежування прав на базі ABAC.
+    \item \textbf{AU-2 (Event Logging)}: незмінне ведення журналів аудиту всіх запитів та відповідей ШІ-сервера.
+\end{itemize}
+
+\subsubsection{Вимоги до відмовостійкості (CPU Fallback / Peer-to-Peer)}
+Для забезпечення безперервності процесів система повинна реалізовувати:
+\begin{itemize}
+    \item \textbf{CPU Fallback}: автоматичний перехід інференсу на центральний процесор (AVX-512/AMX) у разі виходу з ладу GPU з падінням швидкості генерації до 8--12 токенів/сек.
+    \item \textbf{Peer-to-Peer failover}: автоматичне перенаправлення запитів на сусідній периферійний вузол у межах регіону при повному збої локального сервера.
+\end{itemize}
+
+\newpage
+\section{Додаток А. Специфікація сутностей ШІ-вузла (для ТЗ)}
+
+Для забезпечення роботи модуля «Істотність» у базі даних (Mnesia/KVS) ведуться такі реєстрові сутності:
+\begin{enumerate}
+    \item \textbf{ai\_node}: Дані про периферійний обчислювальний вузол (апаратні параметри, температура GPU, статус вузла).
+    \item \textbf{ai\_model}: Параметри розгорнутих LLM та ембедінг моделей (шлях до файлу ваг, конфігурація квантування).
+    \item \textbf{ai\_inference\_task}: Журнал виконання запитів користувачів до ШІ (ідентифікатор користувача, промпт, час виконання).
+    \item \textbf{ai\_anonymization\_dictionary}: Зашифрована таблиця відповідностей для знеособлення персональних даних.
+\end{enumerate}
+
+\section{Додаток Б. Технічні деталі RAG-контуру та оркестрації K8s}
+
+Повна оркестрація 600+ периферійних вузлів здійснюється через централізований Kubernetes за методологією GitOps та інструментами автоматизації Ansible. Всі GGUF файли моделей та векторні індекси завантажуються в нічний час ( cron Pull-механізм з 01:00 до 05:00) із центрального сховища Scality RING. Оновлення контейнерів інференсу проводиться за схемою Blue-Green Deployment для виключення простоїв сервісу.
+
+\end{document}
