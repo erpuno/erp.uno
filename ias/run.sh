@@ -1,3 +1,4 @@
 
-pdflatex acc.tex
-pdflatex acc_pro.tex
+pdflatex policy.tex
+pdflatex ias.tex
+pdflatex ias_pro.tex
