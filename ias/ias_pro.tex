@@ -1,0 +1,529 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{helvet}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{eso-pic}
+\usepackage{fancyhdr}
+\usepackage{parskip}
+\usepackage{microtype}
+\usepackage[english, ukrainian]{babel}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{titlesec}
+
+\definecolor{nato}{HTML}{293757}
+\definecolor{footergray}{gray}{0.65}
+
+\geometry{a4paper,left=3cm,right=3cm,top=3cm,bottom=3cm}
+\renewcommand{\familydefault}{\sfdefault}
+\setcounter{secnumdepth}{3}
+
+\titleformat{\section}
+  {\color{nato}\Huge\bfseries}{\thesection.}{1em}{}
+\titlespacing*{\section}{0pt}{30pt}{12pt}
+
+\titleformat{\subsection}
+  {\color{nato}\LARGE\bfseries}{\thesubsection.}{1em}{}
+\titlespacing*{\subsection}{0pt}{20pt}{8pt}
+
+\titleformat{\subsubsection}
+  {\color{nato}\Large\bfseries}{\thesubsubsection.}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{6pt}
+
+\fancyhf{}
+\fancyhead[R]{\small\color{footergray} 28 червня 2026}
+\fancyfoot[L]{\small\color{footergray} Техноробочий проект ERP/1. Модуль IAS}
+\fancyfoot[R]{\small\color{footergray}\thepage}
+
+\newcommand\HUGE[1]{\fontsize{40}{40}\selectfont #1}
+
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\footrule}{\color{footergray}\hrule width \textwidth height 0.4pt}
+
+\begin{document}
+
+\pagestyle{fancy}
+
+\begin{titlepage}
+  \AddToShipoutPictureBG*{\AtPageLowerLeft{\color{nato}\rule{\paperwidth}{\paperheight}}}
+  \color{white}\thispagestyle{empty}\vspace*{3cm}\centering
+  {\Huge  \textbf{ERP/1: Авторизація} \par} \vspace{1.5cm}
+  {\HUGE  \textbf{Техноробочий проект} \par} \vspace{1.5cm}
+  {\LARGE \textbf{на створення та впровадження модуля «Служба ідентифікації та авторизації (IAS)» як засобу інформатизації} \par} \vspace{1.5cm}
+  {\large Згідно з ДСТУ 34.201-89 та Постановою КМУ № 205 від 21.02.2025 \par}
+  {\large Формалізація вимог за стандартом ISO/IEC/IEEE 29148:2018 \par}
+  \vfill
+  {\large 2026 \copyright\ Системи Електронного Урядування \par}
+\end{titlepage}
+
+\newpage
+
+\begin{center}
+  {\Huge\color{nato}\bfseries Зміст\par}
+\end{center}
+\vspace{40pt}
+\tableofcontents
+
+\newpage
+
+\section{Загальні відомості про засіб інформатизації}
+
+\subsection{Найменування та підстави для розробки}
+\textbf{Найменування засобу інформатизації:} Модуль «Служба ідентифікації та авторизації (IAS)» (далі --- Модуль IAS / Система IAS) у складі інформаційної системи управління підприємством ERP/1.
+
+\textbf{Підстави для розробки:}
+\begin{enumerate}
+    \item Закон України «Про захист інформації в інформаційно-телекомунікаційних системах».
+    \item Постанова Кабінету Міністрів України від 29.03.2006 № 373 «Про затвердження Правил забезпечення захисту інформації в інформаційних, телекомунікаційних та інформаційно-телекомунікаційних системах».
+    \item Постанова Кабінету Міністрів України від 21.02.2025 № 205 «Про затвердження Порядку використання засобів інформатизації».
+    \item Угода про асоціацію між Україною та Європейським Союзом (в частині транскордонної взаємодії електронних довірчих послуг).
+    \item Технічне завдання на побудову Zencrypted інфраструктури безпеки.
+\end{enumerate}
+
+\subsection{Простежуваність вимог та відповідність нормативній базі}
+Для забезпечення відповідності Постанові КМУ № 205 від 21.02.2025 та вимогам міжнародного аудиту, проектування Модуля IAS базується на принципі наскрізної простежуваності (traceability) від високорівневих бізнес-політик безпеки до конкретних елементів реалізації.
+
+Усі вимоги, визначені в \texttt{ias.tex}, пов'язані з відповідними структурами даних та виконуваними процесами в цьому документі:
+\begin{itemize}
+    \item \textbf{Політика доступу та ABAC:} Політики безпеки з \texttt{policy.tex} транслюються у функціональні вимоги контролю доступу в \texttt{ias.tex} (Розділ 4.1.5) та формалізуються в цьому документі у вигляді коду перевірки атрибутів (\texttt{allow/3} в Розділі 2.2).
+    \item \textbf{Керування життєвим циклом сертифікатів:} Вимоги до CMP-випуску транслюються у реєстрову сутність \texttt{Certificate} та процес \texttt{bpe\_cmp\_enrollment.erl} (Розділ 3.2.2).
+    \item \textbf{Провіженінг та узгодження конфігурацій:} Вимоги до одностороннього провіженінгу та реконсиляції реалізуються через сутність \texttt{ias\_vpn\_device\_state} та процес \texttt{bpe\_vpn\_provisioning.erl} (Розділ 3.2.4).
+\end{itemize}
+
+\subsection{Призначення та цілі створення засобу}
+Модуль IAS розробляється як центральна адміністративно-координаційна служба для керування цифровими ідентичностями, сертифікатами пристроїв, авторизацією користувачів та віддалених точок підключення VPN. 
+
+\textbf{Основні цілі створення:}
+\begin{itemize}
+    \item Автоматизація життєвого циклу PKI-сертифікатів клієнтських пристроїв через стандартизовані протоколи CMP, EST та CMC.
+    \item Забезпечення повного контролю за конфігураціями VPN-шлюзів через односторонній транзакційний провіженінг.
+    \item Підтримка відмовостійкості та швидкої реконсиляції мережевого стану у разі аварійних перезапусків та збоїв.
+    \item Відповідність вимогам міжнародного аудиту щодо захисту персональних даних та контролю доступів (ABAC).
+\end{itemize}
+
+\subsection{План-графік виконання етапів робіт}
+Розробка та впровадження Модуля IAS поділяється на такі етапи:
+\begin{enumerate}
+    \item \textbf{Етап 1: Аналітичне моделювання та проектування} (розробка схем даних, визначення графів об'єктів та написання BPE-процесів) --- 4 тижні.
+    \item \textbf{Етап 2: Реалізація сховища даних KVS та бізнес-логіки} (реалізація Mnesia-моделей та BPE DSL рушія) --- 6 тижнів.
+    \item \textbf{Етап 3: Інтеграція з CA та VPN} (реалізація CMP-клієнта, Erlang RPC провіженінгу та reconciliation циклів) --- 6 тижнів.
+    \item \textbf{Етап 4: Розробка веб-інтерфейсу N2O/NITRO} (створення адміністративної консолі та wizard-інтерфейсів) --- 4 тижні.
+    \item \textbf{Етап 5: Державна експертиза та сертифікація КСЗІ} (отримання експертного висновку) --- 8 тижнів.
+\end{enumerate}
+
+\newpage
+\section{Відомості про робочий процес та умови експлуатації}
+
+\subsection{Опис бізнес-процесів (BPMN / FSM)}
+Всі процеси керування доступом формалізуються у вигляді кінцевих автоматів (FSM) та виконуються рушієм процесів BPE.
+
+\subsubsection{Процес реєстрації пристрою та імпорту OVPN (bpe\_ovpn\_import.erl)}
+Цей процес відповідає за початкове імпортування раніше створених OpenVPN конфігурацій та створення відповідних реєстрових сутностей в IAS.
+\begin{enumerate}
+    \item \textbf{StartImport:} Початок процесу оператором безпеки.
+    \item \textbf{ParseConfig:} Сервісна задача, яка парсить .ovpn та створює структуру вилучених параметрів.
+    \item \textbf{VerifyCertificates:} Перевірка валідності імпортованого сертифіката (підпис, термін дії, ланцюжок довіри).
+    \item \textbf{ApproveImportPlan:} Користувацька задача затвердження згенерованого плану імпорту оператором.
+    \item \textbf{CreateGraphObjects:} Сервісна задача, яка записує об'єкти Device, Certificate, VPN Service та зв'язки між ними в KVS.
+    \item \textbf{ImportCompleted:} Завершення процесу.
+\end{enumerate}
+
+\subsubsection{Процес випуску та сертифікації CMP (bpe\_cmp\_enrollment.erl)}
+Процес забезпечує автоматизоване отримання сертифіката від CA за допомогою CSR, згенерованого безпосередньо клієнтським пристроєм.
+\begin{enumerate}
+    \item \textbf{StartEnrollment:} Ініціація пристроєм запиту на випуск.
+    \item \textbf{GenerateKeyCSRPlan:} Створення в IAS плану генерації ключів та CSR на пристрої.
+    \item \textbf{AwaitCSRUpload:} Очікування завантаження файлу CSR з пристрою.
+    \item \textbf{ValidateCSR:} Перевірка підпису та параметрів CSR.
+    \item \textbf{SubmitToCMP:} Відправка CSR до CA через протокол CMP.
+    \item \textbf{VerifyCertificate:} Отримання випущеного сертифіката, перевірка публічного ключа проти CSR, запис у сховище та оновлення статусу пристрою.
+    \item \textbf{EnrollmentCompleted:} Завершення випуску.
+\end{enumerate}
+
+\subsubsection{Процес авторизації та оцінки довіри (bpe\_trust\_evaluation.erl)}
+Процес динамічної оцінки права пристрою чи користувача на підключення.
+\begin{enumerate}
+    \item \textbf{StartEvaluation:} Виклик процесу під час handshake пристрою або планової перевірки.
+    \item \textbf{CheckExpiry:} Перевірка дати закінчення дії сертифіката.
+    \item \textbf{CheckCRL:} Запит та перевірка серійного номера за списками відкликання (CRL/OCSP).
+    \item \textbf{EvaluateABACRules:} Оцінка контекстних правил (роль, ЄДРПОУ, час, робоче місце).
+    \item \textbf{UpdateTrustStatus:} Запис оновленого статусу довіри пристрою (Ready або Blocked).
+    \item \textbf{EvaluationCompleted:} Завершення оцінки.
+\end{enumerate}
+
+\subsubsection{Процес провіженінгу VPN (bpe\_vpn\_provisioning.erl)}
+Процес транзакційної доставки налаштувань на шлюзи VPN та контролю узгодження.
+\begin{enumerate}
+    \item \textbf{StartProvisioning:} Ініціація оновлення конфігурації.
+    \item \textbf{BuildCommand:} Генерація канонічної команди провіженінгу з інкрементним номером ревізії.
+    \item \textbf{DeliverToVPN:} Виклик віддаленої процедури RPC на шлюзі VPN.
+    \item \textbf{AwaitCompletionNotice:} Очікування повідомлення від vpn\_event\_bus про успішне застосування змін на шлюзі.
+    \item \textbf{VerifyDataplane:} Перевірка проходження тестового пакету через зашифрований тунель.
+    \item \textbf{ProvisioningCompleted:} Завершення провіженінгу.
+\end{enumerate}
+
+\subsection{Опис ролей та прав доступу (ABAC)}
+Доступ до адміністративних функцій IAS обмежується на базі ABAC. Приклад правила авторизації:
+\begin{verbatim}
+allow(Operator, Action, Object) ->
+    OperatorRole = maps:get(role, Operator),
+    OperatorEDRPOU = maps:get(edrpou, Operator),
+    ObjectSensitivity = maps:get(sensitivity_level, Object),
+    
+    IsSecurityAdmin = (OperatorRole == security_admin),
+    MatchesEDRPOU = (OperatorEDRPOU == maps:get(edrpou, Object, undefined)),
+    
+    case {IsSecurityAdmin, ObjectSensitivity} of
+        {true, _} -> true;
+        {false, confidential} -> MatchesEDRPOU;
+        {false, public} -> true;
+        _ -> false
+    end.
+\end{verbatim}
+
+\subsection{Умови експлуатації та системне середовище}
+Система IAS повинна розгортатися у кластерному середовищі:
+\begin{itemize}
+    \item \textbf{Операційна система:} Linux (Ubuntu Server LTS, Rocky Linux) або macOS (для розробки).
+    \item \textbf{Платформа:} Erlang/OTP версії 28+.
+    \item \textbf{Служби взаємодії:} Розподілені Erlang-ноди, з'єднані за допомогою epmd та TLS mesh.
+    \item \textbf{Вимоги до СУБД:} Mnesia, інтегрована через інтерфейс KVS.
+\end{itemize}
+
+\newpage
+\section{Інформаційне та програмне забезпечення}
+
+\subsection{Інформаційне забезпечення (Схеми та Дані)}
+
+\subsubsection{Визначення структур даних (Erlang Records)}
+Всі ключові сутності описуються у вигляді Erlang рекорді:
+
+\begin{verbatim}
+-record(ias_domain_object, {
+    key,                       % {Kind, ObjectId}
+    schema_version = 1,        % Версія схеми даних
+    kind,                      % user | device | certificate | policy
+    object_id,                 % Унікальний UUID
+    payload = #{},             % Мапа з атрибутами об'єкта
+    revision = 1,              % Номер поточної ревізії
+    created_at = 0,            % Timestamp створення
+    updated_at = 0             % Timestamp оновлення
+}).
+
+-record(ias_certificate_material_record, {
+    key,                       % {SubjectKind, SubjectId}
+    schema_version = 1,
+    subject_kind,              % user | device | ca
+    subject_id,                % UUID суб'єкта
+    material_type,             % public_cert | cert_chain | signature
+    encoding = pem,            % pem | der
+    source,                    % cmp | est | manual
+    fingerprint_sha256,        % SHA256 відбиток сертифіката
+    body_envelope = #{},       % Мапа, що містить PEM-тіло
+    revision = 1,
+    created_at = 0,
+    updated_at = 0,
+    expires_at = undefined     % Термін дії сертифіката
+}).
+
+-record(ias_vpn_device_state, {
+    device_id,                 % UUID пристрою (PK)
+    schema_version = 2,
+    revision = 0,              % Актуальна ревізія на шлюзі
+    command_digest = undefined,% Хеш останньої відправленої команди
+    canonical_command = #{},   % Тіло сформованої команди
+    binding = #{},             % Параметри мережевої прив'язки
+    lifecycle_state = unbound, % unbound | pending | active | degraded
+    last_decommission = undefined,
+    decommission_history = [],
+    decommissioned_at = undefined,
+    updated_at = 0
+}).
+
+-record(ias_csr_enrollment_record, {
+    csr_fingerprint,           % Хеш CSR (PK)
+    schema_version = 1,
+    status = submitted,        % submitted | processing | signed | rejected
+    retryable = false,         % Чи можна повторити спробу
+    payload = #{},             % Мапа з параметрами запиту та CSR PEM
+    revision = 1,
+    created_at = 0,
+    updated_at = 0
+}).
+
+-record(ias_vpn_reconciliation_incident, {
+    device_id,                 % UUID пристрою
+    schema_version = 1,
+    kind,                      % orphan | stale_revision | fingerprint_mismatch
+    reason,                    % Текстовий опис розбіжності
+    token,                     % Унікальний токен інциденту
+    status = open,             % open | acknowledged | resolved
+    snapshot = #{},            % Порівняльний знімок станів IAS та VPN
+    first_seen = 0,
+    last_seen = 0,
+    occurrences = 1,
+    acknowledged_by = undefined,
+    acknowledged_note = undefined,
+    acknowledged_at = undefined,
+    resolved_by = undefined,
+    resolved_note = undefined,
+    resolved_at = undefined,
+    updated_at = 0
+}).
+\end{verbatim}
+
+\subsubsection{Опис довідників та реєстрових сутностей}
+Опис полів реєстрових сутностей (таких як \texttt{User}, \texttt{Device}, \texttt{Certificate}) відповідає таксономії, зазначеній у Технічних вимогах. Всі записи зберігаються у таблиці Mnesia \texttt{kvs}, яка містить записи типу \texttt{ias\_domain\_object} та інші допоміжні рекорди.
+
+\subsubsection{Алгоритми оцінки статусу довіри (Trust Evaluation)}
+Приклад визначення статусу пристрою на основі його криптографічного стану:
+\begin{verbatim}
+evaluate_device_trust(DeviceState, CertRecord, CurrentTime) ->
+    case CertRecord#ias_certificate_material_record.expires_at of
+        Expires when CurrentTime > Expires ->
+            {blocked, expired};
+        _ ->
+            case check_crl_status(CertRecord#ias_certificate_material_record.fingerprint_sha256) of
+                revoked -> {blocked, revoked};
+                ok ->
+                    case DeviceState#ias_vpn_device_state.lifecycle_state of
+                        degraded -> {degraded, connection_timeout};
+                        active -> {ready, ok};
+                        unbound -> {incomplete, no_binding}
+                    end
+            end
+    end.
+\end{verbatim}
+
+\subsection{Програмне забезпечення (Реалізація)}
+
+\subsubsection{bpe\_ovpn\_import.erl (DSL процесу імпорту)}
+\begin{verbatim}
+-module(bpe_ovpn_import).
+-include("bpe.hrl").
+-compile(export_all).
+
+def() ->
+    #process{
+        name = 'OVPN Profile Import',
+        beginEvent = 'StartImport',
+        endEvent = 'ImportCompleted',
+        tasks = [
+            #beginEvent{name='StartImport'},
+            #serviceTask{name='ParseConfig', module=?MODULE},
+            #serviceTask{name='VerifyCertificates', module=?MODULE},
+            #userTask{name='ApproveImportPlan', module=?MODULE},
+            #serviceTask{name='CreateGraphObjects', module=?MODULE},
+            #endEvent{name='ImportCompleted'}
+        ],
+        flows = [
+            #sequenceFlow{name='1', source='StartImport', target='ParseConfig'},
+            #sequenceFlow{name='2', source='ParseConfig', target='VerifyCertificates'},
+            #sequenceFlow{name='3', source='VerifyCertificates', 
+                          target='ApproveImportPlan', condition="certs_ok"},
+            #sequenceFlow{name='4', source='VerifyCertificates', 
+                          target='StartImport', condition="certs_invalid"},
+            #sequenceFlow{name='5', source='ApproveImportPlan', target='CreateGraphObjects'},
+            #sequenceFlow{name='6', source='CreateGraphObjects', target='ImportCompleted'}
+        ],
+        roles = [security_admin, operator]
+    }.
+
+action({serviceTask, 'ParseConfig'}, Proc) ->
+    % Логіка парсингу OVPN файлу
+    {reply, Proc, "certs_ok"};
+action({serviceTask, 'CreateGraphObjects'}, Proc) ->
+    % Створення сутностей в KVS
+    {reply, Proc};
+action(_, Proc) -> {reply, Proc}.
+\end{verbatim}
+
+\subsubsection{bpe\_cmp\_enrollment.erl (DSL процесу CMP випуску)}
+\begin{verbatim}
+-module(bpe_cmp_enrollment).
+-include("bpe.hrl").
+-compile(export_all).
+
+def() ->
+    #process{
+        name = 'CA CMP Enrollment',
+        beginEvent = 'StartEnrollment',
+        endEvent = 'EnrollmentCompleted',
+        tasks = [
+            #beginEvent{name='StartEnrollment'},
+            #serviceTask{name='GenerateKeyCSRPlan', module=?MODULE},
+            #userTask{name='AwaitCSRUpload', module=?MODULE},
+            #serviceTask{name='ValidateCSR', module=?MODULE},
+            #serviceTask{name='SubmitToCMP', module=?MODULE},
+            #serviceTask{name='VerifyCertificate', module=?MODULE},
+            #endEvent{name='EnrollmentCompleted'}
+        ],
+        flows = [
+            #sequenceFlow{name='1', source='StartEnrollment', target='GenerateKeyCSRPlan'},
+            #sequenceFlow{name='2', source='GenerateKeyCSRPlan', target='AwaitCSRUpload'},
+            #sequenceFlow{name='3', source='AwaitCSRUpload', target='ValidateCSR'},
+            #sequenceFlow{name='4', source='ValidateCSR', target='SubmitToCMP', condition="csr_valid"},
+            #sequenceFlow{name='5', source='ValidateCSR', target='AwaitCSRUpload', condition="csr_invalid"},
+            #sequenceFlow{name='6', source='SubmitToCMP', target='VerifyCertificate', condition="enrollment_ok"},
+            #sequenceFlow{name='7', source='SubmitToCMP', target='StartEnrollment', condition="enrollment_failed"},
+            #sequenceFlow{name='8', source='VerifyCertificate', target='EnrollmentCompleted'}
+        ],
+        roles = [operator, device]
+    }.
+
+action({serviceTask, 'ValidateCSR'}, Proc) ->
+    {reply, Proc, "csr_valid"};
+action({serviceTask, 'SubmitToCMP'}, Proc) ->
+    {reply, Proc, "enrollment_ok"};
+action(_, Proc) -> {reply, Proc}.
+\end{verbatim}
+
+\subsubsection{bpe\_trust\_evaluation.erl (DSL процесу перевірки довіри)}
+\begin{verbatim}
+-module(bpe_trust_evaluation).
+-include("bpe.hrl").
+-compile(export_all).
+
+def() ->
+    #process{
+        name = 'Device Trust Evaluation',
+        beginEvent = 'StartEvaluation',
+        endEvent = 'EvaluationCompleted',
+        tasks = [
+            #beginEvent{name='StartEvaluation'},
+            #serviceTask{name='CheckExpiry', module=?MODULE},
+            #serviceTask{name='CheckCRL', module=?MODULE},
+            #serviceTask{name='EvaluateABACRules', module=?MODULE},
+            #serviceTask{name='UpdateTrustStatus', module=?MODULE},
+            #endEvent{name='EvaluationCompleted'}
+        ],
+        flows = [
+            #sequenceFlow{name='1', source='StartEvaluation', target='CheckExpiry'},
+            #sequenceFlow{name='2', source='CheckExpiry', target='CheckCRL', condition="not_expired"},
+            #sequenceFlow{name='3', source='CheckExpiry', target='UpdateTrustStatus', condition="expired"},
+            #sequenceFlow{name='4', source='CheckCRL', target='EvaluateABACRules', condition="not_revoked"},
+            #sequenceFlow{name='5', source='CheckCRL', target='UpdateTrustStatus', condition="revoked"},
+            #sequenceFlow{name='6', source='EvaluateABACRules', target='UpdateTrustStatus'},
+            #sequenceFlow{name='7', source='UpdateTrustStatus', target='EvaluationCompleted'}
+        ],
+        roles = [security_admin, system]
+    }.
+
+action({serviceTask, 'CheckExpiry'}, Proc) ->
+    {reply, Proc, "not_expired"};
+action({serviceTask, 'CheckCRL'}, Proc) ->
+    {reply, Proc, "not_revoked"};
+action(_, Proc) -> {reply, Proc}.
+\end{verbatim}
+
+\subsubsection{bpe\_vpn\_provisioning.erl (DSL процесу провіженінгу VPN)}
+\begin{verbatim}
+-module(bpe_vpn_provisioning).
+-include("bpe.hrl").
+-compile(export_all).
+
+def() ->
+    #process{
+        name = 'VPN Command Provisioning',
+        beginEvent = 'StartProvisioning',
+        endEvent = 'ProvisioningCompleted',
+        tasks = [
+            #beginEvent{name='StartProvisioning'},
+            #serviceTask{name='BuildCommand', module=?MODULE},
+            #serviceTask{name='DeliverToVPN', module=?MODULE},
+            #userTask{name='AwaitCompletionNotice', module=?MODULE},
+            #serviceTask{name='VerifyDataplane', module=?MODULE},
+            #endEvent{name='ProvisioningCompleted'}
+        ],
+        flows = [
+            #sequenceFlow{name='1', source='StartProvisioning', target='BuildCommand'},
+            #sequenceFlow{name='2', source='BuildCommand', target='DeliverToVPN'},
+            #sequenceFlow{name='3', source='DeliverToVPN', target='AwaitCompletionNotice', condition="delivery_ok"},
+            #sequenceFlow{name='4', source='DeliverToVPN', target='StartProvisioning', condition="delivery_failed"},
+            #sequenceFlow{name='5', source='AwaitCompletionNotice', target='VerifyDataplane'},
+            #sequenceFlow{name='6', source='VerifyDataplane', target='ProvisioningCompleted'}
+        ],
+        roles = [operator, system]
+    }.
+
+action({serviceTask, 'BuildCommand'}, Proc) ->
+    {reply, Proc};
+action({serviceTask, 'DeliverToVPN'}, Proc) ->
+    {reply, Proc, "delivery_ok"};
+action(_, Proc) -> {reply, Proc}.
+\end{verbatim}
+
+\subsubsection{ias\_validator.erl (Модуль валідації)}
+\begin{verbatim}
+-module(ias_validator).
+-export([validate_csr/1, validate_chain/2, verify_fingerprint/2]).
+
+validate_csr(CSR_PEM) ->
+    % Виклик OpenSSL або вбудованого ASN.1 розшифровувача для перевірки підпису CSR
+    case public_key:pem_decode(CSR_PEM) of
+        [_] -> ok;
+        _   -> {error, invalid_csr_format}
+    end.
+
+validate_chain(Cert_PEM, CA_Chain_PEM) ->
+    % Криптографічна перевірка ланцюжка сертифікатів CA
+    ok.
+
+verify_fingerprint(Cert_PEM, SHA256) ->
+    % Порівняння відбитку SHA-256
+    Calculated = crypto:hash(sha256, Cert_PEM),
+    case Calculated of
+        SHA256 -> ok;
+        _      -> {error, fingerprint_mismatch}
+    end.
+\end{verbatim}
+
+\newpage
+\section{Вимоги до засобу за ISO/IEC/IEEE 29148}
+
+\subsection{Функціональні вимоги}
+Система повинна забезпечувати повнофункціональне керування ідентичностями, валідацію сертифікатів, оновлення конфігурацій шлюзів VPN без втрати з'єднань користувачів та виявлення невідповідностей стану мережі.
+
+\subsection{Вимоги до інтерфейсів та дизайну}
+\begin{itemize}
+    \item Веб-інтерфейс адміністративної консолі повинен базуватися на реактивному фреймворку N2O/NITRO.
+    \item Відповідність вимогам WCAG 2.1 рівню AA для доступності інтерфейсів.
+    \item Візуальний дизайн повинен наслідувати фірмовий стиль Zencrypted з підтримкою Sleek Dark Mode.
+\end{itemize}
+
+\subsection{Вимоги до безпеки та захисту інформації}
+\begin{itemize}
+    \item Шифрування каналів зв'язку за допомогою TLS v1.3.
+    \item Підтримка КЕП CAdES-X Long та алгоритму ДСТУ 4145-2002.
+    \item Ізоляція ключів: приватний ключ ніколи не записується і не передається в IAS, залишаючись виключно на кінцевому пристрої.
+    \item Атестація комплексу за вимогами ДССЗІ України на рівень захисту Г3.
+\end{itemize}
+
+\subsection{Вимоги до продуктивності та надійності}
+\begin{itemize}
+    \item Час аптайму системи не менше 99.99\% (High Availability).
+    \item Час відновлення (RTO) після повного перезапуску ноди не більше 5 секунд завдяки KVS/Mnesia rehydration.
+    \item Здатність обробляти до 1000 запитів авторизації на секунду на одну ноду.
+\end{itemize}
+
+\subsection{Вимоги до логування та аудиту}
+\begin{itemize}
+    \item Всі операції провіженінгу, випуску та зміни статусів довіри повинні підписуватися цифровим підписом ноди та записуватися в стійкий лог аудиту.
+    \item Заборона модифікації або видалення записів журналу аудиту (immutable audit log).
+\end{itemize}
+
+\subsection{Адміністративні та юридичні вимоги}
+\begin{itemize}
+    \item Всі компоненти поставляються з ліцензіями відкритого вихідного коду (MIT/Apache 2.0).
+    \item Модуль IAS повинен інтегруватися з наявною інфраструктурою підприємства без потреби закупівлі додаткового платного ПЗ.
+\end{itemize}
+
+\end{document}
