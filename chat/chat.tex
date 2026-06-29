@@ -1,0 +1,224 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage{helvet}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{eso-pic}
+\usepackage{fancyhdr}
+\usepackage{parskip}
+\usepackage{microtype}
+\usepackage[english, ukrainian]{babel}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{titlesec}
+
+% Define brand colors
+\definecolor{primary}{HTML}{293757}
+\definecolor{footergray}{gray}{0.65}
+
+\geometry{a4paper,left=3cm,right=3cm,top=3cm,bottom=3cm}
+\renewcommand{\familydefault}{\sfdefault}
+\setcounter{secnumdepth}{3}
+
+% Font shapes for T2A/Helvetica (mapping to cmss for Cyrillic support)
+\DeclareFontFamily{T2A}{phv}{}
+\DeclareFontShape{T2A}{phv}{m}{n}{<->ssub * cmss/m/n}{}
+\DeclareFontShape{T2A}{phv}{bx}{n}{<->ssub * cmss/bx/n}{}
+\DeclareFontShape{T2A}{phv}{m}{it}{<->ssub * cmss/m/it}{}
+\DeclareFontShape{T2A}{phv}{bx}{it}{<->ssub * cmss/bx/it}{}
+
+\titleformat{\section}
+  {\color{primary}\Huge\bfseries}{\thesection.}{1em}{}
+\titlespacing*{\section}{0pt}{30pt}{12pt}
+\titleformat{\subsection}
+  {\color{primary}\LARGE\bfseries}{\thesubsection.}{1em}{}
+\titlespacing*{\subsection}{0pt}{20pt}{8pt}
+\titleformat{\subsubsection}
+  {\color{primary}\Large\bfseries}{\thesubsubsection.}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{6pt}
+
+\fancyhf{}
+\fancyhead[R]{\small\color{footergray} 29 червня 2026}
+\fancyfoot[L]{\small\color{footergray} Технічні вимоги ERP/1. Модуль Комунікатор}
+\fancyfoot[R]{\small\color{footergray}\thepage}
+
+\newcommand\HUGE[1]{\fontsize{38}{38}\selectfont #1}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\footrule}{\color{footergray}\hrule width \textwidth height 0.4pt}
+
+\begin{document}
+\pagestyle{fancy}
+
+\begin{titlepage}
+\AddToShipoutPictureBG*{\AtPageLowerLeft{\color{primary}\rule{\paperwidth}{\paperheight}}}
+\color{white}\thispagestyle{empty}\vspace*{4cm}\centering
+  {\Huge \textbf{ERP/1: Комунікатор} \par} \vspace{2cm}
+  {\HUGE \textbf{Технічні вимоги} \par} \vspace{2.5cm}
+  {\LARGE \textbf{Локальна інфраструктура безпеки, \\ наскрізного шифрування X.509 CMS \\ та захищеного обміну повідомленнями} \par} \vspace{2.5cm}
+\vfill
+  {\large 2026 \copyright\ Системи Електронного Урядування \par}
+\end{titlepage}
+
+\newpage
+\begin{center}
+  {\Huge\color{primary}\bfseries Зміст\par}
+\end{center}
+\vspace{40pt}
+\tableofcontents
+
+\newpage
+\begin{abstract}
+У цьому документі наведено детальні технічні вимоги до підсистеми ERP/1: Комунікатор, яка розробляється як надійна, децентралізована, стійка до відмов платформа безпечного обміну повідомленнями (чат v2) та документами (пошта v3) у захищеному периферійному контурі підприємства чи установи. Система базується на принципах наскрізного шифрування X.509 CMS, кодуванні повідомлень у форматі ASN.1 DER та транспортному протоколі Buddha (X.422). Вона абсорбує існуючі сервіси авторизації, видачі сертифікатів (CA), захищених тунелів (VPN), служби каталогів (LDAP) та забезпечує повну функціональну сумісність без використання екосистеми Rust.
+\end{abstract}
+
+\newpage
+\section{Умовні скорочення та визначення}
+
+Основні терміни та скорочення підсистеми «Комунікатор»:
+
+\begin{longtable}{p{4cm}p{10cm}}
+\toprule
+\textbf{Термін / Скорочення} & \textbf{Значення} \\
+\midrule
+CA & Certificate Authority (Центр сертифікації / засвідчувальний центр) \\
+CMS & Cryptographic Message Syntax (Криптографічний синтаксис повідомлень) \\
+DER & Distinguished Encoding Rules (Правила однозначного кодування ASN.1) \\
+ASN.1 & Abstract Syntax Notation One (Абстрактна синтаксична нотація один) \\
+OCSP & Online Certificate Status Protocol (Протокол онлайн-перевірки статусу) \\
+EST & Enrollment over Secure Transport (Реєстрація через безпечний транспорт) \\
+CMP & Certificate Management Protocol (Протокол управління сертифікатами) \\
+TSP & Time-Stamp Protocol (Протокол штампів часу) \\
+IAS & Identity Access Server (Сервер автентифікації та авторизації) \\
+LDAP & Lightweight Directory Access Protocol (Полегшений протокол каталогів) \\
+VPN & Virtual Private Network (Віртуальна приватна мережа / тунель) \\
+E2EE & End-to-End Encryption (Наскрізне шифрування від клієнта до клієнта) \\
+MLS & Messaging Layer Security (Протокол групового шифрування) \\
+\bottomrule
+\end{longtable}
+
+\newpage
+\section{Загальні відомості}
+
+\subsection{Передумови}
+Сучасні виклики безпеки інформаційного обміну в державних установах та на об'єктах критичної інфраструктури потребують відмови від використання публічних та закордонних хмарних месенджерів. Передача службової інформації повинна здійснюватися через локальну інфраструктуру, яка:
+\begin{enumerate}
+    \item \textbf{Конфіденційність (КСЗІ)}: Гарантує наскрізне шифрування повідомлень і файлів (E2EE) безпосередньо на кінцевих пристроях користувачів.
+    \item \textbf{Автономність (Air-Gapped)}: Здатна функціонувати в умовах відсутності доступу до мережі Інтернет за допомогою локальних каналів маршрутизації та VPN-тунелів.
+    \item \textbf{Стандартизація}: Відповідає міжнародним стандартам ITU-T X.509, IETF CMS (RFC 5652) та вітчизняному ДСТУ 4145 для забезпечення сумісності із державною інфраструктурою ключів.
+\end{enumerate}
+
+\subsection{Цільові продукти для абсорбції}
+Підсистема «Комунікатор» абсорбує технічні рішення таких систем:
+\begin{itemize}
+    \item \textbf{chat.n2o.dev}: асинхронна архітектура швидкої доставки повідомлень на базі Erlang/OTP.
+    \item \textbf{x509.chat}: концепція першого покоління месенджера з наскрізною авторизацією за клієнтськими сертифікатами X.509.
+    \item \textbf{protocol.zencrypted.uk}: специфікації протоколу Buddha (X.422), призначеного для передачі криптографічно підписаних ASN.1 DER пакетів.
+\end{itemize}
+
+\section{Призначення та цілі впровадження}
+Модуль призначений для розгортання єдиної захищеної системи миттєвого обміну повідомленнями, передачі документів, управління ієрархією користувачів та випуску ключів на базі Erlang/OTP.
+
+Цілі впровадження:
+\begin{itemize}
+    \item Локальний запуск месенджера v2 із наскрізним криптографічним шифруванням.
+    \item Запуск поштового клієнта v3 для формалізованого обміну документами у вигляді CMS-пакетів.
+    \item Локальне керування випуском та життєвим циклом сертифікатів за протоколами EST/CMP/OCSP.
+    \item Організація захищених шлюзів зв'язку (VPN/LDAP) на периферії.
+\end{itemize}
+
+\newpage
+\section{Класифікація вимог}
+
+\subsection{Функціональні вимоги}
+
+\subsubsection{Вимоги до Центру сертифікації (CA ERP/1: Сертифікати)}
+Сервер CA повинен підтримувати автоматизоване управління сертифікатами X.509:
+\begin{itemize}
+    \item Підтримка реєстрації та випуску сертифікатів за протоколом EST (RFC 7030) через HTTPS.
+    \item Підтримка протоколу CMP (RFC 4210) для складних операцій життєвого циклу ключів.
+    \item Перевірка статусів сертифікатів у реальному часі через OCSP (RFC 6960) з часом відповіді не більше 100 мс.
+    \item Надання сервісу міток часу за протоколом TSP (RFC 3161) для юридичного підтвердження часу відправки документів.
+\end{itemize}
+
+\subsubsection{Вимоги до VPN (ERP/1: Тунелі)}
+Модуль тунелювання повинен забезпечувати ізольовані канали:
+\begin{itemize}
+    \item Автоматичне підняття тунелю на клієнтських пристроях за допомогою локальних сертифікатів X.509.
+    \item Робота за протоколами з мінімальним накладним оверхедом (WireGuard / UDP тунелі) для стабільності в ненадійних мережах.
+    \item Інтеграція з сервером авторизації для динамічного виділення IP-адрес.
+\end{itemize}
+
+\subsubsection{Вимоги до LDAP (ERP/1: Директорія)}
+Служба каталогів повинна забезпечувати ієрархічний довідник:
+\begin{itemize}
+    \item Зберігання профілів користувачів, їх публічних сертифікатів, зв'язків та прав доступу (атрибутів ABAC).
+    \item Асинхронне обслуговування запитів за протоколом LDAPv3 (RFC 4511) через порт 389/636 (LDAPS).
+    \item Підтримка гомотопічного DER кодування та компіляції ASN.1 схем довідника.
+\end{itemize}
+
+\subsubsection{Вимоги до IAS (ERP/1: Авторизація)}
+Сервер авторизації повинен контролювати вхід та сесії:
+\begin{itemize}
+    \item Автентифікація за клієнтськими сертифікатами X.509 без використання паролів.
+    \item Підтримка авторизації на базі атрибутів користувача (ABAC), зчитаних з LDAP та сертифіката.
+    \item Контроль статусу відкликання ключів через OCSP перед кожним початком сесії зв'язку.
+\end{itemize}
+
+\subsubsection{Вимоги до CHAT (ERP/1: Комунікатор v2)}
+Сервер CHAT повинен забезпечувати маршрутизацію повідомлень:
+\begin{itemize}
+    \item Маршрутизація повідомлень у вигляді DER-кодованих ASN.1 об'єктів без дешифрування контенту на сервері (Zero-Knowledge).
+    \item Підтримка протоколу Double Ratchet для генерації тимчасових ключів сесії на клієнті.
+    \item Тимчасове (транзієнтне) збереження повідомлень в оперативній пам'яті (Mnesia/KVS) до отримання квитанції про доставку, після чого дані повністю знищуються.
+\end{itemize}
+
+\subsubsection{Вимоги до MAIL (ERP/1: Документи v3)}
+Поштовий сервер повинен забезпечувати доставку документів:
+\begin{itemize}
+    \item Прийом та відправка документів у вигляді підписаних CMS-конвертів (S/MIME).
+    \item Підтримка протоколів доставки поштових пакетів (SMTP/IMAP) з обов'язковим TLS-захистом.
+    \item Автоматична верифікація підписів відправника та перевірка ланцюжків сертифікатів через локальний CA.
+\end{itemize}
+
+\subsection{Нефункціональні вимоги}
+
+\subsubsection{Вимоги до програмного стеку}
+\begin{itemize}
+    \item \textbf{Заборона Rust}: усі компоненти (CA, VPN, LDAP, IAS, CHAT, MAIL) повинні бути реалізовані на Erlang/OTP, Elixir або C99 для забезпечення сумісності із цільовим середовищем розгортання та спрощення КСЗІ.
+    \item \textbf{Erlang/OTP додатки}: кожен сервіс має бути оформлений як окремий OTP-додаток (Application) з супервізорами та процесами-серверами.
+\end{itemize}
+
+\subsubsection{Вимоги до безпеки та криптографії}
+\begin{itemize}
+    \item Використання виключно сертифікованих алгоритмів: ДСТУ 4145-2002 для електронного підпису та ДСТУ 7624 (Калина) / AES для шифрування контенту.
+    \item Повне логування та аудит дій адміністраторів через незмінний журнал подій під захистом апаратного модуля TPM 2.0.
+\end{itemize}
+
+\newpage
+\section{Додаток А. Регламент взаємодії за протоколом Buddha (X.422)}
+
+Регламент взаємодії визначає транспортні та криптографічні стандарти передачі даних у підсистемі «Комунікатор».
+
+\subsection{Транспортний рівень X.422.1}
+\begin{enumerate}
+    \item \textbf{Мережеві сокети}: Обмін пакетами здійснюється через асинхронні TCP сокети або шифровані UDP-канали. Для локального виявлення пристроїв у межах фізичної LAN-мережі підтримується UDP Multicast на виділений порт 4221.
+    \item \textbf{Структура транзиту}: Сервер виконує виключно роль асинхронного брокера (Broker), який пересилає DER-пакети адресатам на основі унікальних ідентифікаторів профілів.
+\end{enumerate}
+
+\subsection{Криптографічний конверт X.422.2}
+Кожне інформаційне повідомлення на клієнті упаковується у CMS-конверт відповідно до стандарту RFC 5652 та кодується за правилами DER:
+\begin{itemize}
+    \item \textbf{SignedData}: містить оригінальне повідомлення (або його хеш), сертифікат відправника та його електронний підпис (ДСТУ 4145 або ECDSA).
+    \item \textbf{EnvelopedData}: містить зашифровані за допомогою симетричного ключа (AES-GCM/Калина) дані. Сам симетричний ключ шифрується на публічному ключі отримувача за схемою ECDH (еліптичні криві).
+    \item \textbf{Захист метаданих}: заголовки пакетів (ідентифікатор отримувача та пристрою) шифруються на тимчасових серверних ключах для захисту від аналізу трафіку.
+\end{itemize}
+
+\end{document}

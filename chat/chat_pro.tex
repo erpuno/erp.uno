@@ -1,0 +1,479 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage{helvet}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{eso-pic}
+\usepackage{fancyhdr}
+\usepackage{parskip}
+\usepackage{microtype}
+\usepackage[english, ukrainian]{babel}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{tikz}
+\usetikzlibrary{positioning, shapes.geometric, arrows.meta}
+
+% Define brand colors
+\definecolor{primary}{HTML}{293757}
+\definecolor{footergray}{gray}{0.65}
+
+\geometry{a4paper,left=3cm,right=3cm,top=3cm,bottom=3cm}
+\renewcommand{\familydefault}{\sfdefault}
+\setcounter{secnumdepth}{3}
+
+% Font shapes for T2A/Helvetica (mapping to cmss for Cyrillic support)
+\DeclareFontFamily{T2A}{phv}{}
+\DeclareFontShape{T2A}{phv}{m}{n}{<->ssub * cmss/m/n}{}
+\DeclareFontShape{T2A}{phv}{bx}{n}{<->ssub * cmss/bx/n}{}
+\DeclareFontShape{T2A}{phv}{m}{it}{<->ssub * cmss/m/it}{}
+\DeclareFontShape{T2A}{phv}{bx}{it}{<->ssub * cmss/bx/it}{}
+
+\titleformat{\section}
+  {\color{primary}\Huge\bfseries}{\thesection.}{1em}{}
+\titlespacing*{\section}{0pt}{30pt}{12pt}
+\titleformat{\subsection}
+  {\color{primary}\LARGE\bfseries}{\thesubsection.}{1em}{}
+\titlespacing*{\subsection}{0pt}{20pt}{8pt}
+\titleformat{\subsubsection}
+  {\color{primary}\Large\bfseries}{\thesubsubsection.}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{6pt}
+
+\fancyhf{}
+\fancyhead[R]{\small\color{footergray} 29 червня 2026}
+\fancyfoot[L]{\small\color{footergray} Техноробочий проект ERP/1. Модуль Комунікатор}
+\fancyfoot[R]{\small\color{footergray}\thepage}
+
+\newcommand\HUGE[1]{\fontsize{38}{38}\selectfont #1}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\footrule}{\color{footergray}\hrule width \textwidth height 0.4pt}
+
+\begin{document}
+\pagestyle{fancy}
+
+\begin{titlepage}
+\AddToShipoutPictureBG*{\AtPageLowerLeft{\color{primary}\rule{\paperwidth}{\paperheight}}}
+\color{white}\thispagestyle{empty}\vspace*{3cm}\centering
+  {\Huge \textbf{ERP/1: Комунікатор} \par} \vspace{1.5cm}
+  {\HUGE \textbf{Техноробочий проект} \par} \vspace{1.5cm}
+  {\LARGE \textbf{на створення та впровадження \\ локальної системи безпечного зв'язку, \\ видачі сертифікатів та обміну повідомленнями} \par} \vspace{1.5cm}
+  {\large Згідно з Постановою КМУ № 205 від 21.02.2025 \par}
+  {\large Формалізація вимог за стандартом ISO/IEC/IEEE 29148:2018 \par}
+  \vfill
+  {\large 2026 \copyright\ Системи Електронного Урядування \par}
+\end{titlepage}
+
+\newpage
+\begin{center}
+  {\Huge\color{primary}\bfseries Зміст\par}
+\end{center}
+\vspace{40pt}
+\tableofcontents
+
+\newpage
+\section{Загальні відомості про засіб інформатизації}
+
+\subsection{Найменування та підстави для розробки}
+\textbf{Найменування засобу інформатизації:} Модуль «Комунікатор» (інфраструктура безпечного зв'язку CHAT v2 / MAIL v3) у складі інформаційної системи управління підприємством ERP/1.
+
+\textbf{Підстави для виконання робіт:}
+\begin{itemize}
+    \item Закон України «Про захист персональних даних»;
+    \item Закон України «Про захист інформації в інформаційно-комунікаційних системах»;
+    \item Порядок використання засобів інформатизації (Постанова КМУ № 205 від 21.02.2025);
+    \item Регламент взаємодії систем безпеки та шифрування X.422.
+\end{itemize}
+
+\subsection{Призначення та цілі створення засобу}
+Модуль призначений для розгортання периферійних систем захищеного обміну повідомленнями та документами, локального управління сертифікатами відкритих ключів (CA), VPN-тунелювання, служби каталогів (LDAP) та Identity Access Management (IAS) без використання сторонніх хмарних рішень та мови Rust на периферії.
+
+\subsection{План-графік виконання етапів робіт}
+\begin{enumerate}
+    \item \textbf{Етап 1: Технічне проектування} --- опис ASN.1 DER структур, схем каталогів LDAP та специфікацій WireGuard тунелів. (1.5 місяці).
+    \item \textbf{Етап 2: Реалізація CA та EST/CMP} --- запуск локального засвідчувального центру для видачі та перевірки статусів X.509. (2 місяці).
+    \item \textbf{Етап 3: Розробка CHAT v2 та MAIL v3 серверів} --- впровадження асинхронного брокера повідомлень на базі Erlang/OTP та поштової черги доставки документів. (2.5 місяці).
+    \item \textbf{Етап 4: Інтеграція клієнтських додатків} --- реалізація клієнтських Swift/SwiftUI SDK для роботи за протоколом Buddha X.422. (1.5 місяці).
+    \item \textbf{Етап 5: Державна експертиза КСЗІ} --- отримання атестату відповідності КСЗІ України. (2 місяці).
+\end{enumerate}
+
+\newpage
+\section{Відомості про робочий процес та умови експлуатації}
+
+\subsection{Опис бізнес-процесів (BPMN / FSM)}
+
+\subsubsection{Процес автентифікації клієнта за сертифікатом (chat\_auth.erl)}
+Керує процесом перевірки клієнтського сертифіката X.509 при встановленні зв'язку:
+\begin{enumerate}
+    \item \textbf{ClientConnect}: Клієнт ініціює TCP/TLS з'єднання.
+    \item \textbf{RequestCertificate}: Сервер вимагає клієнтський сертифікат (Mutual TLS).
+    \item \textbf{VerifyCertificateChain}: Перевірка підпису та ланцюжка сертифікатів через локальний CA.
+    \item \textbf{CheckOCSPStatus}: Запит до локального OCSP-сервера для перевірки наявності сертифіката в списку відкликаних.
+    \item \textbf{LoadLDAPAttributes}: Читання профілю користувача з LDAP для перевірки ABAC-атрибутів доступу.
+    \item \textbf{GrantAccess}: Створення сесії зв'язку, генерація тимчасового токена (AccessToken).
+\end{enumerate}
+
+\subsubsection{Процес обміну повідомленнями за протоколом Buddha (chat\_message.erl)}
+Керує життєвим циклом передачі повідомлень (CHAT v2):
+\begin{enumerate}
+    \item \textbf{ReceiveEnvelope}: Прийом DER-кодованого CMS-пакета від відправника.
+    \item \textbf{RouteByProfile}: Читання незашифрованого заголовка отримувача та пошук його сесії.
+    \item \textbf{StoreTransientQueue}: Збереження зашифрованого конверта в оперативній таблиці Mnesia.
+    \item \textbf{DeliverToClient}: Відправка пакета отримувачу при встановленні з'єднання.
+    \item \textbf{WaitDeliveryReceipt}: Очікування підтвердження отримання (Ack) від клієнта.
+    \item \textbf{DestroyMessage}: Повне видалення повідомлення з оперативної пам'яті сервера.
+\end{enumerate}
+
+\subsection{Опис ролей та прав доступу (ABAC)}
+Автентифікація користувачів базується на атрибутах LDAP. Приклад Erlang-функції авторизації доступу до каналів зв'язку:
+\begin{verbatim}
+allow(User, Action, Channel) ->
+    UserSecurityLevel = maps:get(clearance_level, User),
+    ChannelSecurityLevel = maps:get(required_level, Channel),
+    UserDept = maps:get(department, User),
+    ChannelDept = maps:get(department, Channel),
+    
+    HasClearance = (UserSecurityLevel >= ChannelSecurityLevel),
+    MatchesDept = (UserDept == ChannelDept),
+    
+    case {HasClearance, Action} of
+        {true, write_message} -> MatchesDept;
+        {true, read_message} -> true;
+        _ -> false
+    end.
+\end{verbatim}
+
+\subsection{Специфікація апаратного забезпечення та мережеві порти}
+Підсистема «Комунікатор» використовує такі мережеві порти на периферійному сервері:
+\begin{center}
+\small
+\begin{longtable}{p{2cm} p{3.5cm} p{2.5cm} p{5.5cm}}
+\toprule
+\textbf{Порт} & \textbf{Протокол} & \textbf{Сервіс} & \textbf{Призначення} \\
+\midrule
+8000 & TCP (WebSocket) & CHAT v2 & Асинхронний обмін DER-повідомленнями \\
+4221 & UDP (Multicast) & CHAT v1 / Discovery & Локальне виявлення пристроїв у LAN \\
+8443 & TCP (HTTPS) & IAS / EST & Реєстрація клієнтів та перевипуск сертифікатів \\
+8089 & TCP (HTTP) & CA / OCSP & Онлайн-перевірка статусу сертифікатів \\
+8088 & TCP (HTTP) & CA / CMP & Управління життєвим циклом сертифікатів \\
+636 & TCP (LDAPS) & LDAP & Служба каталогів користувачів \\
+51820 & UDP & VPN / Тунелі & Захищений WireGuard-канал \\
+465 & TCP (SMTPS) & MAIL v3 & Відправка документів (SMTP over TLS) \\
+993 & TCP (IMAPS) & MAIL v3 & Отримання документів (IMAP over TLS) \\
+\bottomrule
+\end{longtable}
+\end{center}
+
+\subsection{Архітектурна діаграма взаємодії та зв'язків додатків}
+
+Взаємодія між сервером та клієнтом, а також внутрішня інтеграція Erlang/OTP додатків у межах вузла «Комунікатор» представлена на схемі:
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    node distance=1.5cm and 2.5cm,
+    block/.style={draw=primary!80, fill=primary!5, rectangle, minimum height=2.8em, minimum width=6.2em, rounded corners=4pt, align=center, font=\small, line width=0.8pt},
+    db/.style={draw=green!60!black!80, fill=green!5, rectangle, minimum height=2.8em, minimum width=8.0em, rounded corners=4pt, align=center, font=\small, line width=0.8pt},
+    client/.style={draw=orange!80, fill=orange!5, rectangle, minimum height=4.5em, minimum width=9.5em, rounded corners=6pt, align=center, font=\small, thick, line width=1.2pt},
+    arrow/.style={-{Stealth[scale=1.0]}, thick, draw=primary!80}
+]
+
+    % Node definitions
+    % Top Row (Backend servers)
+    \node[block] (ca)   at (0.5, 0)   {\textbf{CA} \\ (EST/CMP)};
+    \node[block] (vpn)  at (3.0, 0)   {\textbf{VPN} \\ (Тунелі)};
+    \node[block] (ias)  at (5.5, 0)   {\textbf{IAS} \\ (Авторизація)};
+    \node[block] (ldap) at (8.0, 0)   {\textbf{LDAP} \\ (Директорія)};
+    \node[block] (chat) at (10.5, 0)  {\textbf{CHAT v2} \\ (Месенджер)};
+    \node[block] (mail) at (13.0, 0)  {\textbf{MAIL v3} \\ (Документи)};
+
+    % Bottom Row (Client and Mnesia Database)
+    \node[client] (cli) at (3.0, -3.2) {\textbf{SwiftUI Клієнт} \\ (Комунікатор)};
+    \node[db] (kvs)     at (10.5, -3.2) {\textbf{Mnesia / KVS} \\ (Транзієнтна БД)};
+
+    % Boundary box for the Erlang/OTP Node services (excluding the Client)
+    \draw[dashed, draw=gray!40, line width=1pt, rounded corners=6pt] (-1.2, -0.8) rectangle (14.7, 1.2);
+    \draw[dashed, draw=gray!40, line width=1pt, rounded corners=6pt] (8.5, -4.0) rectangle (12.5, -0.8);
+    \node[anchor=north east, font=\footnotesize\bfseries\color{gray}] at (14.6, 1.1) {Вузол Erlang/OTP (Комунікатор)};
+
+    % Connections: Client to Backend servers (clean rays from cli.north)
+    \draw[arrow] (cli.north) to[out=135, in=-90] node[left, font=\tiny, pos=0.8] {OCSP} (ca.south);
+    \draw[arrow] (cli.north) -- node[right, font=\tiny, pos=0.5] {Tunnel} (vpn.south);
+    \draw[arrow] (cli.north) to[out=70, in=-90] node[right, font=\tiny, pos=0.7] {Port 8443} (ias.south);
+    \draw[arrow] (cli.north) to[out=50, in=-90] node[right, font=\tiny, pos=0.6] {LDAP} (ldap.south);
+    \draw[arrow] (cli.north) to[out=30, in=-90] node[right, font=\tiny, pos=0.5] {Port 8000} (chat.south);
+    \draw[arrow] (cli.north) to[out=15, in=-90] node[right, font=\tiny, pos=0.4] {Port 993} (mail.south);
+
+    % Connections: Internal connections to IAS (Auth / Verification)
+    \draw[arrow] (ca.north) to[out=40, in=140] node[above, font=\tiny] {EST/CMP} (ias.north);
+    \draw[arrow] (vpn.east)   -- (ias.west);
+    \draw[arrow] (ldap.west)  -- (ias.east);
+
+    % Connections: Services to Mnesia Database
+    \draw[arrow] (chat.south) -- (kvs.north);
+    \draw[arrow] (mail.south) to[out=-90, in=35] (kvs.east);
+
+\end{tikzpicture}
+\caption{Архітектурна діаграма взаємодії OTP-додатків та мережевих портів}
+\label{fig:arch_diag}
+\end{figure}
+
+\subsection{Детальна архітектура Комунікатора та інтеграція репозиторіїв}
+Для побудови підсистеми використовуються репозиторії екосистеми ERP/1:
+\begin{enumerate}
+    \item \textbf{Репозиторії екосистеми Erlang/OTP} (шляхи пошуку):
+    \begin{itemize}
+        \item \texttt{synrc/chat/} --- Сервер CHAT v2 та клієнтські N2O/Nitro залежності.
+        \item \texttt{synrc/ca/} --- Локальний сертифікаційний центр.
+        \item \texttt{synrc/ldap/} --- Реалізація вбудованого LDAP сервера.
+        \item \texttt{zencrypted/ias/} --- Сервер авторизації та ідентифікації.
+        \item \texttt{zencrypted/vpn/} та \texttt{../../zencrypted/vpn2/} --- Модулі VPN тунелів.
+        \item \texttt{erpuno/mail/} --- Сервер документів MAIL v3.
+        \item \texttt{zencrypted/protocol/} --- Опис та специфікації протоколу Buddha.
+    \end{itemize}
+\end{enumerate}
+
+\newpage
+\section{Інформаційне та програмне забезпечення}
+
+\subsection{Інформаційне забезпечення (Схеми та Дані)}
+
+\subsubsection{Визначення структур даних (Erlang Records)}
+\begin{verbatim}
+-record(chat_session, {
+    session_id,                 % UUID сесії (PK)
+    client_id,                  % Серійний номер сертифіката X.509
+    device_id,                  % Однозначний ідентифікатор пристрою
+    ip_address,                 % Поточна IP-адреса
+    access_token,               % Токен доступу сесії
+    status = active,            % active | expired | revoked
+    created_at = 0
+}).
+
+-record(chat_roster, {
+    roster_id,                  % UUID ростера (PK)
+    owner_id,                   % UUID власника
+    contacts = []               % Список контактів
+}).
+
+-record(ca_certificate, {
+    serial_number,              % Серійний номер X.509 (PK)
+    subject_dn,                 % Відмітне ім'я суб'єкта
+    public_key_der,             % Публічний ключ у DER кодуванні
+    not_before = 0,             % Timestamp початку дії
+    not_after = 0,              % Timestamp завершення дії
+    status = valid              % valid | revoked | expired
+}).
+
+-record(vpn_tunnel_state, {
+    tunnel_id,                  % UUID тунелю (PK)
+    client_ip,                  % Виділена IP-адреса клієнта
+    public_key,                 % Публічний ключ WireGuard
+    bytes_sent = 0,             % Надіслано байт
+    bytes_recv = 0,             % Отримано байт
+    last_handshake = 0          % Timestamp останнього рукостискання
+}).
+\end{verbatim}
+
+\subsubsection{Специфікації ASN.1 для обміну даними}
+
+Нижче наведено специфікацію першого шару для UDP-мультікаст та локальних мереж з файлу \texttt{MESSAGE-v1.asn1}:
+\begin{verbatim}
+MESSAGE-v1 DEFINITIONS ::= BEGIN
+
+    IMPORTS ContentInfo FROM CryptographicMessageSyntax-2009
+            Certificate FROM PKIX1Explicit-2009 ;
+
+    OS  ::= ENUMERATED { apple (1), microsoft (2), google (3),
+                         ericsson (4), nokia (5), cisco (6) }
+    P2P ::= SEQUENCE { from OCTET STRING, to OCTET STRING }
+    MUC ::= SEQUENCE { room OCTET STRING }
+
+    CHATString ::= OCTET STRING
+
+    Feature ::= SEQUENCE { id OCTET STRING, key OCTET STRING, 
+                           value OCTET STRING, group OCTET STRING }
+    AuthorityMethod ::= ENUMERATED { announce (0), register (1),
+                                     authenticate (2), dismiss (3),
+                                     renew (4) }
+    Authority ::= SEQUENCE {
+       session OCTET STRING,
+       type AuthorityMethod,
+       cert OCTET STRING,
+       settings SEQUENCE OF feature Feature }
+
+    File ::= SEQUENCE {
+       id OCTET STRING,
+       mime OCTET STRING,
+       payload ANY,
+       parentid OCTET STRING }
+
+    Channel ::= SEQUENCE { channel OCTET STRING }
+    MessageType ::= ENUMERATED { sys (1), reply (2), forward (3), 
+                                 read (4), edited (5) }
+    MessageStatus ::= ENUMERATED { async (1), delete (2), clear (3), 
+                                   update (4), edit (5) }
+    MessageFeed ::= CHOICE { p2p [0] P2P, muc [1] MUC, chan [2] Channel }
+    Message ::= SEQUENCE {
+       id CHATString,
+       feed MessageFeed,
+       from CHATString,
+       to CHATString,
+       files SEQUENCE OF file File,
+       type MessageType,
+       link CHOICE { empty [1] NULL, message [2] Message },
+       seenby CHATString,
+       repliedby CHATString,
+       mentioned SEQUENCE OF name CHATString,
+       status MessageStatus DEFAULT clear }
+
+    Ack ::= SEQUENCE { table OCTET STRING, id OCTET STRING }
+
+END
+\end{verbatim}
+
+\subsection{Програмне забезпечення (Реалізація)}
+
+\subsubsection{chat\_message.erl (DSL процесу обміну повідомленнями)}
+\begin{verbatim}
+-module(chat_message).
+-include("bpe.hrl").
+-compile(export_all).
+
+def() ->
+    #process{
+        name = 'Buddha Protocol Message Delivery',
+        beginEvent = 'ReceiveEnvelope',
+        endEvent = 'DestroyMessage',
+        tasks = [
+            #beginEvent{name='ReceiveEnvelope'},
+            #serviceTask{name='RouteByProfile', module=?MODULE},
+            #serviceTask{name='StoreTransientQueue', module=?MODULE},
+            #serviceTask{name='DeliverToClient', module=?MODULE},
+            #serviceTask{name='WaitDeliveryReceipt', module=?MODULE},
+            #endEvent{name='DestroyMessage'}
+        ],
+        flows = [
+            #sequenceFlow{name='1', source='ReceiveEnvelope', target='RouteByProfile'},
+            #sequenceFlow{name='2', source='RouteByProfile', target='StoreTransientQueue'},
+            #sequenceFlow{name='3', source='StoreTransientQueue', target='DeliverToClient'},
+            #sequenceFlow{name='4', source='DeliverToClient', target='WaitDeliveryReceipt'},
+            #sequenceFlow{name='5', source='WaitDeliveryReceipt', target='DestroyMessage'}
+        ],
+        roles = [operator, system]
+    }.
+
+action({serviceTask, 'RouteByProfile'}, Proc) ->
+    % Визначення одержувача та активної сесії
+    {reply, Proc};
+action({serviceTask, 'StoreTransientQueue'}, Proc) ->
+    % Запис у транзієнтну Mnesia таблицю
+    {reply, Proc};
+action({serviceTask, 'DeliverToClient'}, Proc) ->
+    % Відправка через TCP сокет
+    {reply, Proc};
+action(_, Proc) -> {reply, Proc}.
+\end{verbatim}
+
+\subsubsection{chat\_nif.c (C99 NIF обгортка для декодування ASN.1 DER)}
+Код Erlang NIF модуля мовою C99 для швидкого синтаксичного розбору ASN.1 DER пакетів без Rust:
+\begin{verbatim}
+#include "erl_nif.h"
+#include <string.h>
+
+// Функція розбору ASN.1 TLV (Type-Length-Value) блоку
+static ERL_NIF_TERM parse_tlv_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+    ErlNifBinary bin;
+    if (!enif_inspect_binary(env, argv[0], &bin)) {
+        return enif_make_badarg(env);
+    }
+
+    if (bin.size < 2) {
+        return enif_make_tuple2(env, enif_make_atom(env, "error"), 
+                                enif_make_string(env, "too_short", ERL_NIF_LATIN1));
+    }
+
+    unsigned char tag = bin.data[0];
+    unsigned int length = bin.data[1];
+    unsigned int header_len = 2;
+
+    // Спрощена підтримка довгих довжин DER
+    if (length & 0x80) {
+        unsigned int num_bytes = length & 0x7F;
+        if (bin.size < 2 + num_bytes) {
+            return enif_make_tuple2(env, enif_make_atom(env, "error"), 
+                                    enif_make_string(env, "invalid_length", ERL_NIF_LATIN1));
+        }
+        length = 0;
+        for (unsigned int i = 0; i < num_bytes; i++) {
+            length = (length << 8) | bin.data[2 + i];
+        }
+        header_len = 2 + num_bytes;
+    }
+
+    if (bin.size < header_len + length) {
+        return enif_make_tuple2(env, enif_make_atom(env, "error"), 
+                                enif_make_string(env, "payload_mismatch", ERL_NIF_LATIN1));
+    }
+
+    ERL_NIF_TERM type_term = enif_make_uint(env, tag);
+    
+    unsigned char* payload_data;
+    ERL_NIF_TERM payload_term;
+    payload_data = enif_make_new_binary(env, length, &payload_term);
+    memcpy(payload_data, bin.data + header_len, length);
+
+    return enif_make_tuple3(env, enif_make_atom(env, "ok"), type_term, payload_term);
+}
+
+static ErlNifFunc nif_funcs[] = {
+    {"parse_tlv", 1, parse_tlv_nif}
+};
+
+ERL_NIF_INIT(chat_nif, nif_funcs, NULL, NULL, NULL, NULL)
+\end{verbatim}
+
+\newpage
+\section{Регламент взаємодії X.422 та криптографічні стандарти}
+
+Регламент взаємодії X.422 визначає дворівневий стандарт обміну:
+
+\subsection{X.422.1: Транспортний рівень}
+\begin{itemize}
+    \item Взаємодія між клієнтами та брокерами зв'язку CHAT v2 виконується через асинхронні WebSocket з'єднання, захищені двостороннім mTLS 1.3.
+    \item Поштовий обмін MAIL v3 реалізує доставку підписаних S/MIME конвертів за стандартними захищеними SMTP/IMAP протоколами.
+    \item Для випуску, оновлення та перевірки статусів сертифікатів використовуються стандарти EST (RFC 7030) та OCSP (RFC 6960).
+\end{itemize}
+
+\subsection{X.422.2: Криптографічний конверт CMS}
+Всі текстові та медіа-повідомлення, а також поштові вкладення перед відправленням проходять обов'язкову криптографічну обробку на боці клієнта:
+\begin{enumerate}
+    \item \textbf{Формування підпису (Signature)}: створюється CMS-структура SignedData. Обчислення хешу виконується за алгоритмом ДСТУ 7564 (Купина-384) або SHA-384. Електронний підпис обчислюється на еліптичних кривих за стандартом ДСТУ 4145-2002 або ECDSA.
+    \item \textbf{Шифрування вмісту (EnvelopedData)}: дані шифруються симетричним шифром ДСТУ 7624 (Калина-256) або AES-GCM-256 на сесійному ключі.
+    \item \textbf{Обмін сесійними ключами}: симетричний ключ шифрується на публічному ключі отримувача за алгоритмом еліптичних кривих ECDH (SECP-384 або SECP-571).
+\end{enumerate}
+
+\newpage
+\section{Вимоги до засобу за ISO/IEC/IEEE 29148}
+
+\subsection{Вимоги до надійності та продуктивності}
+\begin{itemize}
+    \item Середній показник доступності (SLA) периферійного сервера «Комунікатор» не менше 99.9\%.
+    \item Швидкість обробки та маршрутизації повідомлень брокером CHAT v2 — не менше 10 000 повідомлень на секунду при затримці доставки не більше 15 мс.
+    \item Пропускна здатність поштової підсистеми MAIL v3 — не менше 500 повідомлень на секунду.
+\end{itemize}
+
+\subsection{Вимоги до безпеки та захисту інформації}
+\begin{itemize}
+    \item Незмінність журналів аудиту, автентифікації користувачів та відкликання сертифікатів.
+    \item Заборона збереження та розшифрування закритого тексту (plaintext) повідомлень та поштових вкладень на серверних вузлах.
+\end{itemize}
+
+\end{document}
