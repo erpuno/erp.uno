@@ -1,0 +1,400 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage{helvet}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{eso-pic}
+\usepackage{fancyhdr}
+\usepackage{parskip}
+\usepackage{microtype}
+\usepackage[english, ukrainian]{babel}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{titlesec}
+
+% Define brand colors
+\definecolor{primary}{HTML}{293757}
+\definecolor{footergray}{gray}{0.65}
+
+\geometry{a4paper,left=3cm,right=3cm,top=3cm,bottom=3cm}
+\renewcommand{\familydefault}{\sfdefault}
+\setcounter{secnumdepth}{3}
+
+% Font shapes for T2A/Helvetica (mapping to cmss for Cyrillic support)
+\DeclareFontFamily{T2A}{phv}{}
+\DeclareFontShape{T2A}{phv}{m}{n}{<->ssub * cmss/m/n}{}
+\DeclareFontShape{T2A}{phv}{bx}{n}{<->ssub * cmss/bx/n}{}
+\DeclareFontShape{T2A}{phv}{m}{it}{<->ssub * cmss/m/it}{}
+\DeclareFontShape{T2A}{phv}{bx}{it}{<->ssub * cmss/bx/it}{}
+
+\titleformat{\section}
+  {\color{primary}\Huge\bfseries}{\thesection.}{1em}{}
+\titlespacing*{\section}{0pt}{30pt}{12pt}
+\titleformat{\subsection}
+  {\color{primary}\LARGE\bfseries}{\thesubsection.}{1em}{}
+\titlespacing*{\subsection}{0pt}{20pt}{8pt}
+\titleformat{\subsubsection}
+  {\color{primary}\Large\bfseries}{\thesubsubsection.}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{6pt}
+
+\fancyhf{}
+\fancyhead[R]{\small\color{footergray} 29 червня 2026}
+\fancyfoot[L]{\small\color{footergray} Техноробочий проект ERP/1. Модуль Аналітика}
+\fancyfoot[R]{\small\color{footergray}\thepage}
+
+\newcommand\HUGE[1]{\fontsize{38}{38}\selectfont #1}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\footrule}{\color{footergray}\hrule width \textwidth height 0.4pt}
+
+\begin{document}
+\pagestyle{fancy}
+
+\begin{titlepage}
+\AddToShipoutPictureBG*{\AtPageLowerLeft{\color{primary}\rule{\paperwidth}{\paperheight}}}
+\color{white}\thispagestyle{empty}\vspace*{3cm}\centering
+  {\Huge \textbf{ERP/1: Аналітика} \par} \vspace{1.5cm}
+  {\HUGE \textbf{Техноробочий проект} \par} \vspace{1.5cm}
+  {\LARGE \textbf{на створення та впровадження \\ локальної DWH-інфраструктури \\ для аналізу та обробки великих даних} \par} \vspace{1.5cm}
+  {\large Згідно з Постановою КМУ № 205 від 21.02.2025 \par}
+  {\large Формалізація вимог за стандартом ISO/IEC/IEEE 29148:2018 \par}
+  \vfill
+  {\large 2026 \copyright\ Системи Електронного Урядування \par}
+\end{titlepage}
+
+\newpage
+\begin{center}
+  {\Huge\color{primary}\bfseries Зміст\par}
+\end{center}
+\vspace{40pt}
+\tableofcontents
+
+\newpage
+\section{Загальні відомості про засіб інформатизації}
+
+\subsection{Найменування та підстави для розробки}
+\textbf{Найменування засобу інформатизації:} Модуль «Аналітика» (локальна DWH-інфраструктура) у складі інформаційної системи управління підприємством ERP/1.
+
+\textbf{Підстави для виконання робіт:}
+\begin{itemize}
+    \item Закон України «Про захист персональних даних»;
+    \item Закон України «Про захист інформації в інформаційно-комунікаційних системах»;
+    \item Порядок використання засобів інформатизації (Постанова КМУ № 205 від 21.02.2025);
+    \item Програма модернізації обчислювальної IT-інфраструктури ЄСІКС.
+\end{itemize}
+
+\subsection{Призначення та цілі створення засобу}
+Модуль призначений для виконання швидких аналітичних обчислень над локальними реєстрами, збереження історії та побудови BI-звітів on-premises на базі інтеграції з відкритими аналітичними базами даних ClickHouse та DuckDB.
+
+\textbf{Основні цілі створення:}
+\begin{itemize}
+    \item Організація децентралізованого DWH на базі C99-сумісного двигуна DuckDB для периферійних вузлів.
+    \item Налаштування централізованого аналітичного кластера ClickHouse для консолідації даних.
+    \item Розробка високопродуктивних ETL-контурів синхронізації транзакційних даних Mnesia/KVS у аналітичні структури.
+    \item Надання BI-інтерфейсу користувачам через інтеграцію з Apache Superset.
+\end{itemize}
+
+\subsection{План-графік виконання етапів робіт}
+Розробка та впровадження модуля «Аналітика» розділяється на такі етапи:
+\begin{enumerate}
+    \item \textbf{Етап 1: Технічне проектування} --- проектування схем даних (зірки/сніжинки), вибір форматів та полів синхронізації. (1 місяць).
+    \item \textbf{Етап 2: Реалізація C99 DuckDB NIF} --- розробка інтерфейсної бібліотеки C99 для зв'язку Erlang/OTP з DuckDB без Rust. (1.5 місяці).
+    \item \textbf{Етап 3: Розробка ETL контуру} --- реалізація процесів синхронізації \texttt{dwh\_sync.erl} та вивантаження у Parquet. (1 місяць).
+    \item \textbf{Етап 4: Розгортання BI та кластеризація} --- налаштування Apache Superset та інтеграція з центральним ClickHouse. (1.5 місяці).
+    \item \textbf{Етап 5: Сертифікація безпеки} --- експертиза КСЗІ, налаштування шифрування LUKS/TPM 2.0 та мережевих політик Cilium. (2 місяці).
+\end{enumerate}
+
+\newpage
+\section{Відомості про робочий процес та умови експлуатації}
+
+\subsection{Опис бізнес-процесів (BPMN / FSM)}
+Керування ETL-процесами та виконання аналітичних запитів формалізуються у вигляді кінцевих автоматів (FSM) та виконуються рушієм процесів BPE:
+
+\subsubsection{Процес ETL синхронізації (dwh\_sync.erl)}
+Цей процес відповідає за періодичне або транзакційне перенесення даних з Mnesia/KVS у стовпчикове сховище DWH:
+\begin{enumerate}
+    \item \textbf{StartSync:} Активація процесу за cron-розкладом або транзакційним тригером.
+    \item \textbf{ExtractMnesiaChanges:} Збір змінених записів з журналів транзакцій Mnesia за останній період.
+    \item \textbf{TransformData:} Приведення даних до пласкої реляційної структури, знеособлення за потреби.
+    \item \textbf{WriteToParquet:} Асинхронне збереження проміжних даних у файл формату Parquet на NVMe.
+    \item \textbf{LoadToDuckDB:} Імпорт Parquet файлу в локальну базу даних DuckDB за допомогою векторної операції копіювання (Copy).
+    \item \textbf{SyncCentralDWH:} Передача агрегованих даних до центрального аналітичного вузла ClickHouse.
+    \item \textbf{SyncCompleted:} Фіксація завершення та запис статусів.
+\end{enumerate}
+
+\subsubsection{Процес ad-hoc аналізу (dwh\_query.erl)}
+Забезпечує обробку аналітичних запитів користувачів через API:
+\begin{enumerate}
+    \item \textbf{ReceiveQuery:} Користувач надсилає аналітичний запит або запускає оновлення дашборду.
+    \item \textbf{RouteQuery:} Маршрутизація запиту (на локальну DuckDB для периферійних даних чи на ClickHouse для глобальної статистики).
+    \item \textbf{ExecuteVectorSQL:} Виконання SQL-запиту векторним процесором СКБД.
+    \item \textbf{FormatResponse:} Перетворення результату в бінарний JSON/Tuple представлення.
+    \item \textbf{LogQueryStats:} Збереження статистики виконання (час обробки, кількість зчитаних рядків) в аудит-журнал.
+\end{enumerate}
+
+\subsection{Опис ролей та прав доступу (ABAC)}
+Доступ до виконання SQL-запитів та перегляду дашбордів Apache Superset обмежується на базі атрибутів користувача:
+\begin{verbatim}
+allow(User, Action, Resource) ->
+    UserRole = maps:get(role, User),
+    UserDept = maps:get(department, User),
+    ResDept = maps:get(department, Resource),
+    
+    IsAnalyst = lists:member(UserRole, [analyst, admin]),
+    MatchesDept = (UserDept == ResDept),
+    
+    case {IsAnalyst, Action} of
+        {true, execute_query} -> true;
+        {false, execute_query} -> MatchesDept;
+        {_, view_dashboard} -> true;
+        _ -> false
+    end.
+\end{verbatim}
+
+\subsection{Специфікація апаратного забезпечення}
+Апаратні вимоги до серверів DWH на периферійних та центральному вузлах:
+\begin{center}
+\small
+\begin{longtable}{p{4cm} p{5cm} p{5cm}}
+\toprule
+\textbf{Параметр} & \textbf{Периферійний вузол (DuckDB)} & \textbf{Центральний вузол (ClickHouse)} \\
+\midrule
+Процесор & x86-64 (min 8 Cores), AVX2 & 2x Intel Xeon / AMD EPYC (min 32 Cores), AVX-512 \\
+Оперативна пам'ять & 16--32 GB DDR4/DDR5 & 128--256 GB ECC DDR5 \\
+Накопичувач & NVMe SSD (PCIe Gen4) & Hardware RAID-10 NVMe Enterprise SSD \\
+Мережевий інтерфейс & 1 Gbps Ethernet & 10/25 Gbps Fiber Ethernet \\
+\bottomrule
+\end{longtable}
+\end{center}
+
+\subsection{Умови експлуатації та системне середовище}
+Периферійні DWH вузли встановлюються на робочих станціях у локальній мережі установ. Системне середовище складається з: Ubuntu LTS 24.04, Erlang/OTP 27, Elixir 1.17, бібліотек C99 (gcc/clang, make) без встановленого Rust SDK.
+
+\subsection{Детальна архітектура DWH на базі DuckDB та ClickHouse}
+Аналітична архітектура будується на поєднанні двох технологій стовпчикового аналізу:
+\begin{enumerate}
+    \item \textbf{DuckDB (Edge OLAP)}:
+    Локальний аналітичний двигун на базі вбудовуваної векторної технології DuckDB. Для забезпечення самостійності та ізоляції ресурсів, DuckDB інтегрується через виділений Erlang NIF, що працює в окремій групі потоків (dirty CPU schedulers) з обмеженими лімітами на використання RAM та CPU, унеможливлюючи вплив OLAP-навантаження на транзакційну OTP-частину. Масштабування рішення досягається через федеративне виконання запитів (за допомогою розширень роботи з об'єктними сховищами) та Peer-to-Peer реплікацію проміжних Parquet-файлів між периферійними вузлами для відмовостійкості.
+    \item \textbf{ClickHouse (Cluster DWH)}:
+    Масштабована СКБД, яка об'єднує дані з усіх вузлів. Синхронізація з DuckDB відбувається асинхронно через вивантаження Parquet файлів.
+\end{enumerate}
+
+\newpage
+\section{Інформаційне та програмне забезпечення}
+
+\subsection{Інформаційне забезпечення (Схеми та Дані)}
+
+\subsubsection{Визначення структур даних (Erlang Records)}
+Основні реєстрові сутності аналітики:
+\begin{verbatim}
+-record(dwh_node_status, {
+    node_id,                    % UUID вузла (PK)
+    hostname,                   % Текстове ім'я хоста
+    ip_address,                 % IP-адреса вузла
+    has_avx512 = false,         % Наявність інструкцій AVX-512
+    queries_processed = 0,      % Кількість виконаних запитів
+    status = offline,           % online | offline | degraded
+    last_ping_at = 0            % Timestamp пінгу
+}).
+
+-record(dwh_query_log, {
+    task_id,                    % UUID задачі (PK)
+    user_id,                    % UUID користувача
+    query_hash,                 % SHA256 хеш SQL запиту
+    execution_time_ms = 0,      % Час виконання
+    read_rows = 0,              % Кількість зчитаних рядків
+    query_type = adhoc,         % adhoc | report | sync
+    created_at = 0
+}).
+
+-record(dwh_pipeline, {
+    pipeline_id,                % UUID конвеєра (PK)
+    source_table,               % Транзакційна таблиця Mnesia
+    target_table,               % Аналітична таблиця DWH
+    last_sync_at = 0,           % Час останньої синхронізації
+    sync_interval_sec = 3600,   % Інтервал синхронізації
+    status = idle               % idle | running | failed
+}).
+
+-record(dwh_storage_config, {
+    storage_id,                 % UUID налаштування
+    local_path,                 % Шлях до бази файлу (.db / .parquet)
+    format = parquet,           % parquet | csv | native
+    compression = zstd,         % zstd | lz4 | none
+    allocated_mb = 0
+}).
+\end{verbatim}
+
+\subsection{Програмне забезпечення (Реалізація)}
+
+\subsubsection{dwh\_sync.erl (DSL процесу синхронізації)}
+\begin{verbatim}
+-module(dwh_sync).
+-include("bpe.hrl").
+-compile(export_all).
+
+def() ->
+    #process{
+        name = 'DWH ETL Sync Workflow',
+        beginEvent = 'StartSync',
+        endEvent = 'SyncCompleted',
+        tasks = [
+            #beginEvent{name='StartSync'},
+            #serviceTask{name='ExtractMnesiaChanges', module=?MODULE},
+            #serviceTask{name='TransformData', module=?MODULE},
+            #serviceTask{name='WriteToParquet', module=?MODULE},
+            #serviceTask{name='LoadToDuckDB', module=?MODULE},
+            #serviceTask{name='SyncCentralDWH', module=?MODULE},
+            #endEvent{name='SyncCompleted'}
+        ],
+        flows = [
+            #sequenceFlow{name='1', source='StartSync', target='ExtractMnesiaChanges'},
+            #sequenceFlow{name='2', source='ExtractMnesiaChanges', target='TransformData'},
+            #sequenceFlow{name='3', source='TransformData', target='WriteToParquet'},
+            #sequenceFlow{name='4', source='WriteToParquet', target='LoadToDuckDB'},
+            #sequenceFlow{name='5', source='LoadToDuckDB', target='SyncCentralDWH'},
+            #sequenceFlow{name='6', source='SyncCentralDWH', target='SyncCompleted'}
+        ],
+        roles = [operator, system]
+    }.
+
+action({serviceTask, 'ExtractMnesiaChanges'}, Proc) ->
+    % Витягнення логу транзакцій з Mnesia
+    {reply, Proc};
+action({serviceTask, 'WriteToParquet'}, Proc) ->
+    % Збереження у тимчасовий Parquet-файл на NVMe
+    {reply, Proc};
+action({serviceTask, 'LoadToDuckDB'}, Proc) ->
+    % Виклик C99 NIF модуля для завантаження в DuckDB
+    {reply, Proc};
+action(_, Proc) -> {reply, Proc}.
+\end{verbatim}
+
+\subsubsection{dwh\_nif.c (C99 Erlang NIF для DuckDB)}
+Нижче наведено код інтеграційного модуля на чистій мові C99 для зв'язку з C-API DuckDB без застосування Rust:
+\begin{verbatim}
+#include "erl_nif.h"
+#include <duckdb.h>
+#include <string.h>
+
+// Контекст для збереження дескриптора бази даних
+typedef struct {
+    duckdb_database db;
+    duckdb_connection con;
+} dwh_ctx_t;
+
+static ErlNifResourceType* DWH_RES_TYPE = NULL;
+
+// Функція очищення ресурсу при видаленні в Erlang
+static void dwh_resource_cleanup(ErlNifEnv* env, void* obj) {
+    dwh_ctx_t* ctx = (dwh_ctx_t*)obj;
+    if (ctx->con) {
+        duckdb_disconnect(&ctx->con);
+    }
+    if (ctx->db) {
+        duckdb_close(&ctx->db);
+    }
+}
+
+// Ініціалізація бази даних DuckDB
+static ERL_NIF_TERM dwh_open_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+    char path[512];
+    if (enif_get_string(env, argv[0], path, sizeof(path), ERL_NIF_LATIN1) <= 0) {
+        return enif_make_badarg(env);
+    }
+
+    dwh_ctx_t* ctx = enif_alloc_resource(DWH_RES_TYPE, sizeof(dwh_ctx_t));
+    memset(ctx, 0, sizeof(dwh_ctx_t));
+
+    // Виклик C-API DuckDB
+    if (duckdb_open(path, &ctx->db) == DuckDBError) {
+        enif_release_resource(ctx);
+        return enif_make_tuple2(env, enif_make_atom(env, "error"), 
+                                enif_make_string(env, "cannot_open_db", ERL_NIF_LATIN1));
+    }
+
+    if (duckdb_connect(ctx->db, &ctx->con) == DuckDBError) {
+        duckdb_close(&ctx->db);
+        enif_release_resource(ctx);
+        return enif_make_tuple2(env, enif_make_atom(env, "error"), 
+                                enif_make_string(env, "cannot_connect_db", ERL_NIF_LATIN1));
+    }
+
+    ERL_NIF_TERM res = enif_make_resource(env, ctx);
+    enif_release_resource(ctx);
+    return enif_make_tuple2(env, enif_make_atom(env, "ok"), res);
+}
+
+// Виконання аналітичного запиту
+static ERL_NIF_TERM dwh_query_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+    dwh_ctx_t* ctx;
+    char query[2048];
+
+    if (!enif_get_resource(env, argv[0], DWH_RES_TYPE, (void**)&ctx)) {
+        return enif_make_badarg(env);
+    }
+    if (enif_get_string(env, argv[1], query, sizeof(query), ERL_NIF_LATIN1) <= 0) {
+        return enif_make_badarg(env);
+    }
+
+    duckdb_result result;
+    if (duckdb_query(ctx->con, query, &result) == DuckDBError) {
+        const char* err_msg = duckdb_value_strval(&result, 0); // спрощено
+        duckdb_destroy_result(&result);
+        return enif_make_tuple2(env, enif_make_atom(env, "error"), 
+                                enif_make_string(env, err_msg ? err_msg : "query_failed", ERL_NIF_LATIN1));
+    }
+
+    // Отримання кількості рядків
+    idx_t row_count = duckdb_row_count(&result);
+    duckdb_destroy_result(&result);
+
+    return enif_make_tuple2(env, enif_make_atom(env, "ok"), enif_make_uint64(env, (unsigned long)row_count));
+}
+
+static ErlNifFunc nif_funcs[] = {
+    {"open", 1, dwh_open_nif},
+    {"query", 2, dwh_query_nif}
+};
+
+static int load(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info) {
+    DWH_RES_TYPE = enif_open_resource_type(env, NULL, "dwh_res", dwh_resource_cleanup, 
+                                           ERL_NIF_RT_CREATE | ERL_NIF_RT_TAKEOVER, NULL);
+    return 0;
+}
+
+ERL_NIF_INIT(dwh_nif, nif_funcs, load, NULL, NULL, NULL)
+\end{verbatim}
+
+\newpage
+\section{Вимоги до засобу}
+
+\subsection{Функціональні вимоги}
+Модуль «Аналітика» повинен забезпечувати регулярне завантаження транзакційних даних, їх зберігання у стовпчиковому форматі на NVMe, виконання локальних аналітичних запитів та агрегацій у фоновому режимі та надання інтерфейсу візуалізації.
+
+\subsection{Вимоги до інтерфейсів та дизайну}
+\begin{itemize}
+    \item Веб-інтерфейс адміністратора конвеєрів та ETL має базуватися на Nitro/N2O.
+    \item Клієнтська візуалізація звітів повинна бути реалізована через інтегровану панель Apache Superset у фірмовому стилі Sleek Dark Mode.
+\end{itemize}
+
+\subsection{Вимоги до безпеки та захисту інформації}
+\begin{itemize}
+    \item Локальні файли баз даних DuckDB (.db) повинні зберігатися на NVMe розділах, зашифрованих за допомогою LUKS з прив'язкою до TPM 2.0.
+    \item Мережева взаємодія між периферійними вузлами та центральним ClickHouse повинна шифруватися за допомогою TLS 1.3 з використанням взаємної автентифікації (mTLS).
+\end{itemize}
+
+\subsection{Вимоги до продуктивності та надійності}
+\begin{itemize}
+    \item Максимальний час виконання регламентної синхронізації (ETL) за годину не повинен перевищувати 3 хвилин.
+    \item Помилка виконання SQL на периферійному вузлі не повинна впливати на транзакційну працездатність ERP/1.
+\end{itemize}
+
+\end{document}

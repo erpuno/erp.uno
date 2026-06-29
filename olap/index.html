@@ -1,0 +1,105 @@
+<html><head><meta charset="utf-8" /><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Аналітика - Локальна DWH-інфраструктура для аналізу та обробки великих даних" />
+<meta name="author" content="Maxim Sokhatsky" />
+<title>ERP/1: Аналітика</title>
+    <link rel="stylesheet" href="../index.css?v=15"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="../img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../img/favicon-16x16.png">
+    <link rel="manifest" href="../img/site.webmanifest">
+</head><body><nav class="sticky">
+    <div class="nav-container">
+        <a href="https://erp.uno" class="logo">ERP/1</a>
+        <div class="lang-group">
+            <div class="lang-switcher">
+                <a href="index.html" class="lang-btn">UA</a>
+            </div>
+        </div>
+    </div>
+</nav><header>
+    <div class="hero-content">
+        <h1>Аналітика</h1>
+        <p class="hero-subtitle">Інформаційно-комунікаційна система «ERP/1: Аналітика» — це високопродуктивна локальна DWH-інфраструктура
+        для обробки великих обсягів даних, векторизованого аналізу та побудови звітів безпосередньо on-premises.</p>
+    </div>
+</header><main>
+    <section class="section-products">
+        <h2>Опис</h2>
+        <div>Сучасна аналітична платформа OLAP/DWH, розгорнута в локальному захищеному контурі установи. Забезпечує децентралізоване накопичення історичних даних, векторизоване виконання аналітичних SQL-запитів із високою швидкістю та інтеграцію з корпоративними BI-системами. Рішення побудовано без використання Rust на базі високооптимізованих C99-сумісних бібліотек і безшовно поєднано з транзакційним OTP-контуром Erlang/Elixir нашої екосистеми.</div>
+    </section>
+
+    <section class="section-solutions">
+        <h2>Ключові модулі</h2>
+        <div class="solutions-grid">
+            <div>Вбудоване сховище: локальна база даних DuckDB з чистим C99 API інтегрується прямо в Erlang-потік периферійних вузлів.</div>
+            <div>Центральний хаб: аналітичний кластер ClickHouse для консолідації та масштабування даних з усіх регіональних вузлів.</div>
+            <div>ETL-контури: фонова асинхронна синхронізація транзакційних таблиць Mnesia/KVS у стовпчиковий аналітичний формат.</div>
+            <div>Векторизовані обчислення: виконання SQL-запитів пакетами рядків з максимальною утилізацією кешу процесора та AVX-512.</div>
+            <div>BI-візуалізація: вбудовані дашборди Apache Superset для глибокого аналізу та наочного відображення показників.</div>
+            <div>Безпека даних: шифрування дискових розділів LUKS, апаратна інтеграція з TPM 2.0 та ізоляція трафіку через Cilium.</div>
+            <div>Автономна робота: повноцінне функціонування в ізольованому контурі установи (Air-Gapped) без зв'язку з інтернетом.</div>
+        </div>
+    </section>
+
+    <section class="section-standards">
+        <h2>Переваги</h2>
+        <ul class="standards-list">
+            <li>Повна конфіденційність: обробка даних на місцях виключає витоки інформації з обмеженим доступом.</li>
+            <li>Спрощений стек C99/OTP: відсутність залежностей від Rust/Cargo полегшує збирання, розгортання та сертифікацію КСЗІ.</li>
+            <li>Висока швидкість: сканування до 100+ мільйонів рядків на секунду на одному ядрі CPU.</li>
+            <li>Стиснення даних: використання Parquet та алгоритмів ZSTD/LZ4 скорочує витрати дискового простору.</li>
+            <li>Відкриті стандарти: використання безкоштовних технологій з ліцензіями MIT та Apache 2.0.</li>
+            <li>Сумісність із стандартами безпеки: повна відповідність державним вимогам захисту інформації та NIST SP 800-53.</li>
+        </ul>
+    </section>
+
+</main>
+<footer>
+    <div class="footer-columns">
+        <div> &nbsp;
+        </div>
+        <div>
+            <h4>Системні продукти</h4>
+            <ul>
+                <li><a href="../ca/index.html">Сертифікати</a></li>
+                <li><a href="../chat/index.html">Комунікатор</a></li>
+                <li><a href="../ldap/index.html">Директорія</a></li>
+                <li><a href="../bpmn/index.html">Процеси</a></li>
+            </ul>
+            <br>
+            <h4>Корпоративні Продукти</h4>
+            <ul>
+                <li><a href="../edu/index.html">Освіта</a></li>
+                <li><a href="../health/index.html">Здоров'я</a></li>
+                <li><a href="../cart/index.html">Реєстри</a></li>
+                <li><a href="../mail/index.html">Документи</a></li>
+                <li><a href="../acc/index.html">Облік</a></li>
+                <li><a href="../warehouse/index.html">Склад</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Завантаження</h4>
+            <ul>
+                <li><a href="https://x509.chat/bdfl.pdf">BDFL Cathedral</a></li>
+                <li><a href="https://x509.chat/encryption.pdf">Encryption Architecture</a></li>
+                <li><a href="https://protocol.zencrypted.uk">Buddha Protocol</a></li>
+                <li><a href="../man/ua/1.htm">ERP/1: Підприємство</a></li>
+                <li><a href="dwh.pdf">ERP/1: Аналітика (ТВ)</a></li>
+                <li><a href="dwh_pro.pdf">ERP/1: Аналітика (ТРП/ТЗ)</a></li>
+                <li><a href="https://axiosis.github.io/books/erp/erp.pdf">ERP/1: Навчальний посібник</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Контакти</h4>
+            <p><a href="mailto:ceo@erp.uno">ceo@erp.uno</a></p>
+            <p>2026 © <a href="https://erp.uno/">ERP.UNO</a></p>
+            <p>2026 © <a href="https://synrc.com/">SYNRC.COM</a></p>
+            <hr>
+            <p>2026 © ТОВ «СЕУ» (46207985)</p>
+            <p>2026 © ТОВ «Криптографічні Телесистеми» (46226772)</p>
+            <br>
+        </div>
+    </div>
+</footer></body>
+</html>
