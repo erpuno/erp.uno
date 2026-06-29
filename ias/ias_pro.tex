@@ -15,8 +15,11 @@
 \usepackage{amsthm}
 \usepackage{longtable}
 \usepackage{booktabs}
+\usepackage{float}
 \usepackage{hyperref}
 \usepackage{titlesec}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit}
 
 \definecolor{nato}{HTML}{293757}
 \definecolor{footergray}{gray}{0.65}
@@ -38,8 +41,8 @@
 \titlespacing*{\subsubsection}{0pt}{10pt}{6pt}
 
 \fancyhf{}
-\fancyhead[R]{\small\color{footergray} 28 червня 2026}
-\fancyfoot[L]{\small\color{footergray} Техноробочий проект ERP/1. Модуль IAS}
+\fancyhead[R]{\small\color{footergray} 29 червня 2026}
+\fancyfoot[L]{\small\color{footergray} Техноробочий проєкт ERP/1. Модуль IAS}
 \fancyfoot[R]{\small\color{footergray}\thepage}
 
 \newcommand\HUGE[1]{\fontsize{40}{40}\selectfont #1}
@@ -56,9 +59,9 @@
   \AddToShipoutPictureBG*{\AtPageLowerLeft{\color{nato}\rule{\paperwidth}{\paperheight}}}
   \color{white}\thispagestyle{empty}\vspace*{3cm}\centering
   {\Huge  \textbf{ERP/1: Авторизація} \par} \vspace{1.5cm}
-  {\HUGE  \textbf{Техноробочий проект} \par} \vspace{1.5cm}
+  {\HUGE  \textbf{Техноробочий проєкт} \par} \vspace{1.5cm}
   {\LARGE \textbf{на створення та впровадження модуля «Служба ідентифікації та авторизації (IAS)» як засобу інформатизації} \par} \vspace{1.5cm}
-  {\large Згідно з Постановою КМУ № 205 від 21.02.2025 \par}
+  {\large Згідно з ДСТУ 34.201-89 та Постановою КМУ № 205 від 21.02.2025 \par}
   {\large Формалізація вимог за стандартом ISO/IEC/IEEE 29148:2018 \par}
   \vfill
   {\large 2026 \copyright\ Системи Електронного Урядування \par}
@@ -88,453 +91,511 @@
     \item Технічне завдання на побудову Zencrypted інфраструктури безпеки.
 \end{enumerate}
 
-\subsection{Простежуваність вимог та відповідність нормативній базі}
-Для забезпечення відповідності Постанові КМУ № 205 від 21.02.2025 та вимогам міжнародного аудиту, проектування Модуля IAS базується на принципі наскрізної простежуваності (traceability) від високорівневих бізнес-політик безпеки до конкретних елементів реалізації.
+\subsection{Статуси опису реалізації}
+Щоб не змішувати фактичну реалізацію, частково завершені можливості, цільову архітектуру та нормативні наміри, у цьому документі застосовуються такі статуси:
+\begin{longtable}{p{0.24\textwidth}p{0.68\textwidth}}
+\toprule
+\textbf{Статус} & \textbf{Зміст} \\
+\midrule
+Реалізовано & Підтверджено поточним кодом, стійкими структурами даних і автоматизованими тестами IAS. \\
+Частково реалізовано & Реалізовано лише для визначеного сценарію або з тимчасовими технічними залежностями. \\
+Цільовий стан & Запланована архітектура або функція наступних ітерацій; не трактується як наявна у поточному середовищі виконання. \\
+Нормативна вимога & Вимога законодавства, стандарту, сертифікації або організаційної політики, що потребує окремих доказів реалізації та приймання. \\
+\bottomrule
+\end{longtable}
 
-Усі вимоги, визначені в \texttt{ias.tex}, пов'язані з відповідними структурами даних та виконуваними процесами в цьому документі:
+\subsection{Простежуваність вимог та відповідність нормативній базі}
+Техноробочий проєкт деталізує технічні вимоги з \texttt{ias.tex} і має зберігати зв'язок між вимогою, фактичним модулем, стійкою структурою даних, автоматизованим тестом та статусом реалізації. Посилання на неіснуючі модулі, демонстраційний код або майбутню архітектуру не повинні подаватися як опис поточного стану.
+
+На цьому етапі зафіксовано такі межі простежуваності:
 \begin{itemize}
-    \item \textbf{Політика доступу та ABAC:} Політики безпеки з \texttt{policy.tex} транслюються у функціональні вимоги контролю доступу в \texttt{ias.tex} (Розділ 4.1.5) та формалізуються в цьому документі у вигляді коду перевірки атрибутів (\texttt{allow/3} в Розділі 2.2).
-    \item \textbf{Керування життєвим циклом сертифікатів:} Вимоги до CMP-випуску транслюються у реєстрову сутність \texttt{Certificate} та процес \texttt{bpe\_cmp\_enrollment.erl} (Розділ 3.2.2).
-    \item \textbf{Провіженінг та узгодження конфігурацій:} Вимоги до одностороннього провіженінгу та реконсиляції реалізуються через сутність \texttt{ias\_vpn\_device\_state} та процес \texttt{bpe\_vpn\_provisioning.erl} (Розділ 3.2.4).
+    \item \textbf{Реалізовано --- керування доменними об'єктами:} користувачі, пристрої, сертифікати, профілі безпеки, політики та VPN-сервіси зберігаються у KVS/Mnesia через доменні модулі IAS.
+    \item \textbf{Реалізовано --- майстер налаштування VPN:} поточний життєвий цикл виконується спеціалізованими модулями IAS з перевірками переходів, готовності матеріалів, доставки та відновлення.
+    \item \textbf{Частково реалізовано --- випуск сертифікатів через CA:} поточний CMP-шлях використовує зовнішній командний інтерфейс OpenSSL як перехідну залежність. Повне усунення запуску OpenSSL із середовища виконання IAS є цільовим станом.
+    \item \textbf{Цільовий стан --- BPE/BPMN:} перенесення керування станами й переходами на \texttt{synrc/bpmn}/BPE не описується як поточна реалізація; наявний майстер поки не виконується рушієм BPE.
+    \item \textbf{Цільові та нормативні вимоги:} EST, CMC, CRL/OCSP, повний ABAC, КСЗІ та національні криптографічні алгоритми не вважаються реалізованими до появи окремих реалізаційних, випробувальних і приймальних доказів.
 \end{itemize}
 
 \subsection{Призначення та цілі створення засобу}
-Модуль IAS розробляється як центральна адміністративно-координаційна служба для керування цифровими ідентичностями, сертифікатами пристроїв, авторизацією користувачів та віддалених точок підключення VPN. 
+Модуль IAS є центральною адміністративно-координаційною службою для керування цифровими ідентичностями, пристроями, сертифікатами, профілями безпеки, політиками та VPN-сервісами. IAS формує бажаний стан і передає керовані конфігурації до VPN, але не бере участі у пересиланні VPN-трафіку.
 
-\textbf{Основні цілі створення:}
+\textbf{Поточні та цільові цілі:}
 \begin{itemize}
-    \item Автоматизація життєвого циклу PKI-сертифікатів клієнтських пристроїв через стандартизовані протоколи CMP, EST та CMC.
-    \item Забезпечення повного контролю за конфігураціями VPN-шлюзів через односторонній транзакційний провіженінг.
-    \item Підтримка відмовостійкості та швидкої реконсиляції мережевого стану у разі аварійних перезапусків та збоїв.
-    \item Відповідність вимогам міжнародного аудиту щодо захисту персональних даних та контролю доступів (ABAC).
+    \item \textbf{Реалізовано:} стійкий реєстр доменних об'єктів у KVS/Mnesia, граф зв'язків, перевірка CSR і X.509, покрокове налаштування пристрою, передавання конфігурацій до VPN через Erlang RPC, ревізії, контрольні суми, журналювання доставки, звіряння стану та відновлення після збоїв.
+    \item \textbf{Частково реалізовано:} випуск сертифікатів через CA за CMP із зовнішнім командним інтерфейсом OpenSSL як перехідною залежністю.
+    \item \textbf{Цільовий стан:} керований клієнт або адаптер CA без запуску зовнішнього OpenSSL у IAS, а також перенесення керування життєвим циклом майстра на \texttt{synrc/bpmn}/BPE зі збереженням наявних доменних модулів і перевіреної поведінки.
+    \item \textbf{Нормативна вимога:} окреме підтвердження вимог КСЗІ, КЕП, криптографії за ДСТУ, захисту персональних даних та інших нормативних профілів.
 \end{itemize}
 
-\subsection{План-графік виконання етапів робіт}
-Розробка та впровадження Модуля IAS поділяється на такі етапи:
-\begin{enumerate}
-    \item \textbf{Етап 1: Аналітичне моделювання та проектування} (розробка схем даних, визначення графів об'єктів та написання BPE-процесів) --- 4 тижні.
-    \item \textbf{Етап 2: Реалізація сховища даних KVS та бізнес-логіки} (реалізація Mnesia-моделей та BPE DSL рушія) --- 6 тижнів.
-    \item \textbf{Етап 3: Інтеграція з CA та VPN} (реалізація CMP-клієнта, Erlang RPC провіженінгу та reconciliation циклів) --- 6 тижнів.
-    \item \textbf{Етап 4: Розробка веб-інтерфейсу N2O/NITRO} (створення адміністративної консолі та wizard-інтерфейсів) --- 4 тижні.
-    \item \textbf{Етап 5: Державна експертиза та сертифікація КСЗІ} (отримання експертного висновку) --- 8 тижнів.
-\end{enumerate}
+\subsection{Послідовність виконання наступних робіт}
+Канонічну послідовність робіт P0--P5 визначено в Додатку Б технічних вимог ERP/1 (\texttt{ias.tex}). Цей техноробочий проєкт не дублює її повний опис, а фіксує лише наслідки для реалізації:
+\begin{itemize}
+    \item спочатку усувається запуск зовнішнього OpenSSL із середовища виконання IAS і стабілізується наскрізний життєвий цикл майстра;
+    \item після цього поточний процес формалізується як FSM/BPMN-модель без розбіжностей із кодом;
+    \item перенесення керування на BPE виконується окремим етапом зі збереженням майстра як користувацького інтерфейсу та повторною синхронізацією документації й випробувань.
+\end{itemize}
+Календарні строки встановлюються лише після окремої оцінки обсягу, ресурсів і критеріїв приймання.
 
 \newpage
 \section{Відомості про робочий процес та умови експлуатації}
 
-\subsection{Опис бізнес-процесів (BPMN / FSM)}
-Всі процеси керування доступом формалізуються у вигляді кінцевих автоматів (FSM) та виконуються рушієм процесів BPE.
+\subsection{Опис робочих процесів (BPMN / FSM)}
+Поточні процеси IAS реалізовано спеціалізованими модулями та стійкими записами стану. Цей розділ фіксує фактичний процесний контур, а інтеграцію з BPE розглядає як цільовий етап розвитку.
 
-\subsubsection{Процес реєстрації пристрою та імпорту OVPN (bpe\_ovpn\_import.erl)}
-Цей процес відповідає за початкове імпортування раніше створених OpenVPN конфігурацій та створення відповідних реєстрових сутностей в IAS.
-\begin{enumerate}
-    \item \textbf{StartImport:} Початок процесу оператором безпеки.
-    \item \textbf{ParseConfig:} Сервісна задача, яка парсить .ovpn та створює структуру вилучених параметрів.
-    \item \textbf{VerifyCertificates:} Перевірка валідності імпортованого сертифіката (підпис, термін дії, ланцюжок довіри).
-    \item \textbf{ApproveImportPlan:} Користувацька задача затвердження згенерованого плану імпорту оператором.
-    \item \textbf{CreateGraphObjects:} Сервісна задача, яка записує об'єкти Device, Certificate, VPN Service та зв'язки між ними в KVS.
-    \item \textbf{ImportCompleted:} Завершення процесу.
-\end{enumerate}
+\subsubsection{Поточний процесний контур}
+У наявній реалізації окремі доменні сценарії координуються кодом IAS і збереженим станом:
+\begin{itemize}
+    \item імпорт OVPN виконує попередній аналіз конфігурації та формує доменні об'єкти без збереження приватного ключа;
+    \item випуск сертифіката приймає та перевіряє CSR, взаємодіє з CA і зв'язує результат із пристроєм та профілем безпеки;
+    \item майстер налаштування VPN веде стійку чернетку, перевіряє умови переходів і готовність матеріалів;
+    \item передавання конфігурації формує канонічну команду з ревізією та контрольною сумою, доставляє її до VPN і зберігає результат;
+    \item звіряння стану виявляє розбіжності, осиротілі записи та потребу у відновленні або виведенні з експлуатації.
+\end{itemize}
 
-\subsubsection{Процес випуску та сертифікації CMP (bpe\_cmp\_enrollment.erl)}
-Процес забезпечує автоматизоване отримання сертифіката від CA за допомогою CSR, згенерованого безпосередньо клієнтським пристроєм.
-\begin{enumerate}
-    \item \textbf{StartEnrollment:} Ініціація пристроєм запиту на випуск.
-    \item \textbf{GenerateKeyCSRPlan:} Створення в IAS плану генерації ключів та CSR на пристрої.
-    \item \textbf{AwaitCSRUpload:} Очікування завантаження файлу CSR з пристрою.
-    \item \textbf{ValidateCSR:} Перевірка підпису та параметрів CSR.
-    \item \textbf{SubmitToCMP:} Відправка CSR до CA через протокол CMP.
-    \item \textbf{VerifyCertificate:} Отримання випущеного сертифіката, перевірка публічного ключа проти CSR, запис у сховище та оновлення статусу пристрою.
-    \item \textbf{EnrollmentCompleted:} Завершення випуску.
-\end{enumerate}
+Фактичні стани, переходи, умови, повторні спроби та помилки мають бути окремо відтворені як модель поточного стану (AS IS) за кодом і тестами. Лише після цього керування процесом може бути поетапно перенесене на \texttt{synrc/bpmn}/BPE. У цільовій архітектурі BPE керує станами й переходами, а наявний майстер залишається користувацьким інтерфейсом над процесом.
 
-\subsubsection{Процес авторизації та оцінки довіри (bpe\_trust\_evaluation.erl)}
-Процес динамічної оцінки права пристрою чи користувача на підключення.
-\begin{enumerate}
-    \item \textbf{StartEvaluation:} Виклик процесу під час handshake пристрою або планової перевірки.
-    \item \textbf{CheckExpiry:} Перевірка дати закінчення дії сертифіката.
-    \item \textbf{CheckCRL:} Запит та перевірка серійного номера за списками відкликання (CRL/OCSP).
-    \item \textbf{EvaluateABACRules:} Оцінка контекстних правил (роль, ЄДРПОУ, час, робоче місце).
-    \item \textbf{UpdateTrustStatus:} Запис оновленого статусу довіри пристрою (Ready або Blocked).
-    \item \textbf{EvaluationCompleted:} Завершення оцінки.
-\end{enumerate}
 
-\subsubsection{Процес провіженінгу VPN (bpe\_vpn\_provisioning.erl)}
-Процес транзакційної доставки налаштувань на шлюзи VPN та контролю узгодження.
-\begin{enumerate}
-    \item \textbf{StartProvisioning:} Ініціація оновлення конфігурації.
-    \item \textbf{BuildCommand:} Генерація канонічної команди провіженінгу з інкрементним номером ревізії.
-    \item \textbf{DeliverToVPN:} Виклик віддаленої процедури RPC на шлюзі VPN.
-    \item \textbf{AwaitCompletionNotice:} Очікування повідомлення від vpn\_event\_bus про успішне застосування змін на шлюзі.
-    \item \textbf{VerifyDataplane:} Перевірка проходження тестового пакету через зашифрований тунель.
-    \item \textbf{ProvisioningCompleted:} Завершення провіженінгу.
-\end{enumerate}
+\subsubsection{Фактична модульна архітектура}
+Поточна реалізація поділена на веб-рівень, доменні служби, стійкі сховища та інтеграційні модулі. Веб-модулі не повинні містити криптографічну, транзакційну або мережеву логіку: вони приймають події користувача, викликають доменні служби та відображають результат.
 
-\subsection{Опис ролей та прав доступу (ABAC)}
-Доступ до адміністративних функцій IAS обмежується на базі ABAC. Приклад правила авторизації:
-\begin{verbatim}
-allow(Operator, Action, Object) ->
-    OperatorRole = maps:get(role, Operator),
-    OperatorEDRPOU = maps:get(edrpou, Operator),
-    ObjectSensitivity = maps:get(sensitivity_level, Object),
-    
-    IsSecurityAdmin = (OperatorRole == security_admin),
-    MatchesEDRPOU = (OperatorEDRPOU == maps:get(edrpou, Object, undefined)),
-    
-    case {IsSecurityAdmin, ObjectSensitivity} of
-        {true, _} -> true;
-        {false, confidential} -> MatchesEDRPOU;
-        {false, public} -> true;
-        _ -> false
-    end.
-\end{verbatim}
+\begin{longtable}{p{0.29\textwidth} p{0.63\textwidth}}
+\toprule
+\textbf{Модуль або група модулів} & \textbf{Фактична відповідальність} \\
+\midrule
+\endhead
+\path{ias_provisioning_wizard.erl} & Веб-сторінка майстра: приймання подій, навігація між кроками та відображення стану. Не є авторитетним сховищем процесу. \\
+\path{ias_provisioning_wizard_store.erl}, \path{ias_provisioning_wizard_draft_store.erl} & Створення, оновлення, відновлення та збереження чернетки майстра; вибір доменних об'єктів і виконання переходів між кроками. \\
+\path{ias_provisioning_wizard_readiness.erl}, \path{ias_provisioning_wizard_relationships.erl}, \path{ias_provisioning_wizard_authorization.erl} & Перевірка готовності матеріалів, узгодженості графа зв'язків, сертифікатів і рішення про авторизацію перед передаванням конфігурації. \\
+\path{ias_domain_store.erl} & Авторитетне стійке зберігання доменних об'єктів через KVS/Mnesia, перевірка схем і транзакційне оновлення проєкцій. \\
+\path{ias_relationship_*} & Побудова, перевірка та відображення графа зв'язків між користувачами, пристроями, сертифікатами, профілями, політиками й VPN-сервісами. \\
+\path{ias_csr_validation.erl}, \path{ias_certificate_verification.erl}, \path{ias_x509_validation.erl} & Перевірка CSR і X.509, зв'язування сертифікатного матеріалу з доменними об'єктами та формування результатів перевірки. \\
+\path{ias_device_csr_enrollment.erl}, \path{ias_cmp_enrollment.erl} & Підготовка випуску сертифіката для пристрою та поточний перехідний CMP-шлях. \path{ias_cmp_enrollment.erl} поки запускає зовнішній OpenSSL і має бути замінений керованим клієнтом або адаптером CA. \\
+\path{ias_ovpn_preview.erl}, \path{ias_ovpn_import.erl}, \path{ias_ovpn_provisioning.erl} & Аналіз OVPN, формування попереднього перегляду й доменної проєкції та підготовка керованого сценарію без збереження приватного ключа в IAS. \\
+\path{ias_vpn_provisioning_command.erl}, \path{ias_vpn_provisioning_delivery.erl}, \path{ias_vpn_client.erl} & Формування канонічної команди, ревізії та контрольної суми, передавання до VPN через Erlang RPC і фіксація результату доставки. \\
+\path{ias_vpn_dynamic_pair.erl} & Вибір статичного або динамічного режиму доставки для пристрою, перевірка повної резервації пари VPN та приймання безпечної проєкції фактичного зв'язування. VPN лишається власником транспортного й ідентифікаційного матеріалу. \\
+\path{ias_vpn_reconciliation.erl}, \path{ias_vpn_orphan_recovery.erl}, \path{ias_vpn_recovery_manifest.erl} & Порівняння стану IAS і VPN, виявлення розбіжностей та осиротілих записів, планування й атомарне виконання відновлення. \\
+\bottomrule
+\end{longtable}
+
+Межі відповідальності розподілено так: KVS/Mnesia зберігає авторитетний стан IAS; CA випускає сертифікати; VPN застосовує передані команди та зберігає власний стан виконання. IAS координує процес, але не підміняє CA або VPN.
+
+Для пристрою без повної динамічної резервації використовується статичний режим доставки. За ввімкненого \path{vpn_dynamic_pair_delivery} і наявності повної резервації \path{ias_vpn_dynamic_pair.erl} спрямовує команду до спеціалізованого динамічного сценарію. Цей режим не є загальним для всіх пристроїв. Архітектурні межі та напрямки взаємодії наведено на рис.~\ref{fig:ias-ca-vpn}.
+
+\subsubsection{Архітектурні діаграми поточного стану}
+Наведені нижче діаграми відображають поточний стан системи за наявними модулями, стійкими структурами та інтеграційними контрактами. Вони не позначають BPE, EST, CMC або повний ABAC як реалізовані компоненти.
+
+\clearpage
+\paragraph{Доменна модель і граф зв'язків.}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  box/.style={draw=nato, rounded corners, align=center, minimum height=12mm, text width=36mm, fill=white},
+  rel/.style={-{Latex[length=2.2mm]}, thick, color=nato},
+  rel label/.style={font=\footnotesize, text=nato, fill=white, inner sep=1.2pt}
+]
+\node[box] (user) at (0,3.2) {Користувач};
+\node[box] (device) at (5.6,3.2) {Пристрій};
+\node[box] (cert) at (11.2,3.2) {Сертифікат};
+\node[box] (policy) at (0,0) {Політика безпеки};
+\node[box] (profile) at (5.6,0) {Профіль безпеки};
+\node[box] (vpn) at (11.2,0) {VPN-сервіс};
+\node[box] (ca) at (11.2,-3.2) {Сертифікат CA};
+
+\draw[rel] (user) -- node[rel label, above] {володіє} (device);
+\draw[rel] (device) -- node[rel label, above] {ідентифікує} (cert);
+\draw[rel] (device) -- node[rel label, right] {має профіль} (profile);
+\draw[rel] (policy) -- node[rel label, above] {задає правила} (profile);
+\draw[rel] (profile) -- node[rel label, above] {дозволяє} (vpn);
+\draw[rel] (cert) -- node[rel label, left, xshift=-3pt] {доступ} (vpn);
+\draw[rel] (ca.east) -- ++(1.2,0) coordinate (ca_cert_bend1)
+  -- node[rel label, left, xshift=-2pt] {підтверджує} ++(0,6.4) coordinate (ca_cert_bend2)
+  -- (cert.east);
+\end{tikzpicture}
+\caption{Поточна доменна модель IAS та основні зв'язки}
+\label{fig:ias-domain-model}
+\end{figure}
+
+\paragraph{Станова модель майстра налаштування VPN.}
+\begin{figure}[H]
+\centering
+\resizebox{0.92\textwidth}{!}{%
+\begin{tikzpicture}[
+  state/.style={draw=nato, rounded corners, align=center, minimum height=11mm, text width=31mm, fill=white},
+  flow/.style={-{Latex[length=2mm]}, thick, color=nato},
+  correction/.style={-{Latex[length=2mm]}, dashed, thick, color=nato},
+  note/.style={font=\footnotesize, text=nato, fill=white, inner sep=1.2pt}
+]
+\node[state] (scheme) at (0,4.8) {Схема};
+\node[state] (user) at (4.2,4.8) {Користувач};
+\node[state] (device) at (8.4,4.8) {Пристрій};
+\node[state] (profile) at (12.6,4.8) {Профіль і політика};
+
+\node[state] (service) at (12.6,2.4) {VPN-сервіс};
+\node[state] (ca) at (8.4,2.4) {Сертифікат CA};
+\node[state] (client) at (4.2,2.4) {Клієнтський сертифікат};
+\node[state] (relations) at (0,2.4) {Зв'язки};
+
+\node[state] (ready) at (0,0) {Готовність матеріалів};
+\node[state] (delivery) at (4.2,0) {Підготовка та\\передавання};
+
+\draw[flow] (scheme) -- (user);
+\draw[flow] (user) -- (device);
+\draw[flow] (device) -- (profile);
+\draw[flow] (profile) -- (service);
+\draw[flow] (service) -- (ca);
+\draw[flow] (ca) -- (client);
+\draw[flow] (client) -- (relations);
+\draw[flow] (relations) -- (ready);
+\draw[flow] (ready) -- (delivery);
+
+\draw[correction] (ready.west) to[bend right=40] node[note, left] {виправлення} (relations.west);
+\draw[correction] (delivery.south) to[bend left=30] node[note, below] {повтор} (ready.south);
+\end{tikzpicture}%
+}
+\caption{Поточна станова модель майстра налаштування VPN}
+\label{fig:ias-wizard-fsm}
+\end{figure}
+\clearpage
+
+\paragraph{Взаємодія IAS, CA та VPN.}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  system/.style={draw=nato, rounded corners, align=center, minimum width=46mm, minimum height=20mm, fill=white},
+  store/.style={draw=nato, cylinder, shape border rotate=90, aspect=0.25, align=center, minimum width=40mm, minimum height=18mm, fill=white},
+  link/.style={-{Latex[length=2.2mm]}, thick, color=nato},
+  link label/.style={font=\footnotesize, text=nato, fill=white, inner sep=1.4pt, align=center}
+]
+\node[system] (ias) at (0,4.0) {IAS\\майстер і доменні модулі};
+\node[system] (ca) at (9.5,4.0) {CA\\випуск сертифікатів};
+\node[store] (kvs) at (0,0) {KVS/Mnesia\\стан IAS};
+\node[system] (vpn) at (9.5,0) {VPN\\застосування команд};
+
+\draw[link] (ias) -- node[link label, above] {CSR і контекст випуску} (ca);
+\draw[link] (ca) -- node[link label, below] {публічний сертифікат} (ias);
+\draw[link] (ias) -- node[link label, left] {читання і запис} (kvs);
+\draw[link] (ias.south east) to[bend left=12] node[link label, above right] {команда через RPC} (vpn.north west);
+\draw[link] (vpn.north west) to[bend left=12] node[link label, below left] {результат і стан} (ias.south east);
+\end{tikzpicture}
+\caption{Архітектурні межі та взаємодія IAS, CA, VPN і KVS/Mnesia}
+\label{fig:ias-ca-vpn}
+\end{figure}
+
+\paragraph{Послідовність передавання та звіряння стану.}
+\begin{figure}[H]
+\centering
+\resizebox{0.96\textwidth}{!}{%
+\begin{tikzpicture}[
+  lifeline/.style={draw=nato, rounded corners, align=center, minimum width=35mm, minimum height=11mm, fill=white},
+  msg/.style={-{Latex[length=2mm]}, thick, color=nato},
+  return/.style={-{Latex[length=2mm]}, dashed, thick, color=nato},
+  msg label/.style={font=\footnotesize, text=nato, fill=white, inner sep=1.2pt}
+]
+\node[lifeline] (wizard) at (0,0) {Майстер};
+\node[lifeline] (delivery) at (4.6,0) {Модуль доставки};
+\node[lifeline] (store) at (9.2,0) {KVS/Mnesia};
+\node[lifeline] (vpn) at (13.8,0) {VPN};
+
+\foreach \x in {0,4.6,9.2,13.8} {\draw[densely dashed, color=footergray] (\x,-0.65) -- (\x,-9.0);}
+
+\draw[msg] (0,-1.3) -- node[msg label, above] {підготувати конфігурацію} (4.6,-1.3);
+\draw[msg] (4.6,-2.4) -- node[msg label, above] {зберегти ревізію} (9.2,-2.4);
+\draw[msg] (4.6,-3.5) -- node[msg label, above] {команда через RPC} (13.8,-3.5);
+\draw[return] (13.8,-4.6) -- node[msg label, above] {результат} (4.6,-4.6);
+\draw[msg] (4.6,-5.7) -- node[msg label, above] {записати спробу} (9.2,-5.7);
+\draw[msg] (4.6,-6.8) -- node[msg label, above] {запит стану} (13.8,-6.8);
+\draw[return] (13.8,-7.9) -- node[msg label, above] {стан VPN} (4.6,-7.9);
+\draw[msg] (4.6,-8.8) -- node[msg label, above] {зафіксувати результат} (9.2,-8.8);
+\end{tikzpicture}%
+}
+\caption{Послідовність передавання конфігурації та звіряння стану}
+\label{fig:ias-delivery-reconciliation}
+\end{figure}
+\clearpage
+
+\subsection{Авторизація та атрибути доступу}
+Поточна реалізація використовує профілі й політики безпеки, атрибути доменних об'єктів,
+граф зв'язків і стан довіри до сертифікатів для ухвалення рішень у сценаріях IAS/VPN.
+Фактичні перевірки виконуються доменними модулями політик, авторизаційних рішень,
+узгодженості політик і перевірки сертифікатів.
+
+Такий механізм є частковою реалізацією атрибутної авторизації та не становить універсального
+рушія ABAC. Формалізована мова політик, адміністративні ролі, зовнішні джерела атрибутів,
+правила організаційної належності, класифікація ресурсів і загальний механізм оцінювання
+політик належать до цільового стану. Їхні моделі даних, набір атрибутів, правила переходу
+та критерії приймання мають бути визначені окремо до реалізації.
 
 \subsection{Умови експлуатації та системне середовище}
 Система IAS повинна розгортатися у кластерному середовищі:
 \begin{itemize}
     \item \textbf{Операційна система:} Linux (Ubuntu Server LTS, Rocky Linux) або macOS (для розробки).
-    \item \textbf{Платформа:} Erlang/OTP версії 28+.
-    \item \textbf{Служби взаємодії:} Розподілені Erlang-ноди, з'єднані за допомогою epmd та TLS mesh.
+    \item \textbf{Платформа:} Erlang/OTP 28; підтримка інших основних версій потребує окремого випробування.
+    \item \textbf{Служби взаємодії:} вузли розподіленого Erlang, виявлення через \path{epmd} та захист каналів відповідно до профілю розгортання.
     \item \textbf{Вимоги до СУБД:} Mnesia, інтегрована через інтерфейс KVS.
 \end{itemize}
 
 \newpage
 \section{Інформаційне та програмне забезпечення}
 
-\subsection{Інформаційне забезпечення (Схеми та Дані)}
+\subsection{Інформаційне забезпечення (схеми та дані)}
 
-\subsubsection{Визначення структур даних (Erlang Records)}
-Всі ключові сутності описуються у вигляді Erlang рекорді:
+\subsubsection{Визначення стійких структур даних}
+Нижче наведено лише фактичні записи, що існують у поточному репозиторії IAS. Канонічним джерелом складу полів залишаються відповідні файли у каталозі \path{include/}; цей документ фіксує їхнє призначення та роль у життєвому циклі.
 
-\begin{verbatim}
--record(ias_domain_object, {
-    key,                       % {Kind, ObjectId}
-    schema_version = 1,        % Версія схеми даних
-    kind,                      % user | device | certificate | policy
-    object_id,                 % Унікальний UUID
-    payload = #{},             % Мапа з атрибутами об'єкта
-    revision = 1,              % Номер поточної ревізії
-    created_at = 0,            % Timestamp створення
-    updated_at = 0             % Timestamp оновлення
-}).
+\begin{longtable}{p{0.34\textwidth}p{0.58\textwidth}}
+\toprule
+\textbf{Запис} & \textbf{Призначення} \\
+\midrule
+\endhead
+\path{ias_domain_object.hrl} & Універсальний версійований запис доменного об'єкта: вид, ідентифікатор, корисне навантаження, ревізія та часові мітки. \\
+\path{ias_provisioning_wizard_draft.hrl} & Стійке представлення чернетки майстра: ідентифікатор, стан, корисне навантаження, ревізія та ознаки завершення або відмови. \\
+\path{ias_certificate_material_record.hrl} & Публічний сертифікатний матеріал і метадані: суб'єкт, тип матеріалу, кодування, джерело, відбиток, конверт тіла та строк чинності. \\
+\path{ias_csr_enrollment_record.hrl} & Стан спроби випуску за CSR: відбиток CSR, стан, ознака можливості повтору, корисне навантаження та ревізія. \\
+\path{ias_vpn_authority.hrl} (запис \path{ias_vpn_device_state}) & Авторитетний стан прив'язки пристрою до VPN: ревізія, контрольна сума команди, канонічна команда, мережеві параметри та стан життєвого циклу. \\
+\path{ias_vpn_provisioning_delivery_audit.hrl} & Окрема спроба доставки: ідентифікатор доставки, пристрій, транзакція, номер спроби, операція, стан і час доставки. \\
+\path{ias_vpn_reconciliation_incident.hrl} & Інцидент розбіжності між IAS і VPN: вид, причина, маркер, стан, знімок, лічильник повторів і дані підтвердження або завершення. \\
+\path{ias_vpn_orphan_recovery_operation.hrl} & Керована операція відновлення осиротілого стану з планом, виконавцем, числом спроб, останньою помилкою та підсумком виконання. \\
+\path{ias_vpn_orphan_resolution_operation.hrl} & Керована операція усунення осиротілого стану через VPN із запитом, результатом VPN, даними очищення та завершення інциденту. \\
+\bottomrule
+\end{longtable}
 
--record(ias_certificate_material_record, {
-    key,                       % {SubjectKind, SubjectId}
-    schema_version = 1,
-    subject_kind,              % user | device | ca
-    subject_id,                % UUID суб'єкта
-    material_type,             % public_cert | cert_chain | signature
-    encoding = pem,            % pem | der
-    source,                    % cmp | est | manual
-    fingerprint_sha256,        % SHA256 відбиток сертифіката
-    body_envelope = #{},       % Мапа, що містить PEM-тіло
-    revision = 1,
-    created_at = 0,
-    updated_at = 0,
-    expires_at = undefined     % Термін дії сертифіката
-}).
-
--record(ias_vpn_device_state, {
-    device_id,                 % UUID пристрою (PK)
-    schema_version = 2,
-    revision = 0,              % Актуальна ревізія на шлюзі
-    command_digest = undefined,% Хеш останньої відправленої команди
-    canonical_command = #{},   % Тіло сформованої команди
-    binding = #{},             % Параметри мережевої прив'язки
-    lifecycle_state = unbound, % unbound | pending | active | degraded
-    last_decommission = undefined,
-    decommission_history = [],
-    decommissioned_at = undefined,
-    updated_at = 0
-}).
-
--record(ias_csr_enrollment_record, {
-    csr_fingerprint,           % Хеш CSR (PK)
-    schema_version = 1,
-    status = submitted,        % submitted | processing | signed | rejected
-    retryable = false,         % Чи можна повторити спробу
-    payload = #{},             % Мапа з параметрами запиту та CSR PEM
-    revision = 1,
-    created_at = 0,
-    updated_at = 0
-}).
-
--record(ias_vpn_reconciliation_incident, {
-    device_id,                 % UUID пристрою
-    schema_version = 1,
-    kind,                      % orphan | stale_revision | fingerprint_mismatch
-    reason,                    % Текстовий опис розбіжності
-    token,                     % Унікальний токен інциденту
-    status = open,             % open | acknowledged | resolved
-    snapshot = #{},            % Порівняльний знімок станів IAS та VPN
-    first_seen = 0,
-    last_seen = 0,
-    occurrences = 1,
-    acknowledged_by = undefined,
-    acknowledged_note = undefined,
-    acknowledged_at = undefined,
-    resolved_by = undefined,
-    resolved_note = undefined,
-    resolved_at = undefined,
-    updated_at = 0
-}).
-\end{verbatim}
+Основні інваріанти зберігання:
+\begin{itemize}
+    \item кожен стійкий запис має явну версію схеми;
+    \item доменні зміни мають ревізію або інший однозначний маркер версії;
+    \item приватні ключі не входять до жодної з наведених структур;
+    \item журнали доставки та інциденти звіряння не підміняють авторитетний стан пристрою;
+    \item операції відновлення й усунення мають власні стани, лічильники спроб і завершення, тому можуть безпечно продовжуватися після збою.
+\end{itemize}
 
 \subsubsection{Опис довідників та реєстрових сутностей}
-Опис полів реєстрових сутностей (таких як \texttt{User}, \texttt{Device}, \texttt{Certificate}) відповідає таксономії, зазначеній у Технічних вимогах. Всі записи зберігаються у таблиці Mnesia \texttt{kvs}, яка містить записи типу \texttt{ias\_domain\_object} та інші допоміжні рекорди.
+Опис полів реєстрових сутностей (таких як \texttt{User}, \texttt{Device}, \texttt{Certificate}) відповідає таксономії, зазначеній у технічних вимогах. Всі записи зберігаються у таблиці Mnesia \texttt{kvs}, яка містить записи типу \texttt{ias\_domain\_object} та інші допоміжні рекорди. Основні доменні сутності та зв'язки між ними показано на рис.~\ref{fig:ias-domain-model}.
 
-\subsubsection{Алгоритми оцінки статусу довіри (Trust Evaluation)}
-Приклад визначення статусу пристрою на основі його криптографічного стану:
-\begin{verbatim}
-evaluate_device_trust(DeviceState, CertRecord, CurrentTime) ->
-    case CertRecord#ias_certificate_material_record.expires_at of
-        Expires when CurrentTime > Expires ->
-            {blocked, expired};
-        _ ->
-            case check_crl_status(CertRecord#ias_certificate_material_record.fingerprint_sha256) of
-                revoked -> {blocked, revoked};
-                ok ->
-                    case DeviceState#ias_vpn_device_state.lifecycle_state of
-                        degraded -> {degraded, connection_timeout};
-                        active -> {ready, ok};
-                        unbound -> {incomplete, no_binding}
-                    end
-            end
-    end.
-\end{verbatim}
+\subsubsection{Фактичний життєвий цикл майстра налаштування VPN}
+Поточний майстер використовує десять кроків у фіксованому порядку; їхню станову послідовність і зворотні переходи показано на рис.~\ref{fig:ias-wizard-fsm}:
+\begin{enumerate}
+    \item схема;
+    \item користувач;
+    \item пристрій;
+    \item профіль і політика безпеки;
+    \item VPN-сервіс;
+    \item сертифікат CA;
+    \item клієнтський сертифікат;
+    \item зв'язки;
+    \item готовність матеріалів;
+    \item підготовка та передавання конфігурації.
+\end{enumerate}
+
+\begin{longtable}{p{0.19\textwidth}p{0.31\textwidth}p{0.42\textwidth}}
+\toprule
+\textbf{Стан} & \textbf{Основна умова переходу} & \textbf{Дія та стійкий результат} \\
+\midrule
+\endhead
+Схема & Обрано підтримуваний сценарій & Створюється чернетка сценарію прив'язаного до пристрою налаштування. \\
+Користувач & Вибрано наявного або створено нового користувача & У чернетці фіксується власник пристрою. \\
+Пристрій & Пристрій належить обраному користувачеві & Фіксується пристрій і очищаються залежні результати попереднього налаштування. \\
+Профіль і політика & Профіль сумісний зі сценарієм & Фіксується профіль, а політика виводиться з його доменного зв'язку. \\
+VPN-сервіс & Сервіс доступний і сумісний із профілем & Фіксується ціль передавання конфігурації. \\
+Сертифікат CA & Матеріал CA наявний і придатний для довіри & Фіксується якір довіри для VPN-сервісу. \\
+Клієнтський сертифікат & Сертифікат узгоджений із CSR, пристроєм і профілем & Сертифікат вибирається або випускається; далі система намагається атомарно застосувати потрібні зв'язки. \\
+Зв'язки & Відсутні конфлікти або їх можна виправити & Граф зв'язків застосовується; за успіху майстер автоматично переходить до перевірки готовності. \\
+Готовність матеріалів & Успішні перевірки сертифікатів, довіри, авторизації та повноти & Фіксується готовність до створення транзакції; за потреби виконуються дії виправлення та повторна перевірка. \\
+Підготовка і передавання & Сформовано канонічну команду, ревізію та контрольну суму & Створюється одна ідемпотентна транзакція, команда передається до VPN, а спроби та результат зберігаються окремо. \\
+\bottomrule
+\end{longtable}
+
+Чернетка зберігається у стійкому сховищі й відновлюється до робочого представлення після перезапуску. Перехід уперед заборонено, якщо для поточного кроку немає потрібних доменних об'єктів або перевірок. Після вибору клієнтського сертифіката майстер не завжди показує окремий екран зв'язків: якщо попередня перевірка успішна, відсутні зв'язки застосовуються автоматично і процес переходить одразу до готовності матеріалів.
+
+\subsubsection{Дані, що змінюються під час основних сценаріїв}
+Для кожного наскрізного сценарію нижче наведено вхідні дані, головний результат і стійкі записи, які створюються або змінюються.
+
+\begin{longtable}{p{0.18\textwidth}p{0.23\textwidth}p{0.23\textwidth}p{0.20\textwidth}}
+\toprule
+\textbf{Сценарій} & \textbf{Основні входи} & \textbf{Результат} & \textbf{Стійкі зміни} \\
+\midrule
+\endhead
+Створення чернетки майстра & Схема налаштування та початковий контекст & Нова чернетка на першому кроці & \path{ias_provisioning_wizard_draft} \\
+Вибір доменних об'єктів & Ідентифікатори користувача, пристрою, профілю, сервісу та сертифікатів & Оновлена чернетка з очищеними залежними результатами & Чернетка майстра та пов'язані доменні записи \\
+Випуск за CSR & CSR PEM, посилання на приватний ключ на пристрої, контекст майстра & Публічний сертифікат або нормалізована помилка випуску & \path{ias_csr_enrollment_record}, \path{ias_certificate_material_record}, чернетка майстра \\
+Застосування зв'язків & Вибрані доменні об'єкти та результат попередньої перевірки & Узгоджений граф або звіт про конфлікти & Доменні зв'язки й чернетка майстра \\
+Перевірка готовності & Чернетка, граф зв'язків, сертифікатні матеріали, VPN-параметри & Зведення перевірок і ознака готовності & Оновлений стан чернетки; авторитетний VPN-стан ще не створюється \\
+Створення конфігурації & Готова чернетка, цільовий VPN-сервіс, ревізія & Канонічна команда та транзакція & \path{ias_vpn_device_state} і запис транзакції підготовки \\
+Доставка до VPN & Канонічна команда, ревізія, контрольна сума & Результат застосування або стан повторної спроби & \path{ias_vpn_provisioning_delivery_audit} і проєкція доставки \\
+Звіряння стану & Авторитетний стан IAS і знімок VPN & Підтвердження узгодженості або інцидент & \path{ias_vpn_reconciliation_incident} \\
+Відновлення осиротілого стану & Інцидент, поточний стан, план дій та виконавець & Відновлений або керовано усунений стан & \path{ias_vpn_orphan_recovery_operation} або \path{ias_vpn_orphan_resolution_operation} \\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Передавання, звіряння та відновлення}
+Після завершення майстра IAS формує канонічну команду з ревізією та контрольною сумою. Повторне передавання тієї самої команди є ідемпотентним, а застаріла ревізія не повинна перезаписувати новіший стан. Кожна спроба доставки має окремий запис аудиту. Послідовність передавання, фіксації результату та подальшого звіряння наведено на рис.~\ref{fig:ias-delivery-reconciliation}.
+
+Звіряння порівнює авторитетний стан IAS зі знімком VPN і створює інцидент для осиротілого запису, застарілої ревізії, невідповідності відбитка або іншого неузгодженого стану. Відновлення та усунення виконуються як окремі керовані операції з планом, числом спроб, останньою помилкою та явним завершенням. Це дозволяє повторити або продовжити операцію після перезапуску без повторного застосування старого бажаного стану.
 
 \subsection{Програмне забезпечення (Реалізація)}
 
-\subsubsection{bpe\_ovpn\_import.erl (DSL процесу імпорту)}
-\begin{verbatim}
--module(bpe_ovpn_import).
--include("bpe.hrl").
--compile(export_all).
+\subsubsection{Цільова інтеграція з BPE}
+У поточній реалізації керування життєвим циклом виконується майстром і доменними сервісними модулями. Після фіксації моделі поточного стану (AS IS) може бути підготовлена цільова BPMN/BPE-модель. Вона повинна повторно використовувати наявні доменні модулі як сервісні дії, зберігати перевірену поведінку та не переносити криптографічну або доменну логіку безпосередньо до визначення процесу.
 
-def() ->
-    #process{
-        name = 'OVPN Profile Import',
-        beginEvent = 'StartImport',
-        endEvent = 'ImportCompleted',
-        tasks = [
-            #beginEvent{name='StartImport'},
-            #serviceTask{name='ParseConfig', module=?MODULE},
-            #serviceTask{name='VerifyCertificates', module=?MODULE},
-            #userTask{name='ApproveImportPlan', module=?MODULE},
-            #serviceTask{name='CreateGraphObjects', module=?MODULE},
-            #endEvent{name='ImportCompleted'}
-        ],
-        flows = [
-            #sequenceFlow{name='1', source='StartImport', target='ParseConfig'},
-            #sequenceFlow{name='2', source='ParseConfig', target='VerifyCertificates'},
-            #sequenceFlow{name='3', source='VerifyCertificates', 
-                          target='ApproveImportPlan', condition="certs_ok"},
-            #sequenceFlow{name='4', source='VerifyCertificates', 
-                          target='StartImport', condition="certs_invalid"},
-            #sequenceFlow{name='5', source='ApproveImportPlan', target='CreateGraphObjects'},
-            #sequenceFlow{name='6', source='CreateGraphObjects', target='ImportCompleted'}
-        ],
-        roles = [security_admin, operator]
-    }.
+\subsubsection{Модулі перевірки CSR і сертифікатів}
+Функції перевірки CSR, X.509, сертифікатів і довіри розподілено між такими модулями:
+\begin{itemize}
+    \item \path{ias_csr_validation.erl} --- синтаксична та структурна перевірка CSR;
+    \item \path{ias_x509_validation.erl} --- розбір і перевірка матеріалу X.509;
+    \item \path{ias_certificate_verification.erl} --- перевірка сертифіката у доменному контексті IAS;
+    \item \path{ias_configured_ca_trust_anchor.erl} --- отримання налаштованого якоря довіри CA;
+    \item \path{ias_certificate_material_store.erl} --- стійке зберігання публічного сертифікатного матеріалу та метаданих;
+    \item \path{ias_certificate_material_protection_public.erl} --- поточний постачальник захисту публічного сертифікатного матеріалу: зберігає PEM у відкритому вигляді та додає контроль цілісності SHA-256 у конверті \path{public_integrity_sha256}.
+\end{itemize}
+Приватні ключі пристроїв не передаються цим модулям і не зберігаються в IAS. Поточний постачальник \path{ias_certificate_material_protection_public} не шифрує публічний матеріал у сховищі; він виявляє його несанкціоновану зміну за контрольною сумою SHA-256. Перевірка CRL/OCSP у режимі реального часу залишається цільовим станом до появи окремого реалізованого й протестованого адаптера.
 
-action({serviceTask, 'ParseConfig'}, Proc) ->
-    % Логіка парсингу OVPN файлу
-    {reply, Proc, "certs_ok"};
-action({serviceTask, 'CreateGraphObjects'}, Proc) ->
-    % Створення сутностей в KVS
-    {reply, Proc};
-action(_, Proc) -> {reply, Proc}.
-\end{verbatim}
+\subsubsection{Ключові модулі та їхні публічні операції}
+Таблиця фіксує основні точки входу, які фактично експортуються поточними модулями. Вона не є повним довідником API, але показує, де реалізовано керування сценаріями й які результати передаються між шарами.
 
-\subsubsection{bpe\_cmp\_enrollment.erl (DSL процесу CMP випуску)}
-\begin{verbatim}
--module(bpe_cmp_enrollment).
--include("bpe.hrl").
--compile(export_all).
+\begin{longtable}{p{0.29\textwidth}p{0.25\textwidth}p{0.32\textwidth}}
+\toprule
+\textbf{Модуль} & \textbf{Ключові операції} & \textbf{Відповідальність і результат} \\
+\midrule
+\endhead
+\path{ias_provisioning_wizard.erl} & \path{event/1}, \path{content/0}, \path{content_for/1} & Обробка подій веб-майстра, відображення поточного кроку та передавання команд до доменних модулів. \\
+\path{ias_provisioning_wizard_store.erl} & \path{new/1}, \path{get/1}, \path{update/2}, \path{next/1}, \path{back/1}, \path{rehydrate/0} & Життєвий цикл чернетки, вибір доменних об'єктів, переходи, відновлення та створення транзакції підготовки. \\
+\path{ias_provisioning_wizard_draft_store.erl} & \path{put/1}, \path{get/1}, \path{replace_in_transaction/2}, \path{validate_all/0} & Стійке зберігання, атомарна заміна та перевірка записів чернеток. \\
+\path{ias_provisioning_wizard_relationships.erl} & \path{review/1}, \path{apply/1}, \path{ready/1} & Попередня перевірка графа, атомарне застосування відсутніх зв'язків і визначення готовності. \\
+\path{ias_provisioning_wizard_readiness.erl} & \path{preview/1}, \path{ready/1} & Зведення перевірок профілю, політики, сертифікатів, приватного ключа на пристрої, VPN-точки та складання матеріалів. \\
+\path{ias_provisioning_wizard_authorization.erl} & \path{derived_policy/1}, \path{verification_status/1}, \path{verify_client_certificate/1} & Виведення політики, читання статусу перевірки та доменна перевірка клієнтського сертифіката. \\
+\path{ias_device_csr_enrollment.erl} & \path{enroll_for_wizard/3}, \path{complete_for_wizard/3}, \path{import_issued_certificate/4} & Підготовка випуску за CSR, завершення зовнішнього випуску та імпорт публічного сертифіката до контексту майстра. \\
+\path{ias_csr_validation.erl} & \path{validate/1} & Перевірка формату CSR, відсутності приватного матеріалу, підпису, безпечності суб'єкта та формування метаданих. \\
+\path{ias_x509_validation.erl} & \path{validate_certificate/2}, \path{validate_pair/2}, \path{validate_ovpn_inputs/3} & Перевірка сертифіката, узгодженості пари матеріалів і вхідних сертифікатів OVPN. \\
+\path{ias_ovpn_provisioning.erl} & \path{preview/3}, \path{prepare/3}, \path{create/3}, \path{refresh/1} & Формування попереднього плану, підготовка та створення конфігурації OVPN, оновлення її стану. \\
+\path{ias_vpn_provisioning_command.erl} & \path{build/1}, \path{desired/2}, \path{summary/1} & Побудова канонічної команди та бажаного стану для VPN. \\
+\path{ias_vpn_provisioning_delivery.erl} & \path{deliver/1}, \path{build_and_deliver/3}, \path{status/1}, \path{history/1}, \path{rehydrate/0} & Доставка, фіксація спроб, читання статусу й історії та відновлення незавершеного стану. \\
+\path{ias_vpn_dynamic_pair.erl} & \path{enabled/0}, \path{ensure/2}, \path{delivery_mode/1}, \path{accept/3}, \path{needs_binding_recovery/1} & Вибір режиму доставки, перевірка динамічної резервації, приймання безпечного стану пари та визначення потреби у відновленні зв'язування. \\
+\path{ias_vpn_reconciliation.erl} & \path{device/1}, \path{report/0}, \path{scan_incidents/0}, \path{acknowledge_incident/4}, \path{resolve_incident/4} & Порівняння станів, побудова звіту, створення й керування інцидентами. \\
+\path{ias_vpn_orphan_recovery.erl} & \path{plan/1}, \path{validate_plan/1}, \path{validate_current/2}, \path{commit/3} & Побудова, перевірка та фіксація плану відновлення осиротілого стану. \\
+\bottomrule
+\end{longtable}
 
-def() ->
-    #process{
-        name = 'CA CMP Enrollment',
-        beginEvent = 'StartEnrollment',
-        endEvent = 'EnrollmentCompleted',
-        tasks = [
-            #beginEvent{name='StartEnrollment'},
-            #serviceTask{name='GenerateKeyCSRPlan', module=?MODULE},
-            #userTask{name='AwaitCSRUpload', module=?MODULE},
-            #serviceTask{name='ValidateCSR', module=?MODULE},
-            #serviceTask{name='SubmitToCMP', module=?MODULE},
-            #serviceTask{name='VerifyCertificate', module=?MODULE},
-            #endEvent{name='EnrollmentCompleted'}
-        ],
-        flows = [
-            #sequenceFlow{name='1', source='StartEnrollment', target='GenerateKeyCSRPlan'},
-            #sequenceFlow{name='2', source='GenerateKeyCSRPlan', target='AwaitCSRUpload'},
-            #sequenceFlow{name='3', source='AwaitCSRUpload', target='ValidateCSR'},
-            #sequenceFlow{name='4', source='ValidateCSR', target='SubmitToCMP', condition="csr_valid"},
-            #sequenceFlow{name='5', source='ValidateCSR', target='AwaitCSRUpload', condition="csr_invalid"},
-            #sequenceFlow{name='6', source='SubmitToCMP', target='VerifyCertificate', condition="enrollment_ok"},
-            #sequenceFlow{name='7', source='SubmitToCMP', target='StartEnrollment', condition="enrollment_failed"},
-            #sequenceFlow{name='8', source='VerifyCertificate', target='EnrollmentCompleted'}
-        ],
-        roles = [operator, device]
-    }.
+\subsubsection{Контракти між шарами}
+\begin{itemize}
+    \item Веб-рівень передає до доменних модулів ідентифікатори та користувацькі команди, але не виконує перевірки готовності або побудову VPN-команд самостійно.
+    \item Модулі майстра повертають \texttt{\{ok, Value\}} або \texttt{\{error, Reason\}}; веб-рівень перетворює ці результати на переходи чи повідомлення користувачеві.
+    \item Сертифікатні модулі працюють із публічним PEM/DER, відбитками й метаданими; посилання на приватний ключ зберігається лише як вказівка на матеріал, що лишається на пристрої.
+    \item Модуль доставки приймає канонічну команду або дані для її побудови й повертає стан доставки, не змінюючи напряму доменний граф майстра.
+    \item Звіряння читає авторитетний стан IAS і фактичний стан VPN; його результатом є звіт, підтвердження узгодженості або стійкий інцидент, а не неявна зміна бажаного стану.
+\end{itemize}
 
-action({serviceTask, 'ValidateCSR'}, Proc) ->
-    {reply, Proc, "csr_valid"};
-action({serviceTask, 'SubmitToCMP'}, Proc) ->
-    {reply, Proc, "enrollment_ok"};
-action(_, Proc) -> {reply, Proc}.
-\end{verbatim}
+\subsection{Короткі алгоритми поточної реалізації}
+Наведені нижче алгоритми є стислим описом фактичної поведінки. Вони не замінюють код і не вводять нових назв модулів або неіснуючих інтерфейсів.
 
-\subsubsection{bpe\_trust\_evaluation.erl (DSL процесу перевірки довіри)}
-\begin{verbatim}
--module(bpe_trust_evaluation).
--include("bpe.hrl").
--compile(export_all).
+\subsubsection{Перехід між кроками майстра}
+\begin{enumerate}
+    \item Завантажити стійку чернетку та визначити поточний крок.
+    \item Перевірити наявність і узгодженість матеріалів, потрібних для переходу.
+    \item У разі помилки зберегти результат перевірки та залишити поточний крок без змін.
+    \item У разі успіху зберегти вибрані доменні ідентифікатори, очистити залежні застарілі результати та перейти до наступного кроку.
+    \item Після зміни сертифіката або графа зв'язків повторно обчислити готовність матеріалів.
+\end{enumerate}
 
-def() ->
-    #process{
-        name = 'Device Trust Evaluation',
-        beginEvent = 'StartEvaluation',
-        endEvent = 'EvaluationCompleted',
-        tasks = [
-            #beginEvent{name='StartEvaluation'},
-            #serviceTask{name='CheckExpiry', module=?MODULE},
-            #serviceTask{name='CheckCRL', module=?MODULE},
-            #serviceTask{name='EvaluateABACRules', module=?MODULE},
-            #serviceTask{name='UpdateTrustStatus', module=?MODULE},
-            #endEvent{name='EvaluationCompleted'}
-        ],
-        flows = [
-            #sequenceFlow{name='1', source='StartEvaluation', target='CheckExpiry'},
-            #sequenceFlow{name='2', source='CheckExpiry', target='CheckCRL', condition="not_expired"},
-            #sequenceFlow{name='3', source='CheckExpiry', target='UpdateTrustStatus', condition="expired"},
-            #sequenceFlow{name='4', source='CheckCRL', target='EvaluateABACRules', condition="not_revoked"},
-            #sequenceFlow{name='5', source='CheckCRL', target='UpdateTrustStatus', condition="revoked"},
-            #sequenceFlow{name='6', source='EvaluateABACRules', target='UpdateTrustStatus'},
-            #sequenceFlow{name='7', source='UpdateTrustStatus', target='EvaluationCompleted'}
-        ],
-        roles = [security_admin, system]
-    }.
+\subsubsection{Передавання конфігурації до VPN}
+\begin{enumerate}
+    \item Побудувати канонічну команду з ревізією та контрольною сумою.
+    \item Знайти або створити одну ідемпотентну транзакцію для цієї команди.
+    \item Передати команду до VPN через Erlang RPC та окремо зафіксувати спробу доставки.
+    \item Зберегти отриманий від VPN результат або стан очікування повтору без втрати авторитетного стану IAS.
+    \item Після відновлення зв'язку повторити лише незавершені спроби та виконати звіряння стану.
+\end{enumerate}
 
-action({serviceTask, 'CheckExpiry'}, Proc) ->
-    {reply, Proc, "not_expired"};
-action({serviceTask, 'CheckCRL'}, Proc) ->
-    {reply, Proc, "not_revoked"};
-action(_, Proc) -> {reply, Proc}.
-\end{verbatim}
-
-\subsubsection{bpe\_vpn\_provisioning.erl (DSL процесу провіженінгу VPN)}
-\begin{verbatim}
--module(bpe_vpn_provisioning).
--include("bpe.hrl").
--compile(export_all).
-
-def() ->
-    #process{
-        name = 'VPN Command Provisioning',
-        beginEvent = 'StartProvisioning',
-        endEvent = 'ProvisioningCompleted',
-        tasks = [
-            #beginEvent{name='StartProvisioning'},
-            #serviceTask{name='BuildCommand', module=?MODULE},
-            #serviceTask{name='DeliverToVPN', module=?MODULE},
-            #userTask{name='AwaitCompletionNotice', module=?MODULE},
-            #serviceTask{name='VerifyDataplane', module=?MODULE},
-            #endEvent{name='ProvisioningCompleted'}
-        ],
-        flows = [
-            #sequenceFlow{name='1', source='StartProvisioning', target='BuildCommand'},
-            #sequenceFlow{name='2', source='BuildCommand', target='DeliverToVPN'},
-            #sequenceFlow{name='3', source='DeliverToVPN', target='AwaitCompletionNotice', condition="delivery_ok"},
-            #sequenceFlow{name='4', source='DeliverToVPN', target='StartProvisioning', condition="delivery_failed"},
-            #sequenceFlow{name='5', source='AwaitCompletionNotice', target='VerifyDataplane'},
-            #sequenceFlow{name='6', source='VerifyDataplane', target='ProvisioningCompleted'}
-        ],
-        roles = [operator, system]
-    }.
-
-action({serviceTask, 'BuildCommand'}, Proc) ->
-    {reply, Proc};
-action({serviceTask, 'DeliverToVPN'}, Proc) ->
-    {reply, Proc, "delivery_ok"};
-action(_, Proc) -> {reply, Proc}.
-\end{verbatim}
-
-\subsubsection{ias\_validator.erl (Модуль валідації)}
-\begin{verbatim}
--module(ias_validator).
--export([validate_csr/1, validate_chain/2, verify_fingerprint/2]).
-
-validate_csr(CSR_PEM) ->
-    % Виклик OpenSSL або вбудованого ASN.1 розшифровувача для перевірки підпису CSR
-    case public_key:pem_decode(CSR_PEM) of
-        [_] -> ok;
-        _   -> {error, invalid_csr_format}
-    end.
-
-validate_chain(Cert_PEM, CA_Chain_PEM) ->
-    % Криптографічна перевірка ланцюжка сертифікатів CA
-    ok.
-
-verify_fingerprint(Cert_PEM, SHA256) ->
-    % Порівняння відбитку SHA-256
-    Calculated = crypto:hash(sha256, Cert_PEM),
-    case Calculated of
-        SHA256 -> ok;
-        _      -> {error, fingerprint_mismatch}
-    end.
-\end{verbatim}
+\subsubsection{Звіряння та відновлення}
+\begin{enumerate}
+    \item Отримати авторитетний стан IAS і знімок фактичного стану VPN.
+    \item Порівняти ревізії, контрольні суми, відбитки сертифікатів і стан життєвого циклу.
+    \item За відсутності розбіжностей закрити або підтвердити відповідний інцидент.
+    \item За наявності розбіжності створити або оновити інцидент і сформувати план відновлення чи виведення з експлуатації.
+    \item Виконувати план як окрему стійку операцію з лічильником спроб, останньою помилкою та явним завершенням.
+\end{enumerate}
 
 \newpage
 \section{Вимоги до засобу за ISO/IEC/IEEE 29148}
 
 \subsection{Функціональні вимоги}
-Система повинна забезпечувати повнофункціональне керування ідентичностями, валідацію сертифікатів, оновлення конфігурацій шлюзів VPN без втрати з'єднань користувачів та виявлення невідповідностей стану мережі.
+Система повинна забезпечувати керування ідентичностями, пристроями, сертифікатами, профілями безпеки та VPN-сервісами; перевірку CSR і X.509; підготовку та передавання керованих VPN-конфігурацій; журналювання доставки; звіряння бажаного і фактичного станів; відновлення після збоїв та контроль виведення об'єктів з експлуатації. Ці можливості деталізують вимоги IAS-FR-001--IAS-FR-007 технічних вимог. IAS-FR-008 і IAS-FR-009 залишаються цільовими вимогами. Конкретний статус і доказ реалізації наведено в таблиці простежуваності цього документа.
 
-\subsection{Вимоги до інтерфейсів та дизайну}
+\subsection{Вимоги до інтерфейсів та оформлення}
+Інтерфейсні положення конкретизують передусім IAS-FR-004 і IAS-FR-005, оскільки веб-рівень відображає стан майстра та результати передавання до VPN.
 \begin{itemize}
-    \item Веб-інтерфейс адміністративної консолі повинен базуватися на реактивному фреймворку N2O/NITRO.
-    \item Відповідність вимогам WCAG 2.1 рівню AA для доступності інтерфейсів.
-    \item Візуальний дизайн повинен наслідувати фірмовий стиль Zencrypted з підтримкою Sleek Dark Mode.
+    \item \textbf{Реалізовано:} адміністративний веб-інтерфейс побудовано на N2O/NITRO/Cowboy і він працює поверх фактичних доменних модулів IAS.
+    \item \textbf{Цільовий стан:} вимоги до доступності інтерфейсів, зокрема відповідність WCAG 2.1 рівню AA, визначаються окремими критеріями приймання та мають бути підтверджені спеціалізованим аудитом.
+    \item \textbf{Організаційна вимога:} візуальне оформлення повинно відповідати погодженому фірмовому стилю Zencrypted; конкретна тема або режим відображення не вважаються властивістю поточної реалізації без окремого затвердження.
+\end{itemize}
+
+\subsection{Вимоги до архітектури та надійності}
+Архітектурні положення є реалізаційною деталізацією IAS-FR-001 та IAS-FR-005--IAS-FR-007.
+\begin{itemize}
+    \item \textbf{Реалізовано:} IAS є застосунком Erlang/OTP із деревами нагляду та відновлюваними після перезапуску процесами.
+    \item \textbf{Реалізовано:} авторитетний стан зберігається у KVS/Mnesia; стійкі записи мають явні версії схем і повинні оновлюватися керованими міграціями.
+    \item \textbf{Реалізовано:} повторне передавання однакової канонічної команди до VPN є ідемпотентним, а застаріла ревізія не може перезаписати новіший стан.
+    \item \textbf{Реалізовано:} стан доставки, інциденти звіряння та операції відновлення зберігаються так, щоб робота могла продовжуватися після перезапуску або тимчасової недоступності VPN.
+    \item \textbf{Поточна платформа:} IAS орієнтований на Erlang/OTP 28 і використовує стандартний модуль \path{json} із \path{stdlib}; підтримка інших основних версій OTP не заявляється без окремого випробування.
+\end{itemize}
+
+\subsection{Вимоги до випробувань}
+Набори випробувань мають підтверджувати статуси IAS-FR-001--IAS-FR-007; для IAS-FR-008, IAS-FR-009 та IAS-NFR-001 критерії приймання формуються разом із відповідною цільовою або нормативною реалізацією.
+\begin{itemize}
+    \item \textbf{Реалізовано:} модульні перевірки виконуються наборами EUnit для доменних модулів, перевірок і перетворень даних.
+    \item \textbf{Реалізовано:} інтеграційні та відновлювальні сценарії перевіряються наборами Common Test, зокрема для стійкості KVS/Mnesia, IAS~$\rightarrow$~VPN RPC, ревізій, звіряння стану та відновлення після перезапуску.
+    \item Кожна зміна формату стійких записів, канонічної команди або контракту IAS/VPN повинна супроводжуватися перевіркою міграції та повторного відтворення стану.
+    \item Цільові показники доступності, часу відновлення, пропускної здатності та затримки визначаються лише за результатами окремих навантажувальних і приймальних випробувань.
 \end{itemize}
 
 \subsection{Вимоги до безпеки та захисту інформації}
+Розділ деталізує безпекові аспекти IAS-FR-002, IAS-FR-003, IAS-FR-009 та нормативну вимогу IAS-NFR-001.
 \begin{itemize}
-    \item Шифрування каналів зв'язку за допомогою TLS v1.3.
-    \item Підтримка КЕП CAdES-X Long та алгоритму ДСТУ 4145-2002.
-    \item Ізоляція ключів: приватний ключ ніколи не записується і не передається в IAS, залишаючись виключно на кінцевому пристрої.
-    \item Категорична відмова від використання JSON Web Tokens (JWT) та OpenID Connect (OIDC) як основних засобів автентифікації. Замість цього застосовується криптоцентрична архітектура на базі mTLS X.509 та локальної генерації CSR на пристроях відповідно до \cite{jwt_pdf, openid_pdf}.
-    \item Атестація комплексу за вимогами ДССЗІ України на рівень захисту Г3.
+    \item \textbf{Реалізовано:} приватні ключі користувачів і пристроїв не зберігаються та не передаються через IAS.
+    \item \textbf{Поточний профіль розгортання:} параметр \path{certificate_material_protection_provider} використовує модуль \path{ias_certificate_material_protection_public}.
+    \item \textbf{Властивість поточного режиму:} IAS зберігає лише публічний X.509-матеріал у відкритому вигляді з контролем цілісності SHA-256; шифрування матеріалу у сховищі цей режим не забезпечує.
+    \item Секрети, повний ключовий матеріал і значення облікових даних не повинні потрапляти до журналів аудиту або системних журналів.
+    \item Захист транспортного рівня, автентифікація вузлів і порядок розподілу секретів повинні бути визначені для кожного профілю розгортання.
+    \item \textbf{Цільовий стан:} застосування TLS 1.3 до конкретних зовнішніх каналів визначається архітектурою відповідного профілю і підтверджується інтеграційними випробуваннями; воно не поширюється автоматично на всі внутрішні канали системи.
+    \item \textbf{Нормативна вимога:} КСЗІ Г3, КЕП CAdES-X Long, ДСТУ 4145-2002, ДСТУ ГОСТ 28147:2009 та шифрування даних у сховищі потребують окремих реалізаційних, випробувальних і атестаційних доказів.
 \end{itemize}
 
-\subsection{Вимоги до продуктивності та надійності}
+\subsection{Вимоги до продуктивності та рівня обслуговування}
+Значення доступності, RTO, RPO, пропускної здатності та затримки не фіксуються в цьому документі без вимірювань. До проведення навантажувальних і приймальних випробувань вони мають статус \textbf{«Цільовий стан»}. Методика випробувань повинна визначати конфігурацію вузлів, обсяг KVS/Mnesia, кількість керованих об'єктів, характер VPN-навантаження, умови відмови та критерії успішного відновлення.
+
+\subsection{Вимоги до журналювання та аудиту}
+Журналювання та аудит забезпечують доказовість виконання IAS-FR-004--IAS-FR-007.
 \begin{itemize}
-    \item Час аптайму системи не менше 99.99\% (High Availability).
-    \item Час відновлення (RTO) після повного перезапуску ноди не більше 5 секунд завдяки KVS/Mnesia rehydration.
-    \item Здатність обробляти до 1000 запитів авторизації на секунду на одну ноду.
+    \item \textbf{Реалізовано:} IAS реєструє в журналі аудиту переходи життєвого циклу, випуск та імпорт сертифікатів, рішення про авторизацію, передавання конфігурацій, інциденти звіряння та дії відновлення.
+    \item Запис аудиту повинен містити ідентифікатор об'єкта, ревізію або версію, результат, причину та часову мітку, якщо ці дані застосовні до події.
+    \item \textbf{Цільовий стан / вимога до розгортання:} криптографічне підписання подій, незмінне WORM-сховище, передавання до ELK/Loki та строки довгострокового зберігання визначаються окремим профілем безпеки і не вважаються автоматично реалізованими властивостями IAS.
 \end{itemize}
 
-\subsection{Вимоги до логування та аудиту}
+\subsection{Адміністративні, ліцензійні та експлуатаційні вимоги}
 \begin{itemize}
-    \item Всі операції провіженінгу, випуску та зміни статусів довіри повинні підписуватися цифровим підписом ноди та записуватися в стійкий лог аудиту.
-    \item Заборона модифікації або видалення записів журналу аудиту (immutable audit log).
+    \item Перелік ліцензій усіх залежностей формується за фактичним складом постачання; документ не обмежує допустимі ліцензії лише MIT або Apache~2.0 без окремого юридичного рішення.
+    \item Потреба у сторонньому програмному забезпеченні, системних пакетах і зовнішніх сервісах повинна бути явно зазначена в описі розгортання. Цільовий стан IAS не передбачає запуск зовнішнього командного інтерфейсу OpenSSL у його середовищі виконання.
+    \item Настанови адміністратора й оператора повинні відповідати фактичним інтерфейсам, режимам запуску, процедурам резервного копіювання, відновлення та діагностики.
 \end{itemize}
 
-\subsection{Адміністративні та юридичні вимоги}
-\begin{itemize}
-    \item Всі компоненти поставляються з ліцензіями відкритого вихідного коду (MIT/Apache 2.0).
-    \item Модуль IAS повинен інтегруватися з наявною інфраструктурою підприємства без потреби закупівлі додаткового платного ПЗ.
-\end{itemize}
 
-\begin{thebibliography}{9}
-\bibitem{jwt_pdf} 
-Технічні вимоги: Про неприпустимість використання JWT токенів як самостійного механізму в державних системах, 2026. 
-\url{https://5ht.co/jwt.pdf}
+\section{Простежуваність реалізації та випробувань}
+Таблиця пов'язує основні вимоги з фактичними зонами коду й автоматизованими перевірками. Назви файлів наведено як орієнтири; канонічним доказом лишаються поточний код, результати EUnit/Common Test і приймальні матеріали конкретної версії.
 
-\bibitem{openid_pdf} 
-Технічні вимоги: Щодо неприпустимості використання OpenID Connect токенів при наявності eIDAS/EUDI у вимогах, 2026. 
-\url{https://5ht.co/openid.pdf}
-\end{thebibliography}
+\begin{longtable}{p{0.09\textwidth}p{0.17\textwidth}p{0.23\textwidth}p{0.22\textwidth}p{0.13\textwidth}}
+\toprule
+\textbf{ID} & \textbf{Вимога} & \textbf{Модулі та дані} & \textbf{Автоматизована перевірка} & \textbf{Статус} \\
+\midrule
+\endhead
+IAS-FR-001 & Стійкий реєстр доменних об'єктів & \path{ias_domain_store.erl}, \path{ias_domain_object.hrl} & \path{ias_domain_store_tests.erl}, \path{ias_persistence_SUITE.erl} & Реалізовано \\
+IAS-FR-002 & Перевірка CSR і X.509 & \path{ias_csr_validation.erl}, \path{ias_x509_validation.erl}, \path{ias_certificate_verification.erl} & \path{ias_x509_validation_tests.erl}, \path{ias_certificate_verification_tests.erl} & Реалізовано \\
+IAS-FR-003 & Випуск через CA без зовнішнього OpenSSL у IAS & Поточний шлях: \path{ias_device_csr_enrollment.erl}, \path{ias_cmp_enrollment.erl}; ціль: керований клієнт або адаптер CA & Тести поточного шляху не підтверджують завершення цільового стану & Цільовий стан \\
+IAS-FR-004 & Майстер налаштування VPN & \path{ias_provisioning_wizard_store.erl}, \path{ias_provisioning_wizard_draft.hrl}, модулі готовності, зв'язків і авторизації & \path{ias_provisioning_wizard_tests.erl}, \path{ias_provisioning_wizard_transaction_tests.erl} & Реалізовано \\
+IAS-FR-005 & Передавання IAS~$\rightarrow$~VPN & \path{ias_vpn_provisioning_command.erl}, \path{ias_vpn_provisioning_delivery.erl}, \path{ias_vpn_client.erl} & \path{ias_vpn_provisioning_delivery_tests.erl}, \path{ias_vpn_rpc_SUITE.erl} & Реалізовано \\
+IAS-FR-006 & Ревізії, контрольні суми та ідемпотентність & \path{ias_vpn_authority.hrl}, \path{ias_vpn_provisioning_delivery_audit.hrl}, модулі формування команди й доставки & \path{ias_vpn_provisioning_command_digest_tests.erl}, \path{ias_vpn_provisioning_delivery_store_tests.erl} & Реалізовано \\
+IAS-FR-007 & Звіряння, відновлення й усунення осиротілих станів & \path{ias_vpn_reconciliation.erl}, \path{ias_vpn_orphan_recovery.erl}, записи інцидентів та операцій & \path{ias_vpn_reconciliation_tests.erl}, \path{ias_vpn_recovery_manifest_tests.erl} & Реалізовано \\
+IAS-FR-008 & Керування процесом через BPE/BPMN & Майбутня інтеграція після фіксації моделі поточного стану & Критерії визначаються під час реалізації & Цільовий стан \\
+IAS-FR-009 & CRL/OCSP, EST і CMC & Цільові адаптери, відсутні у поточному середовищі виконання IAS & Потрібні окремі інтеграційні й приймальні випробування & Цільовий стан \\
+IAS-NFR-001 & КСЗІ, КЕП і криптографія за ДСТУ & Профілі розгортання та окремі реалізації & Потрібні випробувальні й атестаційні докази & Нормативна вимога \\
+\bottomrule
+\end{longtable}
 
 \end{document}
