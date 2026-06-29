@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="ERP/1: Проєкти — українська заміна Atlassian Jira та Confluence. Професійне управління проєктами, Agile-дошки, BPMN-процеси та база знань на базі LaTeX." />
+    <meta name="author" content="Maxim Sokhatsky" />
+    <title>ERP/1: Проєкти</title>
+    <link rel="stylesheet" href="../index.css?v=15"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="../img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../img/favicon-16x16.png">
+    <link rel="manifest" href="../img/site.webmanifest">
+</head>
+<body>
+
+<nav class="sticky">
+    <div class="nav-container">
+        <a href="https://erp.uno/" class="logo">ERP/1</a>
+        <div class="lang-group">
+            <div class="lang-switcher">
+                <a href="index.html" class="lang-btn">UA</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<header>
+    <div class="hero-content">
+        <h1>Проєкти</h1>
+        <p class="hero-subtitle">Інформаційно-комунікаційна система «ERP/1: Проєкти» — це сучасна локальна альтернатива
+        Atlassian Jira та Confluence, розроблена на платформі Erlang/OTP, де замість Markdown для технічної документації
+        та описів завдань використовуються професійні LaTeX-документи.</p>
+    </div>
+</header>
+
+<main>
+    <section class="section-products">
+        <h2>Про Продукт</h2>
+        <div>
+            Модуль <b>«ERP/1: Проєкти»</b> об'єднує функції відстеження завдань (Task Tracking) та ведення
+            бази знань (Knowledge Base/Wiki) в єдину інтегровану систему. Завдяки використанню асинхронної
+            архітектури Erlang/OTP та процесного рушія BPMN (ISO 19510), система забезпечує миттєвий відгук
+            інтерфейсу. Замість спрощеної розмітки Markdown, Confluence-компонент оперує повноцінними LaTeX-документами,
+            що дозволяє будувати креслення, формули та складні таблиці видавничої якості безпосередньо у тілі завдань
+            та статей знань, автоматично компілюючи їх у PDF-документи (ТВ, ТЗ, ТРП) на сервері.
+        </div>
+    </section>
+
+    <section class="section-solutions">
+        <h2>Основні Функції</h2>
+        <div class="solutions-grid">
+            <div><b>Agile-управління (Jira-аналог)</b>: створення Scrum/Kanban дошок, управління беклогом, планування спринтів та гнучке відстеження життєвого циклу задач.</div>
+            <div><b>База знань (Confluence-аналог)</b>: ієрархічна структура сторінок, шаблони технічних специфікацій, коментарі та спільна робота над документами.</div>
+            <div><b>Підтримка LaTeX замість Markdown</b>: опис вимог, специфікацій та документації на LaTeX (пакети amsmath, TikZ, pgf), що гарантує високу точність представлення інженерних даних.</div>
+            <div><b>Серверна PDF-компіляція</b>: автоматичне фонове рендерення LaTeX-документів за допомогою pdflatex/xelatex на Erlang-серверах у PDF-файли звітів.</div>
+            <div><b>BPMN Рушій (BPE)</b>: автоматичне керування робочими процесами завдань (handshake, review, approval) на базі Erlang-процесів.</div>
+            <div><b>Сховище на KVS</b>: швидке збереження історії змін завдань та версійності документів у локальній базі Mnesia/RocksDB.</div>
+        </div>
+    </section>
+
+    <section class="section-standards">
+        <h2>Стандарти та Технологічний Стек</h2>
+        <div>
+            <h4>ТЕХНОЛОГІЧНИЙ СТЕК</h4>
+            <p>
+                <b>Erlang/OTP</b>: високонадійне ядро системи та асинхронні WebSocket підключення.<br>
+                <b>TeX Live</b>: серверний рушій компіляції документів pdflatex/xelatex.<br>
+                <b>N2O / Nitro</b>: легкий фреймворк для розробки швидких клієнт-серверних інтерфейсів.<br>
+                <b>BPE</b>: BPMN-рушій автоматизації життєвих циклів задач.
+            </p>
+
+            <h4>МІЖНАРОДНІ СТАНДАРТИ</h4>
+            <p>
+                <b>ISO/IEC/IEEE 29148</b>: стандарти опрацювання та трасування вимог у проєктах.<br>
+                <b>ISO 19510</b>: графічна нотація та семантика бізнес-процесів BPMN 2.0.<br>
+                <b>X.509</b>: автентифікація користувачів у системі за сертифікатами відкритих ключів.
+            </p>
+        </div>
+    </section>
+
+    <section class="section-standards">
+        <h2>Чому саме LaTeX?</h2>
+        <ul class="standards-list">
+            <li><b>Видавнича якість</b>: формули, схеми алгоритмів та таблиці мають ідеальний вигляд, готовий до друку та офіційного подання.</li>
+            <li><b>Векторні TikZ-схеми</b>: архітектура систем та блок-схеми зберігаються безпосередньо у коді сторінки та рендериться у векторному вигляді.</li>
+            <li><b>Єдине джерело істини</b>: можливість тримати документацію проекту в тому ж репозиторії, що й вихідний код, комбінуючи звітність.</li>
+            <li><b>Готові шаблони</b>: автоматична генерація ТВ, ТЗ та ТРП згідно з державними стандартами (наприклад, ДСТУ чи ДСТУ ISO/IEC 12207).</li>
+        </ul>
+    </section>
+</main>
+
+<footer>
+    <div class="footer-columns">
+        <div> &nbsp;
+        </div>
+        <div>
+            <h4>Системні продукти</h4>
+            <ul>
+                <li><a href="../ca/index.html">Сертифікати</a></li>
+                <li><a href="../chat/index.html">Комунікатор</a></li>
+                <li><a href="../ldap/index.html">Директорія</a></li>
+                <li><a href="../bpmn/index.html">Процеси</a></li>
+            </ul>
+            <br>
+            <h4>Корпоративні Продукти</h4>
+            <ul>
+                <li><a href="../edu/index.html">Освіта</a></li>
+                <li><a href="../health/index.html">Здоров'я</a></li>
+                <li><a href="../cart/index.html">Реєстри</a></li>
+                <li><a href="../mail/index.html">Документи</a></li>
+                <li><a href="../acc/index.html">Облік</a></li>
+                <li><a href="../warehouse/index.html">Склад</a></li>
+                <li><a href="../pm/index.html">Проєкти</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Завантаження</h4>
+            <ul>
+                <li><a href="https://x509.chat/bdfl.pdf">BDFL Cathedral</a></li>
+                <li><a href="https://x509.chat/encryption.pdf">Encryption Architecture</a></li>
+                <li><a href="https://protocol.zencrypted.uk">Buddha Protocol</a></li>
+                <li><a href="../man/ua/1.htm">ERP/1: Підприємство</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Контакти</h4>
+            <p><a href="mailto:ceo@erp.uno">ceo@erp.uno</a></p>
+            <p>2026 © <a href="https://erp.uno/">ERP.UNO</a></p>
+            <p>2026 © <a href="https://synrc.com/">SYNRC.COM</a></p>
+            <hr>
+            <p>2026 © ТОВ «СЕУ» (46207985)</p>
+            <p>2026 © ТОВ «Криптографічні Телесистеми» (46226772)</p>
+            <br>
+        </div>
+    </div>
+</footer>
+</body>
+</html>
