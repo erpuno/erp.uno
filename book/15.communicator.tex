@@ -36,30 +36,30 @@
 
 \subsection{Визначення структур даних (Erlang Records)}
 Основні сутності підсистеми визначені в Erlang-записах:
-\begin{verbatim}
+\begin{lstlisting}
 -record(chat_session, {
-    session_id,                 % UUID сесії (PK)
-    client_id,                  % Серійний номер сертифіката X.509
-    device_id,                  % Ідентифікатор пристрою
-    ip_address,                 % Поточна IP-адреса
-    access_token,               % Токен доступу сесії
+    session_id,                 % Session UUID (PK)
+    client_id,                  % X.509 Certificate Serial Number
+    device_id,                  % Device ID
+    ip_address,                 % Current IP Address
+    access_token,               % Session Access Token
     status = active,            % active | expired | revoked
     created_at = 0
 }).
 
 -record(ca_certificate, {
-    serial_number,              % Серійний номер X.509 (PK)
-    subject_dn,                 % Відмітне ім'я суб'єкта
-    public_key_der,             % Публічний ключ у DER кодуванні
-    not_before = 0,             % Початок дії
-    not_after = 0,              % Завершення дії
+    serial_number,              % X.509 Serial Number (PK)
+    subject_dn,                 % Subject Distinguished Name
+    public_key_der,             % Public key in DER encoding
+    not_before = 0,             % Not before (start)
+    not_after = 0,              % Not after (end)
     status = valid              % valid | revoked | expired
 }).
-\end{verbatim}
+\end{lstlisting}
 
 \subsection{Процесний рушій BPE}
 Для управління життєвим циклом обробки повідомлень використовується BPMN/FSM опис процесу доставки:
-\begin{verbatim}
+\begin{lstlisting}
 -module(chat_message).
 -include("bpe.hrl").
 -compile(export_all).
@@ -86,11 +86,11 @@ def() ->
         ],
         roles = [operator, system]
     }.
-\end{verbatim}
+\end{lstlisting}
 
 \subsection{C99 NIF розбирач TLV DER пакетів}
 Для швидкого розбору ASN.1 DER об'єктів безпосередньо в Erlang без Cargo/Rust, використовується C99 NIF обгортка:
-\begin{verbatim}
+\begin{lstlisting}
 #include "erl_nif.h"
 #include <string.h>
 
@@ -141,4 +141,30 @@ static ErlNifFunc nif_funcs[] = {
 };
 
 ERL_NIF_INIT(chat_nif, nif_funcs, NULL, NULL, NULL, NULL)
-\end{verbatim}
+\end{lstlisting}
+
+\section{Постквантова криптографія (PQC)}
+\index{Постквантова криптографія}
+Зі становленням квантових обчислювальних засобів класичні алгоритми асиметричного шифрування (наприклад, RSA, ECDSA, ECDH) та вітчизняний стандарт ДСТУ 4145-2002 стають потенційно вразливими до алгоритму Шора. Для забезпечення довготривалої конфіденційності державного документообігу підсистема «Комунікатор» передбачає адаптаційну інтеграцію постквантових алгоритмів:
+\begin{itemize}
+    \item \textbf{Кем-механізми (ML-KEM / Kyber)}: Використовуються для безпечного узгодження сесійних симетричних ключів у протоколі Buddha.
+    \item \textbf{Схеми підпису на базі решіток (ML-DSA / Dilithium / Falcon)}: Застосовуються для довготривалої автентифікації сертифікатів та засвідчення КЕП документів.
+    \item \textbf{Станційні підписи на хеш-деревах (LMS, XMSS)}: Використовуються для підпису образів прошивок VPN-шлюзів та кореневих сертифікатів CA.
+\end{itemize}
+
+\section{Архітектура нульової довіри (Zero Trust Architecture)}
+\index{Архітектура нульової довіри}
+Управління безпекою в ІКС «Комунікатор» базується на концепції Zero Trust (згідно з рекомендаціями NIST SP 800-207). Основні правила побудови периметру безпеки:
+\begin{enumerate}
+    \item \textbf{Явне підтвердження}: Кожен запит на доступ до реєстрів чи чату проходить обов'язкову автентифікацію на базі клієнтського сертифіката X.509 та авторизацію за політиками ABAC.
+    \item \textbf{Мінімальні привілеї}: Доступ до сервісів надається за принципом найменших повноважень з урахуванням поточного контексту (IP-адреса, робочий час, роль).
+    \item \textbf{Припущення про вразливість}: Усі сегменти мережі вважаються небезпечними. Трафік між сервісами (навіть всередині датацентру) шифрується за протоколом TLS 1.3 або тунелюється через WireGuard.
+\end{enumerate}
+
+\section{Тестові питання та завдання}
+\begin{enumerate}
+    \item Опишіть призначення та структуру криптографічного конверта CMS протоколу Buddha.
+    \item Чим відрізняється транспортна схема обміну повідомленнями X.422.1 від класичного HTTPS?
+    \item Сформулюйте основну перевагу використання C99 NIF для парсингу ASN.1 DER порівняно з парсингом на рівні Erlang.
+    \item \textbf{Практичне завдання}: Напишіть опис структури ASN.1 для найпростішої схеми передачі текстового повідомлення, що містить ідентифікатор сесії та зашифроване тіло.
+\end{enumerate}
