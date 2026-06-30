@@ -1,0 +1,1341 @@
+\addtocontents{toc}{\protect\newpage}
+\chapter{Інфраструктурний рівень безпеки інтернету}
+
+\section{Електронний підпис і цифрова печатка}
+
+Кваліфікований Електронний Підпис, або Кваліфіклована Електронна Печатка ---
+це набір стандартів криптографічного захисту ДСТУ 4145,
+та міжнародних стандартів які визначають його конверт: X.501, X.509, X.511, X.520.
+
+\renewcommand{\footnotesize}{\scriptsize}
+
+Серія міжнародних стандартів X.500, групується по категоріям, кожна
+з яких має свій перелік ASN.1 файлів. Аби підключити усі визначення необхідні
+для КЕП використані наступі компоненти стандартів (виділені болдом):
+X.501 --- BasicAccessControl \footnote{\url{https://www.itu.int/ITU-T/formal-language/itu-t/x/x501/2019/BasicAccessControl.html}},
+InformationFramework \footnote{\url{https://www.itu.int/ITU-T/formal-language/itu-t/x/x501/2019/InformationFramework.html}},
+UsefulDefinitions \footnote{\url{https://www.itu.int/ITU-T/formal-language/itu-t/x/x501/2019/UsefulDefinitions.html}};
+X.509 --- SpkmGssTokens \footnote{\url{https://www.itu.int/ITU-T/formal-language/itu-t/x/x509/2019/ExtensionAttributes.html}},
+PkiPmiExternalDataTypes \footnote{\url{https://www.itu.int/ITU-T/formal-language/itu-t/x/x509/2019/PkiPmiExternalDataTypes.html}},
+AttributeCertificateDefinitions \footnote{\url{https://www.itu.int/ITU-T/formal-language/itu-t/x/x509/2019/AttributeCertificateDefinitions.html}}, \\
+AlgorithmObjectIdentifiers \footnote{\url{https://www.itu.int/ITU-T/formal-language/itu-t/x/x509/2019/AlgorithmObjectIdentifiers.html}}, \\
+AuthenticationFramework \footnote{\url{https://www.itu.int/ITU-T/formal-language/itu-t/x/x509/2019/AuthenticationFramework.html}},
+CertificateExtensions \footnote{\url{https://www.itu.int/ITU-T/formal-language/itu-t/x/x509/2019/CertificateExtensions.html}}; \\
+X.511 --- SpkmGssTokens \footnote{\url{https://www.itu.int/ITU-T/formal-language/itu-t/x/x511/2019/SpkmGssTokens.html}},
+DirectoryAbstractService \footnote{\url{https://www.itu.int/ITU-T/formal-language/itu-t/x/x511/2019/DirectoryAbstractService.html}};
+X.520 --- PasswordPolicy \footnote{\url{https://www.itu.int/ITU-T/formal-language/itu-t/x/x520/2019/PasswordPolicy.html}},
+UpperBounds \footnote{\url{https://www.itu.int/ITU-T/formal-language/itu-t/x/x520/2019/UpperBounds.html}},
+SelectedAttributeTypes \footnote{\url{https://www.itu.int/ITU-T/formal-language/itu-t/x/x520/2019/SelectedAttributeTypes.html}}.
+
+Можно було би винести необхідні визначення одразу в KEP.asn1,
+однак цим хотілося підкреслити сумісність з міжнародними стандартами. Окрім серії
+протоколів X.500, КЕП ще визначає також запити та відповіді OCSP, також у ASN.1 форматі.
+
+\newpage
+На відміну від самого алгоритму КЕП, який визначено ДСТУ 4145,
+конверти визначаються не стандартами, а наказами міністерства юстиції:
+Проект наказу Адміністрації Держспецзв'язку та Держкомінфоматизації (2009) \footnote{\url{http://www.dsszzi.gov.ua/dsszzi/control/uk/publish/article?art\_id=77726}},
+Наказ Міністерства юстиції України 1236/5/453 \footnote{\url{https://zakon.rada.gov.ua/laws/show/z1401-12}}.
+Керуючись цими нормативними документами було створено файл KEP.asn1 \footnote{\url{https://github.com/synrc/ca/blob/master/priv/kep/KEP.asn1}},
+який є одним з трьох top-level файлів необхідниї для компіляції ASN.1 компілятором\footnote{\url{https://asn1.erp.uno}}.
+
+Існує небагато безкоштовних та повних компіляторів (генераторів парсерів)
+ASN.1 специфікацій. Erlang є прикладом системи, до складу якої входить
+першокласний безкоштовний з відкритою ліценцією ASN.1 компілятор, де
+файли в ASN.1 нотації можуть бути зкомпільовані безпосередньо Erlang компілятором:
+
+\renewcommand{\footnotesize}{\normal}
+
+\begin{verbatim}
+> erlc AuthenticationFramework.asn1
+> erlc InformationFramework.asn1
+> erlc KEP.asn1
+\end{verbatim}
+
+Створити файл підпису PKCS-7 можна за допомогою будь якої програми сертифікованої в Україні.
+Найпростіше отримати свою КЕП печатку будучи клієнтом ПриватБанку. За допомогою
+"Користувача ЦСК" компанії ІІТ ви можете підписувати файли використовуючи безкоштовну
+форму приватного ключа у вигляді звичайного файлу.
+
+\newpage
+\subsection{Приклад використання}
+
+Щоб показати як користуватися КЕП, та прочитати атрибутивну інформацію з сертифікату,
+який вшитий в PCKS-7 повідомлення з криптографічним підписом, покажемо 5 функцій:
+
+\renewcommand{\footnotesize}{\scriptsize}
+
+\begin{verbatim}
+> CA.CAdES.readSignature
+[
+  {:certinfo, ~c"TINUA-2955020254",
+   "СОХАЦЬКИЙ МАКСИМ ЕРОТЕЙОВИЧ",
+   "МАКСИМ ЕРОТЕЙОВИЧ", "СОХАЦЬКИЙ",
+   "СОХАЦЬКИЙ МАКСИМ ЕРОТЕЙОВИЧ",
+   [
+     subjectKeyIdentifier: "VNXfTvJQccGtPgNhUftIQZV+mUROTgroLotsbtYZsFE=",
+     authorityKeyIdentifier: "XphNUm+C84/0vi5ABGgN/rOvysLkBHVNB9CuTISwfB0=",
+     keyUsage: [<<6, 192>>],
+     certificatePolicies: {"https://acsk.privatbank.ua/acskdoc",
+      ["1.2.804.2.1.1.1.2.2", "1.3.6.1.5.5.7.2.1"]},
+     basicConstraints: [],
+     qcStatements: {"https://acsk.privatbank.ua",
+      ["0.4.0.1862.1.1", "0.4.0.1862.1.5", "1.3.6.1.5.5.7.11.2",
+       "0.4.0.194121.1.1", "1.2.804.2.1.1.1.2.1"]},
+     cRLDistributionPoints: ["http://acsk.privatbank.ua/crl/PB-2023-S6.crl"],
+     freshestCRL: ["http://acsk.privatbank.ua/crldelta/PB-Delta-2023-S6.crl"],
+     authorityInfoAccess: [
+       {"1.3.6.1.5.5.7.48.2",
+        "http://acsk.privatbank.ua/arch/download/PB-2023.p7b"},
+       {"1.3.6.1.5.5.7.48.1", "http://acsk.privatbank.ua/services/ocsp/"}
+     ],
+     subjectInfoAccess: [
+       {"1.3.6.1.5.5.7.48.3", "http://acsk.privatbank.ua/services/tsp/"}
+     ],
+     subjectDirectoryAttributes: [
+       {"1.2.804.2.1.1.1.11.1.4.7.1", "0"},
+       {"1.2.804.2.1.1.1.11.1.4.1.1", "2955020254"}
+     ]
+   ], "ФІЗИЧНА ОСОБА", "", "", ~c"UA", "КИЇВ"},
+  {:certinfo, ~c"UA-14360570-2310",
+   "КНЕДП АЦСК АТ КБ \"ПРИВАТБАНК\"", "", "",
+   "КНЕДП АЦСК АТ КБ \"ПРИВАТБАНК\"",
+   [
+     contentType: "0.6.9.42.840.113549.1.7.1",
+     signingTime: "240221110356Z",
+     messageDigest: "MfvlhoDVCPkptQRN+S2zNGp0nrOsS93mLdbcz/kZ9GI=",
+     signingCertificateV2: 540041581425012649131508804155871837613877419268,
+     contentTimestamp: {"1.2.840.113549.1.7.2",
+      36995253346304402407284752111874897026, "20240221110626Z",
+      "MfvlhoDVCPkptQRN+S2zNGp0nrOsS93mLdbcz/kZ9GI="}
+   ], "АТ КБ \"ПРИВАТБАНК\"", "", "", ~c"UA", "Київ"}
+]
+\end{verbatim}
+\renewcommand{\footnotesize}{\normal}
+
+\newpage
+\section{Криптографічні інформаційні повідомлення}
+
+Реалізації повинні підтримувати транспортування ключів, узгодження ключів
+і раніше розподілені симетричні ключі шифрування ключів, представлені ktri,
+kari та kekri відповідно.
+
+Реалізації можуть підтримувати керування ключами на основі пароля,
+представлене pwri. Реалізації МОЖУТЬ підтримувати будь-які інші методи
+керування ключами, такі як шифрування на основі ідентифікації Боне-Франкліна
+та Боне-Бойєна (RFC 5409) або інші методи шифрування SYNRC, такі як варіанти
+KYBER Key Transport (LAMPS-WG) для постквантової криптографії (PQC).
+
+IETF (SMIME-WG) стандарти: 5990, 5911, 5750--5754, 5652, 5408, 5409,
+5275, 5126, 5035, 4853, 4490, 4262, 4134, 4056, 4010, 3850, 3851,
+3852, 3854, 3855, 3657, 3560, 3565, 3537, 3394, 3369, 3370, 3274,
+3114, 3278, 3218, 3211, 3217, 3183, 3185, 3125--3126, 3058, 2984,
+2876, 2785, 2630, 2631, 2632 , 2633, 5083, 5084, 2634.
+
+Сумісність: Erlang SSL, LibreSSL CMS, OpenSSL CMS, GnuPG S/MIME.
+
+\subsection{Головна функція}
+
+Специфікація синтаксису криптографічних повідомлень CMS X.509 для
+дисципліни RSA (Key Transport), ECC (Key Agreement), KEK (Key Encryption Key)
+для додатків Erlang/OTP, які ніколи не преживала heartbleed (!) CRYPTO та SSL.
+Реалізовано як модуль CMS програми CA.
+
+\renewcommand{\footnotesize}{\scriptsize}
+
+\begin{lstlisting}
+defmodule CMS do
+    def decrypt(cms, {schemeOID, privateKeyBin}) do
+        {_,{:ContentInfo,_,{:EnvelopedData,_,_,x,y,_}}} = cms
+        {:EncryptedContentInfo,_,{_,encOID,{_,<<_::16,iv::binary>>}},data} = y
+              case :proplists.get_value(:kari,  x, []) do
+        [] -> case :proplists.get_value(:ktri,  x, []) do
+        [] -> case :proplists.get_value(:kekri, x, []) do
+        [] -> case :proplists.get_value(:pwri,  x, []) do
+        [] -> {:error, "Unknown Other Recepient Info"}
+              pwri  -> pwri(pwri,   privateKeyBin, encOID, data, iv) end
+              kekri -> kekri(kekri, privateKeyBin, encOID, data, iv) end
+              ktri  -> ktri(ktri,   privateKeyBin, encOID, data, iv) end
+              kari  -> kari(kari,   privateKeyBin, schemeOID, encOID, data, iv) end
+    end
+end
+\end{lstlisting}
+
+\newpage
+\subsection{CMS-KARI-ECC}
+
+IETF 3278:2002 Використання алгоритмів криптографії еліптичних
+кривих (ECC) у синтаксисі криптографічних повідомлень (CMS) із
+підтримкою Suite B IETF 5008:2007, 6318:2011.
+
+\begin{lstlisting}
+# openssl cms -decrypt -in encrypted.txt -inkey client.key -recip client.pem
+# openssl cms -encrypt -aes256 -in message.txt -out encrypted.txt \
+                       -recip client.pem -keyopt ecdh_kdf_md:sha256
+\end{lstlisting}
+
+CMS Codec KARI: ECC+KDF/ECB+AES/KW+256/CBC:
+
+\begin{lstlisting}
+def map(:'dhSinglePass-stdDH-sha512kdf-scheme'), do: :sha512
+def map(:'dhSinglePass-stdDH-sha384kdf-scheme'), do: :sha384
+def map(:'dhSinglePass-stdDH-sha256kdf-scheme'), do: :sha256
+def eccCMS(ukm, bit), do:
+    :'CMSECCAlgs-2009-02'.encode(:'ECC-CMS-SharedInfo', sharedInfo(ukm, bit))
+def sharedInfo(ukm, len), do: {:'ECC-CMS-SharedInfo',
+    {:'KeyWrapAlgorithm',{2,16,840,1,101,3,4,1,45},:asn1_NOVALUE}, ukm, <>}
+
+def kari(kari, privateKeyBin, schemeOID, encOID, data, iv) do
+    {_,:v3,{_,{_,_,publicKey}},ukm,{_,kdfOID,_},[{_,_,encryptedKey}]} = kari
+    {scheme,_}  = CA.ALG.lookup(schemeOID)
+    {kdf,_}     = CA.ALG.lookup(kdfOID)
+    {enc,_}     = CA.ALG.lookup(encOID)
+    sharedKey   = :crypto.compute_key(:ecdh,publicKey,privateKeyBin,scheme)
+    {_,payload} = eccCMS(ukm, 256)
+    derived     = KDF.derive(map(kdf), sharedKey, 32, payload)
+    unwrap      = CA.AES.KW.unwrap(encryptedKey, derived)
+    res         = CA.AES.decrypt(enc, data, unwrap, iv)
+    {:ok, res}
+end
+def testDecryptECC(), do: CA.CMS.decrypt(testECC(), testPrivateKeyECC())
+
+def testECC() do
+    {:ok,base} = :file.read_file "priv/certs/encrypted.txt"
+    [_,s] = :string.split base, "\n\n"
+    x = :base64.decode s
+    :'CryptographicMessageSyntax-2010'.decode(:ContentInfo, x)
+end
+
+def testPrivateKeyECC() do
+    privateKey = :public_key.pem_entry_decode(pem("priv/certs/client.key"))
+    {:'ECPrivateKey',_,privateKeyBin,{:namedCurve,schemeOID},_,_} = privateKey
+    {schemeOID,privateKeyBin}
+end
+\end{lstlisting}
+
+
+\newpage
+\subsection{CMS-KEKRI-KEK}
+
+Інформація про одержувача ключа шифрування ключа, як визначено CMS IETF 5652:2009, 3852:2004, 3369:2002, 2630:1999.
+
+\begin{lstlisting}
+# openssl cms -encrypt -secretkeyid 07 \
+              -secretkey 0123456789ABCDEF0123456789ABCDEF \
+              -aes256 -in message.txt -out encrypted2.txt
+
+# openssl cms -decrypt -in encrypted2.txt -secretkeyid 07 \
+              -secretkey 0123456789ABCDEF0123456789ABCDEF
+\end{lstlisting}
+
+CMS Codec KEKRI: KEK+AES-KW+CBC:
+
+\begin{lstlisting}
+def kekri(kekri, privateKeyBin, encOID, data, iv) do
+    {:'KEKRecipientInfo',_vsn,_,{_,kea,_},encryptedKey} = kekri
+    _ = CA.ALG.lookup(kea)
+    {enc,_} = CA.ALG.lookup(encOID)
+    unwrap = CA.AES.KW.unwrap(encryptedKey,privateKeyBin)
+    res = CA.AES.decrypt(enc, data, unwrap, iv)
+    {:ok, res}
+end
+def testDecryptKEK(), do: CA.CMS.decrypt(testKEK(), testPrivateKeyKEK())
+
+def testPrivateKeyKEK() do
+    {:kek, :binary.decode_hex("0123456789ABCDEF0123456789ABCDEF")}
+end
+
+def testKEK() do
+    {:ok,base} = :file.read_file "priv/certs/encrypted2.txt"
+    [_,s] = :string.split base, "\n\n"
+    x = :base64.decode s
+    :'CryptographicMessageSyntax-2010'.decode(:ContentInfo, x)
+end
+\end{lstlisting}
+
+\newpage
+\subsection{CMS-KTRI-RSA}
+
+The very first CMS IETF 3852:1999:
+
+\begin{lstlisting}
+# gpgsm --list-keys
+# gpgsm --list-secret-keys
+# gpgsm -r 0xD3C8F78A -e CNAME > cms.bin
+# gpgsm -u 0xD3C8F78A -d cms.bin
+# gpgsm --export-secret-key-p12 0xD3C8F78A > key.bin
+# openssl pkcs12 -in key.bin -nokeys -out public.pem
+# openssl pkcs12 -in key.bin -nocerts -nodes -out private.pem
+\end{lstlisting}
+
+CMS Codec KTRI: RSA+RSAES-OAEP:
+
+\begin{lstlisting}
+def ktri(ktri, privateKeyBin, encOID, data, iv) do
+    {:'KeyTransRecipientInfo',_vsn,_,{_,schemeOID,_},key} = ktri
+    {:rsaEncryption,_} = CA.ALG.lookup schemeOID
+    {enc,_} = CA.ALG.lookup(encOID)
+    sessionKey = :public_key.decrypt_private(key, privateKeyBin)
+    res = CA.AES.decrypt(enc, data, sessionKey, iv)
+    {:ok, res}
+end
+def testDecryptRSA(), do: CA.CMS.decrypt(testRSA(), testPrivateKeyRSA())
+
+def testPrivateKeyRSA() do
+    {:ok,bin} = :file.read_file("priv/rsa-cms.key")
+    pki = :public_key.pem_decode(bin)
+    [{:PrivateKeyInfo,_,_}] = pki
+    rsa = :public_key.pem_entry_decode(hd(pki))
+    {:'RSAPrivateKey',:'two-prime',_n,_e,_d,_,_,_,_,_,_} = rsa
+    {:rsaEncryption,rsa}
+end
+
+def testRSA() do
+    {:ok,x} = :file.read_file "priv/rsa-cms.bin"
+    :'CryptographicMessageSyntax-2010'.decode(:ContentInfo, x)
+end
+\end{lstlisting}
+
+\subsection{KDF}
+
+KDF (MD5: 128, SHA: 160—512) and HKDF (HMAC) Key Derive functions used in ECC CMS schemes as of NIST SP 800-108r1.
+
+\begin{lstlisting}
+defmodule KDF do
+    def hl(:md5),    do: 16
+    def hl(:sha),    do: 20
+    def hl(:sha224), do: 28
+    def hl(:sha256), do: 32
+    def hl(:sha384), do: 48
+    def hl(:sha512), do: 64
+
+    def derive(h, d, len, x) do
+        :binary.part(:lists.foldr(fn i, a ->
+            :crypto.hash(h, d <> <> <> x) <> a
+        end, <<>>, :lists.seq(1,round(Float.ceil(len/hl(h))))), 0, len)
+    end
+end
+\end{lstlisting}
+
+\newpage
+\subsection{AES-KW}
+
+AES Key Wrap function is applicable to keys of 128/192/256 bit using AES-ECB encoding as of RFC 5649:2009 Advanced Encryption Standard (AES) Key Wrap with Padding Algorithm.
+
+\begin{lstlisting}
+-define(MSB64,      1/unsigned-big-integer-unit:64).
+-define(DEFAULT_IV, << 16#A6A6A6A6A6A6A6A6:?MSB64 >>).
+
+unwrap(CipherText, KEK) -> unwrap(CipherText, KEK, ?DEFAULT_IV).
+unwrap(CipherText, KEK, IV)
+        when (byte_size(CipherText) rem 8) =:= 0
+        andalso (bit_size(KEK) =:= 128
+            orelse bit_size(KEK) =:= 192
+            orelse bit_size(KEK) =:= 256) ->
+    BlockCount = (byte_size(CipherText) div 8) - 1,
+    IVSize = byte_size(IV),
+    case do_unwrap(CipherText, 5, BlockCount, KEK) of
+        << IV:IVSize/binary, PlainText/binary >> ->
+            PlainText;
+        _ ->
+            erlang:error({badarg, [CipherText, KEK, IV]})
+    end.
+
+codec(128) -> aes_128_ecb;
+codec(192) -> aes_192_ecb;
+codec(256) -> aes_256_ecb.
+
+do_unwrap(Buffer, J, _BlockCount, _KEK) when J < 0 -> Buffer;
+do_unwrap(Buffer, J, BlockCount, KEK) ->
+    do_unwrap(do_unwrap(Buffer, J, BlockCount, BlockCount, KEK),
+              J - 1, BlockCount, KEK).
+do_unwrap(Buffer, _J, I, _BlockCount, _KEK) when I < 1 -> Buffer;
+do_unwrap(<< A0:?MSB64, Rest/binary >>, J, I, BlockCount, KEK) ->
+    HeadSize = (I - 1) * 8,
+    << Head:HeadSize/binary, B0:8/binary, Tail/binary >> = Rest,
+    Round = (BlockCount * J) + I,
+    A1 = A0 bxor Round,
+    Data = << A1:?MSB64, B0/binary >>,
+    << A2:8/binary, B1/binary >>
+        = crypto:crypto_one_time(codec(bit_size(KEK)),
+          KEK, ?DEFAULT_IV, Data, [{encrypt,false}]),
+    do_unwrap(<< A2/binary, Head/binary, B1/binary,
+          Tail/binary >>, J, I - 1, BlockCount, KEK).
+\end{lstlisting}
+
+\newpage
+\subsection{AES-256}
+
+All AES-256 flavours are implemented for a wide range of ECC Key Agreement schemes.
+
+\begin{lstlisting}
+def decrypt(crypto_codec, data, key, iv \\ :crypto.strong_rand_bytes(16))
+def decrypt(:'id-aes256-ECB',data,key,iv), do: decryptAES256ECB(data,key,iv)
+def decrypt(:'id-aes256-CBC',data,key,iv), do: decryptAES256CBC(data,key,iv)
+def decrypt(:'id-aes256-GCM',data,key,iv), do: decryptAES256GCM(data,key,iv)
+def decrypt(:'id-aes256-CCM',data,key,iv), do: decryptAES256CCM(data,key,iv)
+def test() do
+  [
+    check_SECP384R1_GCM256(),
+    check_X25519_GCM256(),
+    check_C2PNB368w1_GCM256(),
+    check_BrainPoolP512t1_GCM256(),
+    check_BrainPoolP512t1_GCM256(),
+    check_SECT571_GCM256(),
+    check_X448_GCM256(),
+    check_X448_CBC256(),
+    check_X448_ECB256(),
+  ]
+end
+\end{lstlisting}
+
+\newpage
+\section{Імплементація CMP сервера у складі АЦСК}
+
+IETF follow up (PKIX): 7030, 6960, 6818, 6844, 6712, 6664, 6402, 6277, 6170, 6024, 6025, 5934, 5912--5914, 5877, 5816, 5755, 5756, 5758, 5697, 5636, 5480, 5272--5274, 5280, 5055, 5019, 4985, 4683, 4630, 4476, 4387, 4325, 4158, 4210, 4211, 4055, 4043, 3874, 3779, 3820, 3739, 3709, 3628, 3161, 3029, 2797, 2559, 2587, 3039, 3029, 2511, 2510.
+
+Compatibility: OpenSSL, Cisco, Red Hat, Siemens, Nokia, IBM.
+
+Ця стаття могла би називати «Як написати CMP сервер за 30 хвилин»,
+ але на відміну від попередньої статті про LDAP, ця вже покриває більше ніж тузінь ASN.1 файлів, добре шо ми вже познайомилися з CMS та LDAP бібіліотеками та їх ASN.1 файлами. В цій статті про CMP нас в основному цікавитимуть PKIXCMP-2009, PKIXCRMF-2009 та EnrollmentMessageSyntax-2009 для CMC.
+
+\renewcommand{\footnotesize}{\scriptsize}
+
+\begin{lstlisting}
+CMS-AES-CCM-and-AES-GCM-2009.asn1
+CMSAesRsaesOaep-2009.asn1
+CMSECCAlgs-2009-02.asn1
+CMSECDHAlgs-2017.asn1
+CryptographicMessageSyntax-2009.asn1
+CryptographicMessageSyntax-2010.asn1
+CryptographicMessageSyntaxAlgorithms-2009.asn1
+EnrollmentMessageSyntax-2009.asn1
+PKCS-10.asn1
+PKCS-7.asn1
+PKIX1Explicit-2009.asn1
+PKIX1Implicit-2009.asn1
+PKIXAlgs-2009.asn1
+PKIXCMP-2009.asn1
+PKIXCRMF-2009.asn1
+\end{lstlisting}
+
+\newpage
+\subsection{CSR}
+
+Отже починається написання CMP серверу з найголовнішої його функції: видачі сертифікату по PCKS-10 CSR реквесту. Схема наступна: Клієнт генерує приватний ключ, конвертує його в PEM файл, відсилає як P10CR повідомлення у складі payload PKIMessage, отримує відповідь CP, після чого клієнт шле ще одне повідомлення CERTCONF, після якого CMP сервер повинен відповисти PKICONF повідомленням.
+
+
+\begin{lstlisting}
+ def csr(user) do
+      {ca_key, ca} = read_ca()
+      priv = X509.PrivateKey.new_ec(:secp384r1)
+      der = :public_key.der_encode(:ECPrivateKey, priv)
+      pem = :public_key.pem_encode([{:ECPrivateKey, der, :not_encrypted}])
+      :file.write_file(user <> ".key", pem)
+      :io.format '~p~n', [priv]
+      csr = X509.CSR.new(priv, "/C=UA/L=Kyiv/O=SYNRC/CN=" <> user,
+         extension_request: [
+            X509.Certificate.Extension.subject_alt_name(["n2o.dev"])])
+      :io.format 'CSR: ~p~n', [csr]
+      :file.write_file(user <> ".csr", X509.CSR.to_pem(csr))
+      true = X509.CSR.valid?(csr)
+      subject = X509.CSR.subject(csr)
+      :io.format 'Subject ~p~n', [subject]
+      :io.format 'CSR ~p~n', [csr]
+      X509.Certificate.new(X509.CSR.public_key(csr), subject, ca, ca_key,
+         extensions: [subject_alt_name:
+           X509.Certificate.Extension.subject_alt_name(["n2o.dev", "erp.uno"]) ])
+      csr
+  end
+\end{lstlisting}
+
+\newpage
+Перед початком роботи CMP сервера повинен бути згенерований рутовий CA сертифікат з приватним ключем, ці два файла ми зберігаємо на диск, і у всіх подальших операціях користуємося ними. Для генерації файлів використовуємо функцію CA.CSR.ca.
+
+\begin{lstlisting}
+ def ca() do
+      ca_key = X509.PrivateKey.new_ec(:secp384r1)
+      ca = X509.Certificate.self_signed(ca_key,
+            "/C=UA/L=Kyiv/O=SYNRC/CN=CSR-CMP", template: :root_ca)
+      der = :public_key.der_encode(:ECPrivateKey, ca_key)
+      pem = :public_key.pem_encode([{:ECPrivateKey, der, :not_encrypted}])
+      :file.write_file "ca.key", pem
+      :file.write_file "ca.pem", X509.Certificate.to_pem(ca)
+      {ca_key, ca}
+  end
+
+  def read_ca() do
+      {:ok, ca_key_bin} = :file.read_file "ca.key"
+      {:ok, ca_bin} = :file.read_file "ca.pem"
+      {:ok, ca_key} = X509.PrivateKey.from_pem ca_key_bin
+      {:ok, ca} = X509.Certificate.from_pem ca_bin
+      {ca_key, ca}
+  end
+\end{lstlisting}
+
+Для одноразовоїї генерації серверних сертифікатів які обсуговують клієнтські TLS сесії можна використати наступний код.
+
+\begin{lstlisting}
+  def server(name) do
+      {ca_key, ca} = read_ca()
+      server_key = X509.PrivateKey.new_ec(:secp384r1)
+        X509.Certificate.new(X509.PublicKey.derive(server_key),
+           "/C=UA/L=Kyiv/O=SYNRC/CN=" <> name, ca, ca_key,
+           extensions: [subject_alt_name:
+              X509.Certificate.Extension.subject_alt_name(["n2o.dev", "erp.uno"]) ])
+  end
+\end{lstlisting}
+
+\newpage
+\subsection{CMS}
+
+Детально сімейство протоколів і CMS кодування описано в окремій статті присвяченій CMS Compliance. CMS кодування використовується тільки для CMC сервера, тому ми це поки висвітлювати не будемо.
+
+\subsubsection{CMP/CSR/TCP}
+
+RFC 6712, 4210. Для початку напишемо простий PKIMessage сервер.
+
+\begin{lstlisting}
+defmodule CA.CMP do
+  @moduledoc "CA/CMP TCP server."
+  require CA
+
+  def start(), do: :erlang.spawn(fn -> listen(1829) end)
+  def listen(port) do
+      {:ok, socket} = :gen_tcp.listen(port,
+        [:binary, {:packet, 0}, {:active, false}, {:reuseaddr, true}])
+      accept(socket)
+  end
+
+  def accept(socket) do
+      {:ok, fd} = :gen_tcp.accept(socket)
+      :erlang.spawn(fn -> __MODULE__.loop(fd) end)
+      accept(socket)
+  end
+
+  def loop(socket) do
+      case :gen_tcp.recv(socket, 0) do
+           {:ok, data} ->
+               [headers,body] = :string.split data, "\r\n\r\n", :all
+               {:ok,dec} = :'PKIXCMP-2009'.decode(:'PKIMessage', body)
+               {:PKIMessage, header, body, code, _extra} = dec
+               __MODULE__.message(socket, header, body, code)
+               loop(socket)
+          {:error, :closed} -> :exit
+      end
+  end
+\end{lstlisting}
+
+\newpage
+\subsubsection{PKIMessage.protection}
+
+Розберемося з полем PKIMessage.protection, в якому зберігається результат PBKDF2 алгоритма. Майте на увазі шо OpenSSL за замовчування використовує 20-байтні ключі та HMAC/SHA-1 у якості MAC функції, хоча OWF в 500 ітераціях обчислюється за допомогою OWF функції SHA-256.
+
+\subsubsection{ANSWER}
+
+Оскільки CMP сервер повинен працювати по HTTP/1.0 згідно стандартів додаємо необхідні HTTP заголовки.
+
+\begin{lstlisting}
+ def answer(socket, header, body, code) do
+      message = CA."PKIMessage"(header: header, body: body, protection: code)
+      {:ok, bytes} = :'PKIXCMP-2009'.encode(:'PKIMessage', message)
+      res =  "HTTP/1.0 200 OK\r\n"
+          <> "Server: SYNRC CA/CMP\r\n"
+          <> "Content-Type: application/pkixcmp\r\n\r\n"
+          <> :erlang.iolist_to_binary(bytes)
+      :gen_tcp.send(socket, res)
+  end
+\end{lstlisting}
+
+\subsubsection{P10CR/CP}
+
+Запускаємо сервер та генеруємо сертифікати CA та CSR користувача:
+
+\begin{lstlisting}
+$ mix deps.get
+$ iex -S mix
+> CA.CSR.ca
+> CA.CSR.csr "maxim"
+\end{lstlisting}
+
+Запускаємо клієнтський запит за допомогою OpenSSL:
+
+\begin{lstlisting}
+# openssl cmp -cmd p10cr -server localhost:1829 \
+#             -path . -srvcert ca.pem -ref cmptestp10cr \
+#             -secret pass:0000 -certout $client.pem -csr $client.csr
+\end{lstlisting}
+
+\newpage
+Пишемо функцію видачі сертифікату:
+
+\begin{lstlisting}
+def message(socket, header, {:p10cr, csr} = body, code) do
+      {:PKIHeader, pvno, from, to, messageTime, protectionAlg,
+         _senderKID, _recipKID, transactionID, senderNonce,
+         _recipNonce, _freeText, _generalInfo} = header
+      true = code == validateProtection(header, body, code)
+
+      {ca_key, ca} = CA.CSR.read_ca()
+      subject = X509.CSR.subject(csr)
+      :io.format '~p~n',[subject]
+      true = X509.CSR.valid?(CA.parseSubj(csr))
+      cert = X509.Certificate.new(X509.CSR.public_key(csr),
+         CA.CAdES.subj(subject), ca, ca_key,
+         extensions: [subject_alt_name:
+            X509.Certificate.Extension.subject_alt_name(["synrc.com"]) ])
+
+      reply = CA."CertRepMessage"(response:
+            [ CA."CertResponse"(certReqId: 0,
+              certifiedKeyPair: CA."CertifiedKeyPair"(certOrEncCert:
+                {:certificate, {:x509v3PKCert, CA.convertOTPtoPKIX(cert)}}),
+              status: CA."PKIStatusInfo"(status: 0))])
+
+      pkibody = {:cp, reply}
+      pkiheader = CA."PKIHeader"(sender: to, recipient: from, pvno: pvno,
+          recipNonce: senderNonce, transactionID: transactionID,
+          protectionAlg: protectionAlg, messageTime: messageTime)
+      answer(socket, pkiheader, pkibody,
+          validateProtection(pkiheader, pkibody, code))
+  end
+\end{lstlisting}
+
+\newpage
+\subsubsection{CERTCONF/PKICONF}
+
+\begin{lstlisting}
+def message(socket, header, {:certConf, statuses}, code) do
+      {:PKIHeader, _, from, to, _, _, _, _, _, senderNonce, _, _, _} = header
+
+      :lists.map(fn {:CertStatus,bin,no,{:PKIStatusInfo, :accepted, _, _}} ->
+          :logger.info 'CERTCONF ~p request ~p~n', [no,:binary.part(bin,0,8)]
+      end, statuses)
+
+      pkibody = {:pkiconf, :asn1_NOVALUE}
+      pkiheader = CA."PKIHeader"(header, sender: to, recipient: from,
+          recipNonce: senderNonce)
+      answer(socket, pkiheader, pkibody,
+          validateProtection(pkiheader, pkibody, code))
+  end
+\end{lstlisting}
+
+В результаті в консолі повинні спостерігати:
+
+\begin{lstlisting}
+CMP info: sending P10CR
+CMP info: received CP
+CMP info: sending CERTCONF
+CMP info: received PKICONF
+CMP info: received 1 enrolled certificate(s), saving to file 'maxim.pem'
+\end{lstlisting}
+
+\subsubsection{GENM/GENP}
+
+Далі можете написати інші функції:
+
+\begin{lstlisting}
+# openssl cmp -cmd genm -server 127.0.0.1:1829 \
+#             -recipient "/CN=CMPserver" -ref 1234 -secret pass:0000
+\end{lstlisting}
+
+\begin{lstlisting}
+def message(_socket, _header, {:genm, req} = _body, _code) do
+      :io.format 'generalMessage: ~p~n', [req]
+  end
+\end{lstlisting}
+
+\newpage
+\subsubsection{IR/IP}
+
+\begin{lstlisting}
+# openssl cmp -cmd ir -server 127.0.0.1:1829 \
+#             -path . -srvcert ca.pem -ref NewUser \
+#             -secret pass:0000 -certout maxim.pem \
+#             -newkey maxim.key -subject "/CN=maxim/O=SYNRC/ST=Kyiv/C=UA"
+\end{lstlisting}
+
+\begin{lstlisting}
+ def message(_socket, _header, {:ir, req}, _) do
+      :lists.map(fn {:CertReqMsg, req, sig, code} ->
+         :io.format 'request: ~p~n', [req]
+         :io.format 'signature: ~p~n', [sig]
+         :io.format 'code: ~p~n', [code]
+      end, req)
+  end
+\end{lstlisting}
+
+\subsubsection{CR/CP}
+
+\begin{lstlisting}
+# openssl cmp -cmd cr -server 127.0.0.1:1829 \
+#             -path . -srvcert ca.pem -ref NewUser \
+#             -secret pass:0000 -certout maxim.pem \
+#             -newkey maxim.key -subject "/CN=maxim/O=SYNRC/ST=Kyiv/C=UA"
+\end{lstlisting}
+
+\newpage
+\subsubsection{Висновки}
+
+\begin{lstlisting}
+defmodule CA do
+  use Application
+  use Supervisor
+
+  require Record
+  Enum.each(Record.extract_all(from_lib: "ca/include/PKIXCMP-2009.hrl"),
+            fn {name, definition} -> Record.defrecord(name, definition) end)
+
+  Enum.each(Record.extract_all(from_lib: "public_key/include/public_key.hrl"),
+            fn {name, definition} -> Record.defrecord(name, definition) end)
+
+  def init([]), do: {:ok, { {:one_for_one, 5, 10}, []} }
+  def start(_type, _args) do
+      :logger.add_handlers(:ldap)
+      CA.CMP.start
+      CA.CMC.start
+      :supervisor.start_link({:local, __MODULE__}, __MODULE__, [])
+  end
+\end{lstlisting}
+
+Ну PasswordBasedMac в нас є, тепер треба DHMac, але shared secret можна і в PBM засунути. Є ше Proof Of Posession (POP) — там зразу ECDSA verify. Я до речі думаю в CA тримати ключі для всіх кривих, і коли я виставлятиму сервіс то я буду виставляти його на N портах і N ключах, щоб будь який клієнтський TLS сертифікат приймався як рідний! Chat X.509 дає можливість вибирати TLS сертифікати автоматично по обраних кривих. Ви вибираєте під якими ключами сьогодні заходити. LDAP, MQTT, NS, CA — в кожного сервісу свої N портів і N серверних TLS сертифікатів. Передбачається що перший сертифікат видається DH по TCP а потім зразу всьо переходить в TLS режим і всі наступні сертифікати вже видаються всередині клієнтського TLS. При реєстрації користувач зразу доступний в LDAP якшо захотів зробити себе відкритим для пошуку. Після реєстрації пошук в директорії і френдування (обмін ключами) і поїхали чат в обгортках CAdES, CMS, ECDSA/AES — лейби біля повідомлень ПІДПИС/ШИФР.
+
+\subsection{CA, АЦСК, ЦЗО та ОЗО}
+
+Акредитований центр сертифікації ключів (АЦСК) в українській термінології та Certificate Authority (CA) в міжнародній виконують спільну задачу — управління життєвим циклом інфраструктури відкритих ключів. В Україні розбудова цієї інфраструктури спирається на Центральний засвідчувальний орган (ЦЗО), який відповідає за адміністрування кореневого сертифіката держави, та Окремі засвідчувальні органи (ОЗО), що є підлеглими сертифікаційними вузлами. ЦЗО формує довіру на національному рівні та інтегрується з міжнародними реєстрами, тоді як ОЗО забезпечують функціонування конкретних галузевих доменів.
+
+Для забезпечення цих процесів розроблено рішення \texttt{synrc/ca} — компактний та потужний засвідчувальний центр розміром усього 2000 рядків коду (\emph{Pure Elixir}). Він комплексно покриває потреби інфраструктури:
+\begin{itemize}
+    \item \textbf{Підтримка PKI-сутностей:} CA, RA, SERVER, CLIENT, HUMAN, PROGRAM.
+    \item \textbf{Адаптація державних стандартів:} Повна підтримка операцій у поліноміальному базисі Галуа $GF(2^m)$ для криптографії ДСТУ 4145-2002.
+    \item \textbf{Широкий спектр еліптичних кривих та схем:} \texttt{secp256k1}, \texttt{secp384r1}, \texttt{secp521r1} та підтримка гібридних механізмів Діффі-Геллмана (\texttt{RSA}, $GF(p)$, $GF(2^m)$).
+    \item \textbf{Документи розширеної ідентифікації (EUID):} TAXID (РНОКПП), PID (паспорт), IBAN, HIID, LOYAL.
+    \item \textbf{Мережева взаємодія:} Обслуговування запитів за протоколами CMP (TCP 8829), EST (HTTP 8047) та CMC (TCP 5318) згідно з RFC.
+\end{itemize}
+
+\section{Безпечна система доменних імен DNSSEC}
+
+Безпека маршрутизації та ідентифікації ресурсів в інтернеті критично залежить від цілісності доменної системи імен. Протокол DNSSEC (Domain Name System Security Extensions) додає криптографічні підписи до записів DNS, що унеможливлює підміну IP-адрес (cache poisoning). В інфраструктурі державних інформаційних систем впровадження DNSSEC є обов'язковим для захисту урядових доменів (\texttt{gov.ua}), гарантуючи, що звернення громадян до криптографічних сервісів є автентичними та надійно захищеними від атак перехоплення (Man-In-The-Middle).
+
+\newpage
+\section{Захищений месенджер SYNRC CHAT}
+
+Рішення \texttt{synrc/chat} демонструє застосування інфраструктурних стандартів безпеки для створення захищеного корпоративного месенджера. Він базується на імплементації протоколу \emph{Zen Crypted Buddha} та глибоко інтегрований з екосистемою Erlang/OTP (\texttt{Mnesia} для маршрутизації та зберігання повідомлень).
+
+Головною відмінністю SYNRC CHAT є наскрізне використання сертифікації:
+\begin{itemize}
+    \item Використання X.509 CMS Envelopes для управління ключами та захисту вмісту.
+    \item Імплементація ASN.1 визначених протоколів та DER бінарної серіалізації поверх класичних транспортів.
+    \item Підтримка сучасних криптографічних примітивів: X25519, X448, SECP384r1.
+    \item Вбудована інтеграція з CA через протоколи CMP та EST для автоматичного отримання та оновлення сертифікатів клієнтів за допомогою еліптичної криптографії.
+\end{itemize}
+За замовчуванням кожен пакет у месенджері підписується (Sign/Verify) та шифрується (Encrypt/Decrypt), що перетворює його на інструмент з рівнем гарантії безпеки (\emph{High Assurance}), придатний для систем розвідки та оперативного управління.
+
+Так як якісну безпечну розподілену інфраструктуру яка відповідає міжнародним і українським стандартами неможливо створити без CA/CMS, OCSP, TSP, LDAP, DNS/DNSSEC, MQTT серверів, то всі ці сервери є фундаментом продуктів SYNRC які формують перший рівень фреймворку Сохацького який умовно називається Security або Безпека Підприємства. На цьому фреймворку побудовані головні інфраструктурні елементи країни, а також реєстрові системи.
+
+Загалом, LDAP це дуже древня і надійна технологія яка присутня буквально у всіх топових компаніях, корпораціях, великих і малих бізнесах. Так, є сучасній Identity Server продукти (Hashicorp) які не підтримуються LDAP, але це поодинокі непопулярні маргінальні екземпляри. SYNRC LDAP це гарний початок для малих, середніх і великих бізнесів навести порядок в штатних розкладах, календарях, задачах, ресурсах підприємства, таких як автопарки, IoT, реєстрах персональних і промислових комп'ютерів, портів, правил ABAC, правил маршрутизації, контактних книгах користувачів, одним словом все для чого створений і де використовується LDAP.
+
+\section{Система директорії підприємства LDAP}
+
+Пройшло 13 років з того часу як компанія SYNRC випустила була свій власний брендований LDAP Directory Server на Erlang з підтримкою MongoDB. Взагалі баз які підтримують префіксний і суфіксний пошук по B-Tree таблицям не так багато, в основному це складні SQL та MongoDB. Хоча такі бази як Mnesia, LMDB, BDB-похідні (RocksDB, LevelDB) немають повнотекстового пошуку, це можна реалізувати шляхом повного траверса, що на цих базах зазвичай працює швидко (якшо на С), і ше швидше якшо база підтримує mmap (LMDB).
+
+Непереможний по перформенсу станом на зараз є OpenLDAP (LMDB), однак нам хочеться мати свою імплементацію, яку можна було би використовувати як фірмове сховище даних для директорії ресурсів підприємства згідно як міжнародних стандартів так і стандартів України. Ми захотіли відмовитися від зовнішньої бази даних (MongoDB) що ускладнює розробку, і хотілося вибрати шось вбудовуване для Erlang, вибирали між zambal/elmdb та elixir-sqlite/exqlite, переміг SQLite тому шо хотілося мати мінімальну ідіоматичну імплементацію, така шоб з одного боку була зрозуміла навіть людям без глибокої освіти в Computer Science, а з іншого боку відкривала двері в підтримку інших промислових корпоративних SQL джерел даних (Oracle, T-SQL, PostgreSQL).
+
+На відміну від попередньої версії SYNRC LDAP яка робилася під стартап PEOPLE|SYNC який ми хотіли продати PEOPLE|NET, а потім Київстар, як SyncML стартап по синхронізації контактних книг, ця версія робиться для стартапа SYNRC CHAT для розвідки. В цій версії ми значну увагу приділили сумісністю з клієнтами, такими як Apache Directory Studio, а також усіма LDIF файлами які ми змогли знайти в інтернеті. Сучасна версія \texttt{synrc/ldap} реалізована всього у 300 рядках коду на Elixir, але при цьому забезпечує абсолютну сумісність із низкою фундаментальних IETF RFC (2849, 3296, 3671-3673, 4510-4518, 5480). Архітектура підтримує гаряче перемикання бекендів зберігання даних: SQLITE, LMDB та MONGODB, задовольняючи як вимоги до вбудовуваних рішень (in-memory SQLite), так і високонавантажених кластерів (LMDB).
+
+
+\subsection{Вертикальні бази}
+
+Я вперше познайомився з вертикальними базами коли працював в International Land Systems, Inc. Тоді в нас була система документообігу на вертикальній базі, які дуже часто використовуються в системах документообігу. Наприклад таку схему даних використовує Alfresco, а також SQL розширення для зберігання XML у Oracle та інших SQL базах.
+
+Основна ідея вертикальних баз, або схем, полягає в тому шо об'єкти зберігаються не у плоских таблицях де кожен атрибут це окрема колонка, а всі атрибути та їх значення зберігаються в трьох колонках, де перша — це номер об'єкта, друга — ім'я атрибута, а третя — значення атрибуту. Це дозволяє тримати розріжені (атрибутами) об'єкти, та певним чином спростити управління базою. Всі наївні імплементації вертикальних баз страждаються по перформенсу, тому потрібно бути обрежним. Наприклад, ми не рекомендуємо використовувати SYNRC LDAP де об'єм директоріє більше ніж пів мільйона співробітників, наприклад для Walmart. Для великих корпорацій краще брати OpenLDAP.
+
+\subsection{Предметна область}
+
+\subsubsection{Netscape, Sun DS, 389 DS, Oracle}
+
+PEOPLE|SYNC стартап SYNRC 2007 року підтримував також роботу з Sun Directory Server. Його родовід бере початок від сервера OpenLDAP, в 1996 року стартував форк Netscape Directory Server. Після банкротства Netscape право на код викупила компанія AOL, яка ліцензувала право на розробку компанії Sun Microsystems, зберігши право на код. В 2009 році Sun DS був переіменований на 389 Directory Server, а Oracle почала свій форк Sun DS під назвою Oracle Directory Server. 389 Directory Server також можна зустріти під іменами Fedora DS та Red Hat DS, оскільки це основні донори проекту.
+
+\subsubsection{Microsoft Active Directory}
+
+Традиційно кожна корпорація займається розробкою свого LDAP сервера, компанія Microsoft випустила свій перший в 1999 році. Active Directory у якості бекенда використовує Extensible Storage Engine ESENT.DLL, також відомий як JetDB, на яцій побудований також Windows Registry, Microsoft Access, та можливо і інші внутрішні продукти компанії Microsoft.
+
+\subsubsection{OpenLDAP, Apple Open Directory}
+
+Були часи, що OpenLDAP був вбудований в кожну версію Mac OS X, але Apple почала розвивати свій власний Open Directory Server, оскільки безпека кожної корпорації полягає у тому числі в брендованих LDAP серверах під свої потреби та політику розробки..
+
+\subsection{TCP сервер}
+
+Я неодноразово використовував написання LDAP серверу у своїх Erlang курсах, а також на конференціях у якості майстер-класу по програмуванню, де ми з аудиторією пишемо всі разом LDAP сервер за 45 хвилин з моїми коментарями та інтеракцією. Рекорд на відео був поставлений 30 хвилин, так шо це не прікол, я дійсню MVP всіх продуктів SYNRC можу написати за 30 хвилин кожен. Власне це є одним з критеріїв SYNRC, що тісно переплетено з показником LOC. Ця версія SYNRC LDAP з підтримкою SQLite займає 300 рядків коду і проходить всі LDIF тест сюїти.
+
+Перед початком поставте Erlang та його Erlang AST фронтенд Elixir. Ставити можна завжди тільки Elixir, Erlang піде як залежність в будь-якому пекедж менеджері.
+
+\begin{lstlisting}
+# apt install elixir
+\end{lstlisting}
+
+Створюємо папку проекту і в ній створюємо файл mix.exs для уніфікованого депенденсі і пекадж менеджера Erlang і Elixir мов, mix.
+
+Крім класичної прелюдії mix.exs, нам цікавий параметр exqlite, це ім'я бібліотеки пакетного менеджера hex.pm, яка містить в собі 8-мегабайтний Сі файл, і FFI обгортку для нього яка в Erlang світі називається NIF.
+
+\begin{lstlisting}
+defmodule LDAP.Mixfile do
+  use Mix.Project
+  def project(), do:
+    [ app: :ldap, version: "8.7.20", deps: deps(),
+      releases: [ ldap: [ include_executables_for: [:unix],
+                          cookie: "SYNRC:LDAP" ] ] ]
+  def application(), do:
+    [ mod: {LDAP, []},
+      extra_applications: [ :eldap, :asn1 ] ] end
+  def deps(), do:
+    [ {:exqlite, "~> 0.13.14"} ]
+end
+\end{lstlisting}
+
+Далі пишемо найпростіший ідіоматичний Erlang TCP сервер. Довгий час я використовував класичні, розширені версії на недокументованій функції prim\_inet:async\_accept, такий як 5HT/tcp, але зрештою відмовився так як не вбачаю в надмірному контролі семантики процесу ніяких перевах, для нас діє така сама семантика як в вебі, відвалився клієнт і нічого страшного, нікому його контроль на рівні сигналінгу не потрібен. Ми не слідкуємо за LDAP клієнтами!
+
+Якшо в config/config.exs немає параметра ldap:intance то створюється нова SQLite база по рендомному хешу з налаштуваннями по перформансу: 1) відключений журнал, 2) ін-меморі буфер, 3) великий кеш, 4) примусова синхронність; які визначаються відповідними SQL прагмами.
+
+Архітектура TCP сервера відповідає POSIX, ми створюємо лістенер, який на кожне вхідне TCP повідомлення стартує акцептори, які стартують некотрольований Erlang процес — лупер, який обслуговує вхідне TCP повідомлення. Для декодування використовується згенерований ASN.1 компілятором енкодер/декодер LDAP протоколу по файлу LDAP.ans1, який можна знайти прямо в RFC IETF на нормативно-правових актах України.
+
+\begin{lstlisting}
+# erlc LADP.asn1
+\end{lstlisting}
+
+Після геренації покладіть файли в LDAP.erl та LDAP.hrl в папку src проекту. А в папці lib створіть обгортку для згенерованих рекордів за допомогою Record,
+
+\begin{lstlisting}
+defmodule DS do
+    require Record
+    Enum.each(Record.extract_all(from_lib: "ldap/include/LDAP.hrl"),
+             fn {name, definition} -> Record.defrecord(name, definition) end)
+end
+\end{lstlisting}
+
+а також створіть козу Erlang аплікейшина в Elixir синтаксисі, файл ldap.ex:
+
+\begin{lstlisting}
+defmodule LDAP do
+   import Exqlite.Sqlite3
+   require DS
+   use Application
+   use Supervisor
+   def code(), do: :binary.encode_hex(:crypto.strong_rand_bytes(8))
+   def init([]), do: {:ok, { {:one_for_one, 5, 10}, []} }
+   def start(_, _) do
+       :logger.add_handlers(:ldap)
+       :supervisor.start_link({:local, LDAP}, LDAP, [])
+   end
+   def initDB(path) do
+       {:ok, conn} = open(path)
+       :logger.info 'SYNRC LDAP Instance: ~p', [path]
+       :logger.info 'SYNRC LDAP Connection: ~p', [conn]
+       execute(conn, "create table ldap (rdn text,att text,val binary)")
+       :ok = execute(conn, "PRAGMA journal_mode = OFF;")
+       :ok = execute(conn, "PRAGMA temp_store = MEMORY;")
+       :ok = execute(conn, "PRAGMA cache_size = 1000000;")
+       :ok = execute(conn, "PRAGMA synchronous = 0;")
+       conn
+   end
+   def listen(port,path) do
+       conn = initDB(path)
+       {:ok, socket} = :gen_tcp.listen(port,
+         [:binary, {:packet, 0}, {:active, false}, {:reuseaddr, true}])
+       accept(socket,conn)
+   end
+   def accept(socket,conn) do
+       {:ok, fd} = :gen_tcp.accept(socket)
+       :erlang.spawn(fn -> loop(fd, conn) end)
+       accept(socket,conn)
+   end
+\end{lstlisting}
+
+\begin{lstlisting}
+   def start() do
+       :erlang.spawn(fn ->
+           listen(:application.get_env(:ldap,:port,1489),
+                  :application.get_env(:ldap,:instance,code())) end)
+   end
+   def answer(response, no, op, socket) do
+       message = DS."LDAPMessage"(messageID: no, protocolOp: {op, response})
+       {:ok, bytes} = :'LDAP'.encode(:'LDAPMessage', message)
+       send = :gen_tcp.send(socket, :erlang.iolist_to_binary(bytes))
+   end
+   def loop(socket, db) do
+       case :gen_tcp.recv(socket, 0) do
+            {:ok, data} ->
+                 case :'LDAP'.decode(:'LDAPMessage',data) do
+                      {:ok,decoded} ->
+                          {:'LDAPMessage', no, payload, _} = decoded
+                          message(no, socket, payload, db)
+                          loop(socket, db)
+                      {:error,reason} ->
+                         :logger.error 'ERROR: ~p', [reason]
+                        :exit
+                 end
+            {:error, :closed} -> :exit
+       end
+   end
+end
+\end{lstlisting}
+
+Цей сервер вже може відповідати на запити ldapmodify але буде їх блокувати так як поки що не відповідає належним чином. Запустити програму можна класичними мантрами Elixir, а в Elixir Shell виконати функцію запуску TCP лістенера, для цього перевпевніться що дефаултний порт 1389 вільний.
+
+\begin{lstlisting}
+# mix deps.get
+# iex -S mix
+> LDAP.start
+#PID<0.311.0>
+iex(2)>
+04:58:26.030 [info]  SYNRC LDAP Instance: "416C4C41ED2C7060"
+04:58:26.030 [info]  SYNRC LDAP Connection: #Reference<0.1146704550.396492828.212314>
+iex(3)>
+nil
+\end{lstlisting}
+
+\newpage
+\subsubsection{BIND}
+
+Для удачного демо я раджу починати з функції BIND. Для цього створимо в базі записи по яким будемо аутентифікуватися.
+
+\begin{lstlisting}
+  createDN(conn, "dc=synrc,dc=com",
+      [ attr("dc",["synrc"]), attr("objectClass",["top","domain"]) ])
+  createDN(conn, "ou=schema",
+      [ attr("ou",["schema"]), attr("objectClass",["top","domain"]) ])
+  createDN(conn, "cn=tonpa,dc=synrc,dc=com",
+      [ attr("cn",["tonpa"]),attr("uid",["1000"]),
+        attr("objectClass",["inetOrgPerson","posixAccount"]) ])
+  createDN(conn, "cn=rocco,dc=synrc,dc=com",
+      [ attr("cn",["rocco"]),attr("uid",["1001"]),
+        attr("objectClass",["inetOrgPerson","posixAccount"]) ])
+  createDN(conn, "cn=admin,dc=synrc,dc=com",
+      [ attr("rootpw",["secret"]), attr("cn",["admin"]),
+        attr("objectClass",["inetOrgPerson"]) ])
+
+  def appendNotEmpty([]),  do: []
+  def appendNotEmpty(res) do
+      res ++ case res do [] -> [] ; _ -> ',' end
+  end
+  def createDN(db, dn, attributes) do
+      norm  = :lists.foldr(fn {:PartialAttribute, att, vals}, acc ->
+              :lists.map(fn val -> [qdn(dn),att,val] end, vals) ++
+                                   acc end, [], attributes)
+      {_,p} = :lists.foldr(fn x, {acc,res} ->
+               {acc + length(x), appendNotEmpty(res)
+                ++ :io_lib.format('(?~p,?~p,?~p)', [acc+1,acc+2,acc+3])}
+              end, {0,[]}, norm)
+      {:ok, statement} = prepare(db,
+            'insert into ldap (rdn,att,val) values ' ++ p ++ '')
+      :ok = bind(db, statement, :lists.flatten(norm))
+      :done = step(db, statement)
+  end
+  def message(no, socket, {:bindRequest, {_,_,bindDN,{:simple, password}}}, db) do
+      sql = "select rdn, att from ldap where " <>
+            "rdn = ?1 and att = 'rootpw' and val = ?2"
+      {:ok, statement} = prepare db, sql
+      bind(db, statement, [hash(qdn(bindDN)),password])
+      case step(db, statement) do
+          :done ->  code = :invalidCredentials
+                    :logger.error 'BIND Error: ~p', [code]
+                    response = DS."BindResponse"(resultCode: code,
+                        matchedDN: "", diagnosticMessage: 'ERROR')
+                    answer(response, no, :bindResponse, socket)
+           {:row,[dn,password]} ->
+                    :logger.info 'BIND DN: ~p', [bindDN]
+                    response = DS."BindResponse"(resultCode: :success,
+                         matchedDN: "", diagnosticMessage: 'OK')
+                    answer(response, no, :bindResponse, socket)
+      end
+  end
+  def message(no, socket, {:bindRequest, {_,_,bindDN,creds}}, db) do
+      code = :authMethodNotSupported
+      :logger.info 'BIND ERROR: ~p', [code]
+      response = DS."BindResponse"(resultCode: code,
+         matchedDN: "", diagnosticMessage: 'ERROR')
+      answer(response, no, :bindResponse, socket)
+  end
+\end{lstlisting}
+
+\newpage
+\subsubsection{ADD}
+
+\begin{lstlisting}
+def message(no, socket, {:addRequest, {_,dn, attributes}}, db) do
+      {:ok, statement} = prepare(db, "select rdn, att, val from ldap where rdn = ?1")
+      bind(db, statement, [hash(qdn(dn))])
+      case step(db, statement) do
+            {:row, _} ->
+                :logger.info 'ADD ERROR: ~p', [dn]
+                resp = DS.'LDAPResult'(resultCode: :entryAlreadyExists,
+                       matchedDN: dn, diagnosticMessage: 'ERROR')
+                answer(resp, no, :addResponse, socket)
+            :done ->
+                createDN(db, dn, attributes)
+                :logger.info 'ADD DN: ~p', [dn]
+                resp = DS.'LDAPResult'(resultCode: :success,
+                       matchedDN: dn, diagnosticMessage: 'OK')
+                answer(resp, no, :addResponse, socket)
+       end
+   end
+\end{lstlisting}
+
+\newpage
+\subsubsection{DSE}
+
+Якшо тестувати наш прото-сервер не ldapmodify, а Apache Directory Studio, то вона початково буде питати так званий Root DSE об'єкт запитуючи після bind, search реквест з пустим DN. Для коректної репрезентації спеціалізованої інформації ми прошиємо стандартну відповідь на цей запит для нашого фірмового SYNRC LDAP сервера версії 2.0 який підтримує протокол LDAPv3. Він підтримує SIMPLE спосіб аунтентифікації тільки (поки що) і два іменних простори ключів: dc=synrc,dc=com ou=schema, як виманає декілька RFC. Це всьо пакується у LDAPMessage і відправляється на клієнт функцією answer.
+
+\begin{lstlisting}
+def attr(k,v),      do: {:PartialAttribute, k, v}
+   def node(dn,attrs), do: {:SearchResultEntry, dn, attrs}
+
+   def message(no, socket,
+       {:searchRequest, {_,"",scope,_,limit,_,_,filter,attributes}}, db) do
+
+       :logger.info 'DSE Scope: ~p', [scope]
+       :logger.info 'DSE Filter: ~p', [filter]
+       :logger.info 'DSE Attr: ~p', [attributes]
+
+       :lists.map(fn response -> answer(response,no,:searchResEntry,socket) end,
+         [ node("", [
+              attr("supportedLDAPVersion", ['3']),
+              attr("namingContexts", ['dc=synrc,dc=com','ou=schema']),
+              attr("supportedControl", ['1.3.6.1.4.1.4203.1.10.1']),
+              attr("supportedExtensions", ['1.3.6.1.4.1.4203.1.11.3']),
+              attr("altServer", ['ldap.synrc.com']),
+              attr("subschemaSubentry", ['ou=schema']),
+              attr("vendorName", ['SYNRC LDAP']),
+              attr("vendorVersion", ['2.0']),
+              attr("supportedSASLMechanisms", ['SIMPLE']),
+              attr("objectClass", ['top','extensibleObject']),
+              attr("entryUUID", [code()])]),
+              attr("supportedFeatures", [ '1.3.6.1.1.14',
+                                          '1.3.6.1.4.1.4203.1.5.1'])
+         ])
+
+       resp = DS.'LDAPResult'(resultCode: :success, matchedDN: "", diagnosticMessage: 'OK')
+       answer(resp, no, :searchResDone,socket)
+   end
+\end{lstlisting}
+
+Після цього зможуть розгортати в інтерфейсі дерево об'єктів.
+
+\newpage
+\subsubsection{MODIFY}
+
+\begin{lstlisting}
+   def modifyDN(db, dn, attributes), do:
+       :lists.map(fn {_, :add, x}     -> modifyAdd(db,dn,x)
+                     {_, :replace, x} -> modifyReplace(db,dn,x)
+                     {_, :delete, x}  -> modifyDelete(db,dn,x) end, attributes)
+
+   def modifyAdd(db, dn, {_,att,[val]}) do
+       {:ok, st} = prepare(db, "insert into ldap (rdn,att,val) values (?1,?2,?3)")
+       :logger.info 'MOD ADD RDN: ~p', [hash(qdn(dn))]
+       bind(db, st, [hash(qdn(dn)),att,val])
+       step(db,st)
+   end
+
+   def modifyReplace(db, dn, {_,att,[val]}) do
+       {:ok, st} = prepare(db, "update ldap set val = ?1 where rdn = ?2 and att = ?3")
+       :logger.info 'MOD REPLACE RDN: ~p', [hash(qdn(dn))]
+       bind(db, st, [val,hash(qdn(dn)),att])
+       step(db,st)
+   end
+
+   def modifyDelete(db, dn, {_,att,_}) do
+       {:ok, st} = prepare(db, "delete from ldap where rdn = ?1 and att = ?2")
+       :logger.info 'MOD DEL RDN: ~p', [hash(qdn(dn))]
+       bind(db, st, [hash(qdn(dn)),att])
+       res = step(db,st)
+       collect0(db,st,res,[])
+   end
+
+   def message(no, socket, {:modifyRequest, {_,dn, attributes}}, db) do
+      {:ok, statement} = prepare(db, "select rdn, att, val from ldap where rdn = ?1")
+      bind(db, statement, [hash(qdn(dn))])
+      case step(db, statement) do
+           {:row, _} -> :logger.info 'MOD DN: ~p', [dn]
+                        modifyDN(db, dn, attributes)
+                        resp = DS.'LDAPResult'(resultCode: :success,
+                            matchedDN: dn, diagnosticMessage: 'OK')
+                        answer(resp, no, :modifyResponse, socket)
+           :done ->     :logger.info 'MOD ERROR: ~p', [dn]
+                        resp = DS.'LDAPResult'(resultCode: :noSuchObject,
+                           matchedDN: dn, diagnosticMessage: 'ERROR')
+                        answer(resp, no, :modifyResponse, socket)
+      end
+   end
+\end{lstlisting}
+
+\newpage
+\subsubsection{MODIFY DN}
+
+\begin{lstlisting}
+   def modifyRDN(socket, no, db, dn, new, del) do
+       {:ok, st} = prepare(db, "update ldap set rdn = ?1 where rdn = ?2")
+       :logger.info 'MODIFY RDN UPDATE: ~p', [hash(qdn(dn))]
+       bind(db, st, [new,hash(qdn(dn))])
+       step(db,st)
+   end
+
+   def message(no, socket, {:modDNRequest, {_,dn,new,del,_}}, db) do
+       :logger.info 'MOD RDN DN: ~p', [dn]
+       :logger.info 'MOD RDN newRDN: ~p', [new]
+       :logger.info 'MOD RDN deleteOldRDN: ~p', [del]
+       modifyRDN(socket, no, db, dn, new, del)
+       resp = DS.'LDAPResult'(resultCode: :success,
+           matchedDN: dn, diagnosticMessage: 'OK')
+       answer(resp, no, :modDNResponse, socket)
+   end
+\end{lstlisting}
+
+\subsubsection{DELETE}
+
+\begin{lstlisting}
+def deleteDN(db, dn) do
+       {:ok, st} = prepare(db, "delete from ldap where rdn = ?1")
+       bind(db, st, [hash(qdn(dn))])
+       res = step(db,st)
+       collect0(db,st,res,[])
+   end
+
+   def message(no, socket, {:delRequest, dn}, db) do
+       :logger.info 'DEL DN: ~p', [dn]
+       deleteDN(db, dn)
+       resp = DS.'LDAPResult'(resultCode: :success, matchedDN: dn, diagnosticMessage: 'OK')
+       answer(resp, no, :delResponse, socket)
+   end
+\end{lstlisting}
+
+\subsubsection{SEARCH}
+
+Операція \texttt{search} є фундаментальною базою для читання та вибірки даних у директорії LDAP. Вона підтримує складні фільтри, які визначаються рекурсивним типом \texttt{Filter}. У цій системі запит парситься та транслюється у внутрішнє представлення, яке у свою чергу генерує оптимізовані SQL-запити. Підтримуються всі стандартні оператори фільтрації: \texttt{present}, \texttt{equalityMatch}, \texttt{substrings}, а також логічні оператори \texttt{AND}, \texttt{OR} та \texttt{NOT}, що дозволяє дуже гнучко шукати записи у корпоративному дереві та делегувати швидкодію індексам підлеглої реляційної СКБД.
+
+\subsubsection{COMPARE}
+
+\begin{lstlisting}
+def message(no, socket, {:compareRequest, {_,dn, assertion}}, db) do
+       :logger.info 'CMP DN: ~p', [dn]
+       :logger.info 'CMP Assertion: ~p', [assertion]
+       result = compareDN(db, db, assertion)
+       resp = DS.'LDAPResult'(resultCode: :success, matchedDN: dn, diagnosticMessage: 'OK')
+       answer(resp, no, :compareResponse, socket)
+   end
+\end{lstlisting}
+
+\subsubsection{ABANDON/UNBIND}
+
+\begin{lstlisting}
+   def message(no, socket, {:abandonRequest, _}, db), do: :gen_tcp.close(socket)
+   def message(no, socket, {:unbindRequest,  _}, db), do: :gen_tcp.close(socket)
+\end{lstlisting}
+
+\subsection{Висновки}
+
+У цій статті ми переконалися, що можливо написати LDAP сервер на 300 рядків, а також що SQLite підходить для малих підприємств у якості сховища даних. Ми взяли повний контроль над продуктом, який не містить залежностей, що функціонують за межами контексту віртуальної машини, а також спростили процес розробки більш складних систем на базі цього продукту. Продукт буде корисний для апробації в підприємства зі стандартизованими та уніфікованими політиками управління ресурсами підприємствах, в телекомунікаційних продуктах, комунікаторах, месенджерах, тощо.
+
+\begin{lstlisting}
+\end{lstlisting}
+
+\newpage
+\section{ASN.1 Компілятор}
+
+Питання вибору серіалізатора залежить від типу інфраструктури в компанії. Якшо ми говоримо про гомогенні інтерфейси та бібліотеки прикладного програмування то зазвичай вони достатньо розвинені аби автоматично генерувати структури для основних мов програмування для яких анонсується серіалізатор. Хоча формально йдеться про AST трансформацію з мови визначення типів структур в цільову мову програмування, такі системи називаються компіляторами мови визначення даних.
+
+У світі існує багато рантаймів, і кожен з них пропонує свій рідний серіалізатор, який в незмінному вигляді представляє дані які циркулюють в рантаймі або віртуальній машині. Так на мовах .NET, Java, Haskell, Erlang є такі природні серіалазотори. В гомогенних архітектурах, де все побудовано навколо однії мови програмування, прийнято використовувати цей серіалізатор як основний для всіх сервісів написаних навіть на різних мовах програмування, так як BERT-RPC протокол який використовувався в Github.
+
+Окремо виділяються формати які не прив'язані до однієї мови, а пропонуються як універсальні серіалізатори, такі як IDL COM/DCOM, ASN.1 DER, Erlang BERT/ETF, GRPC Gproto, SOAP XML/WBXML, та інші бінарні мови і серіалізатори.
+
+Всі сертифікати в браузері, SSH ключі, PGP/GPG ключі, закриті і відкриті конверти, криптографічні повідомлення CMS, протоколи видачі сертифікатів, LDAP директорія та ще багато іншого включачи GSM/LTE та майже всі телекомунікаційні повідомлення визначаються за допомогою ASN.1.
+
+\subsection{Компілятори}
+
+Я хотів зробити огляд ASN.1 компіляторів, але з представлених безкоштовних жоден крім Erlang-ового не компілює повний набір ASN.1 файлів проекта SYNRC CA. Ні C-шний кацапський який використовується в Apple ASN1C, Ні F\#-повий ASN1SCC. Залишається сподіватися, що генератор С-шного коду Фабріса Белара ASN1CC зможе це зробити однак з огляду на його клієнтів навряд чи ми про це дізнаємося, так шоб прямо розказати в блозі.
+
+Я подивився на помилки представлених на сайті ITU компіляторів і складається враження що сумісність з самим ж файлами дефініціями ITU ніхто не перевіряє навіть мануально. Просто вивішують в залікову таблицю будь-кого хто успішно розпарсав сабсет ASN.1 і згенерував якийсь граничні імплементація для свого випадку.
+
+\subsection{Тестовий набір файлів}
+
+Ось текстовий сет з сайту ITU яким я перевіряв компілятори.
+
+\renewcommand{\footnotesize}{\tiny}
+
+\begin{lstlisting}
+AESKeyWrapWithPad-02.asn1
+AESKeyWrapWithPad-88.asn1
+ANSI-X9-42.asn1
+ANSI-X9-62.asn1
+AlgorithmInformation-2009.asn1
+AttributeCertificateVersion1-2009.asn1
+AuthenticationFramework.asn1
+BasicAccessControl.asn1
+CHAT.asn1
+CMS-AES-CCM-and-AES-GCM-2009.asn1
+CMSAesRsaesOaep-2009.asn1
+CMSECCAlgs-2009-02.asn1
+CMSECDHAlgs-2017.asn1
+CertificateExtensions.asn1
+Character-Coding-Attributes.asn1
+Character-Presentation-Attributes.asn1
+Character-Profile-Attributes.asn1
+Colour-Attributes.asn1
+CryptographicMessageSyntax-2009.asn1
+CryptographicMessageSyntax-2010.asn1
+CryptographicMessageSyntaxAlgorithms-2009.asn1
+DOR-definition.asn1
+Default-Value-Lists.asn1
+DirectoryAbstractService.asn1
+Document-Profile-Descriptor.asn1
+EnrollmentMessageSyntax-2009.asn1
+ExtendedSecurityServices-2009.asn1
+External-References.asn1
+Geo-Gr-Coding-Attributes.asn1
+Geo-Gr-Presentation-Attributes.asn1
+Geo-Gr-Profile-Attributes.asn1
+ISO-STANDARD-9541-FONT-ATTRIBUTE-SET.asn1
+ISO9541-SN.asn1
+Identifiers-and-Expressions.asn1
+InformationFramework.asn1
+KEP.asn1
+LDAP.asn1
+Layout-Descriptors.asn1
+Link-Descriptors.asn1
+Location-Expressions.asn1
+Logical-Descriptors.asn1
+MultipleSignatures-2010.asn1
+OCSP.asn1
+PKCS-10.asn1
+PKCS-12.asn1
+PKCS-5.asn1
+PKCS-7.asn1
+PKCS-8.asn1
+PKCS-9.asn1
+PKIX-CommonTypes-2009.asn1
+PKIX-X400Address-2009.asn1
+PKIX1-PSS-OAEP-Algorithms-2009.asn1
+PKIX1Explicit-2009.asn1
+PKIX1Explicit88.asn1
+PKIX1Implicit-2009.asn1
+PKIX1Implicit88.asn1
+PKIXAlgs-2009.asn1
+PKIXAttributeCertificate-2009.asn1
+PKIXCMP-2009.asn1
+PKIXCRMF-2009.asn1
+Raster-Gr-Coding-Attributes.asn1
+Raster-Gr-Presentation-Attributes.asn1
+Raster-Gr-Profile-Attributes.asn1
+SMIMESymmetricKeyDistribution-2009.asn1
+SecureMimeMessageV3dot1-2009.asn1
+\end{lstlisting}
+\renewcommand{\footnotesize}{\normal}
+
+\newpage
+\subsection{Фірмові і стандартні}
+
+Тут розглядаються фірмова бібліотека RPC та стандартна ASN1X компанії SYNRC для бінарної серіалізації внутрішнього бінарного представлення віртуальної машини Erlang та бінарного представлення сімейства розміточних форматів і їх парсерів BER, DER, PER, кодери і декодери яких генеруються з мови специфікацій та протоколів ASN.1.
+
+\subsubsection{Ericsson Erlang BERT/ETF}
+
+Серед фірмових можна відзначити Ericsson Binary Erlang Term Format, який використовується в промисловості більше 10 років починаючи з Github. SYNRC використовує бібліотеку SYNRC RPC яка генерує кодери і декодери (API SDK) для будь яких Erlang структур на наступні мови програмування та мови визначення протоколів:\\
+\\
+\noindent 1) IDL/COM; \\
+2) JavaScript; \\
+3) Google gproto; \\
+4) Apple Swift; \\
+5) Erlang validation. \\
+
+Завдяки генератору BERT парсерів SYNRC RPC компанія NYNJA змогла уніфіковано працювати з об'єктами системи в двох форматах BERT і GPROTO і залишилася після апробації на BERT.
+
+
+\subsubsection{ITU IETF ASN.1 BER/DER/PER Apple/Microsoft/OpenSSL}
+
+До стандартних можна віднести бінарні формати для серіалізації сертифікатів та обгорток криптографічних ключів які використовуються в PKI X.509. Завдяки промисловому і повному компілятору ASN.1 у складі Erlang/OTP ми маємо змогу побудувати повністю API SDK інфраструктуру на Erlang мінімальними зусиллями не гублячи сумісність з фірмовим форматом BERT/ETF, так як він все одно використовується в середині віртуальної машини після конвертації. Так була продемонстрована сумісність протоколів CHAT BERT (HRL) та результату ASN.1 компіляції CHAT BER.\\
+\\
+\noindent 1) ASN1C; \\
+2) ASN1CC; \\
+3) ASN1SCC; \\
+4) ASN1SCG (Swift Code Generation); \\
+5) ASN1JCG (Java Code Generation). \\
+
+В даній статті розказується про один з двох генераторів коду DER/BER/PER кодерів і декодерів SYNRC для мови Swift — ASN1SCG, який генерує код невідмінний від схеми кодування і декодування яку Apple пропонує в свої бібліотеках asn1, crypto та certificates.
+
+\subsubsection{Google gproto/GRPC}
+
+В першу чергу цей формат набув популярності на пристроях Apple, так як протокол основного AP сховища Apple Cassandra використовує цей формат. Значною проблему є переускладеність кодогенератора і інфраструктури компілятора.
+
+\subsection{Бібліотеки Apple}
+
+Починаючи з вести 2020 року, коли Apple анонсувала CryptoKit для X.509 інфраструктури зокрема, компанія випустила наступні бібліотеки, які показується стандартний механізм який Apple передбачає для Swift авторів як вони мусять користуватися PKI X.509 обгортками, сертифікатами, ключами та взагалі будь-якими ASN.1 протоколами. \\
+\\
+\noindent 1) apple/swift-asn1\\
+2) apple/swift-crypto\\
+3) apple/swift-certificates\\
+
+SYNRC ASN1SCG — це ASN.1 компілятор в мову Swift з використанням схеми кодування Apple, написаний на мові Erlang компанією SYNRC. Тут показуються приклади генерації кодерів і декодерів для деяких структур сімейства PKI X.509 в форматі прикладів Apple (насправді відрізнити конкретно ці неможливо).
+
+\subsection{Техніка компіляції}
+
+Оскільки мова ASN.1 має чіткий синтаксис побудова її компілятора може базуватися на BNF парсер генераторах таких як lexx/yacc або їх аналонах на інших мовах програмування leex/yexx (Erlang), Citron (Swift), ANTLR (Java). Загалом нас цікавитимуть LL, LR, LALR, SLR. Але найшвидші парсери це потокові бінарні, Erlang-овий саме такий і займає 2000 рядків разом з токенайзером на 100 рядків.
+
+Технічно, ASN.1 компілятори є AST транформаціями з вихідної мови в цільову, в даному випадку з Erlang шляхом Elixir в Swift. Основне завдання при цьому побудувати базовий розміточний парсер у вигляді мікро-бібліотеки, яку буде використовувати як хелпери згенерований код. В нашому випадку такою бібліотекою є swift-asn1 від Apple тому це теж нам полегшує завдання. Таким чином наш згенерований код сумісний з усіма екстеншинами з бібліотек Apple.
+
+\subsubsection{Розміточний парсер}
+
+В нас в ЗОШ №5 вчився математик Сергій Книш, який закінчив МГУ в 19 і поїхав викладати в Каліфорнію. Я коли був в Сан-Франціско заходив до нього в гості і він розказува таку байку, а він на байки багатий бо він писав мережевий протокол IPX для шкільного комплексу Корветів і БК-0010 шоб можна було в іграшки по мережі гратися і міг в памʼяті сумувати ряди з точністю до всіх розрядів калькулятора. Так от він розказував шо коли ше тільки починався С++, то таблицю віртуальних методів використовували як масив який індексувався байткодом операції, і коли ви читали байт зі стріма ви простоо викликали функцію з цим індексом в таблиці віртуальнихх методів для десеріалізації цього типу даних. Хоча це байка але в ній є зерно істини, розрізати десеріалізатор і серіалізатор на примітивні функції, кожна з яких займається своїм байт-кодом — техніка, що притаманна багатьом бібліотечним парсерам на мовах програмування C++, Rust, Swift, Java, тощо. Приблизно така сама архітектура і у розміточного TLV парсера Apple.
+
+\subsubsection{Послідовності та множини}
+
+Типи \texttt{SEQUENCE} та \texttt{SET} відіграють роль структур. При їх розборі компілятор генерує код, який обробляє кожен елемент об'єкта або строго по черзі (для \texttt{SEQUENCE}), або у довільному порядку (для \texttt{SET}). Враховуючи опціональність тегів, десеріалізатор повинен гнучко опрацьовувати пропущені поля, спираючись на контекстно-залежні теги.
+
+\subsubsection{Рекурсивні суми та їх теги}
+
+Перше шо ви повинні зробити перед тим як публікувати ASN.1 компілятор на сайті ITU.INT це пересвідчитися шо він сприймає класичне визначення рекурсивного списку з книжки Олівʼє Дебюсона [6].
+
+\subsubsection{Імплісіти, експлісіти та опшинали}
+
+Якщо ви хочете позначити поле додатковою інформацією, такою як можливість приймати значення відсутності (\texttt{OPTIONAL}) та вид тегування (\texttt{IMPLICIT} або \texttt{EXPLICIT}), необхідно сформувати правильний контекст розбору. Такі теги модифікують оригінальний універсальний тег об'єкта, вимагаючи від парсера правильної маршрутизації бат-коду під час десеріалізації потоку.
+
+\subsubsection{Переліки та цілочисельні переліки}
+
+Типи \texttt{ENUMERATED} на макрорівні зіставляються зі стандартними алгебраїчними типами в мові програмування. Компілятор гарантує, що значення, закодоване як ціле число, перетворюється на строгу типізацію цільової мови (наприклад, \texttt{enum} у Swift або Erlang атоми).
+
+\subsubsection{Тензори}
+
+Масиви даних (тензори) в моделі ASN.1 кодуються як \texttt{SEQUENCE OF} або \texttt{SET OF}. Компілятор перетворює їх у списки (List) або масиви (Array). Оскільки тип може містити довільну кількість елементів, десеріалізація вимагає циклічного читання структури до досягнення маркеру кінця інформаційного потоку.
+
+\newpage
+\subsection{Висновки}
+
+Найкращий спосіб вивчити ASN.1 — це написати ASN.1 компілятор. Був детально проаналізований X.680 стандарт та знайдені конкуретні переваги над іншими компіляторами: 1) більшість не підтримують рекурсивні типи даних, 2) більшість не підримують повністю всі ASN.1 файли ITU.INT, 3) більшість не підтримують тензори. Наш компілятор зроблений таким, що усуває ці недоліки. Що стосується швидкості парсерів Apple для мови Swift, то вони в середньому в два рази повільніші за fast\_ber парсерів на C++ і в 2 рази швидші за парсери asn1c.
+
+Реалізація використовує потоковий бінарний парсер ASN.1 файлів на 2000 рядків коду разом з токенайзером, що йдуть в дистрибутиві Erlang/OTP в аплікейшині asn1, а сам компілятор виконаний як script файл для мови Elixir на 600 рядків і не потребує компіляції. Найближчі конкуренти asn1c і asn1іcc займають 25000 рядків.
+
+Доведення коректності компілятора має комбінаторний вигляд, а головна теорема стверджує шо за 2 проходи, можна повністю скомпілювати ASN.1 X.680 стандарт в будь яку мову програмування, кожен прохід містить доведення коректності 11 циклів, разом які використовують 50 розгалужень кожне з яких доводиться окремо в комбінаторному стилі кейс аналізом. За перший прохід будують часткові форвард декларації, які повністю стають насиченими на другому проході. В процесі першого проходу не зберігаються файли, зате між проходами не очищується контекст, який містить три типи ключів: визначення типів для носіння полів та їх властивостей, синоніми, та специфікатори тензорів. Також компілятор містить verbose опцію -v яка показує всі стадії насичення контексту.
+
+На розробку компілятора був витрачений 1 людино-місяць та згенеровано ним 30000 рядків Swift 5.8 коду який працює на Windows/Linux/Mac. Цей код покриває всі конверти які можна знайти на сайті ITU.INT у вигляді ASN.1 файлів. Сюди входять PKIX, CMP, CMC, LDAP, CMS, PKCS, X.400, тощо. Компілятор asn1scc написаний на F\# який підтримується Європейським Космічним Агенством не працює на повній множині всіх цих декларацій, а займає теж немало, 32000 рядків на F\#.
+
+
+\section{Протокол розмежування доступу ABAC}
+
+Модель контестного або атрибутного доступу (Attribute-Based Access Control, ABAC) забезпечує гнучке розмежування повноважень. На відміну від класичної рольової моделі (RBAC), де доступ фіксується виключно за роллю користувача, ABAC використовує атрибути суб'єкта, об'єкта, операції та глобального середовища для динамічного прийняття рішень під час виконання запиту. 
+
+Реалізація \texttt{erpuno/abac} повністю відповідає міжнародному стандарту \textbf{ISO/IEC 29146:2016} (Information technology — Security techniques — A framework for access management) та рекомендаціям \textbf{NIST SP 800-162}. Архітектура бібліотеки структурно розподіляє відповідальність між базовими компонентами системи.
+
+Запит на доступ формалізується структурою \texttt{request}, що містить \texttt{subject} (ідентифікатор користувача, сервісу або ERP Employee) та \texttt{endpoint} (API-метод або дія: VIEW, EDIT, SIGN тощо).
+
+\subsection{PEP (Policy Enforcement Point)}
+
+Точка забезпечення виконання (PEP, в рамках \texttt{ABAC.API}) — це програмний інтерфейс, який перехоплює запит користувача на доступ до захищеного ресурсу. Його головна мета — призупинити виконання бізнес-операції та викликати центр прийняття рішень для отримання дозволу. PEP діє як суворий шлюз, блокуючи дію суб'єкта за відсутності позитивного вердикту.
+
+\subsection{PIP (Policy Information Point)}
+
+Точка інформації про політики (PIP) — це системний інтерфейс для отримання додаткових даних (\texttt{ABAC.PIP}). Коли бракує атрибутів для перевірки політики (наприклад, вік користувача, геопозиція чи посада), ініціюється звернення до PIP. Він автоматично збагачує запит атрибутами з поточного контексту екосистеми (модулі ERP, BPMN-двигун BPE, реляційні бази даних або директорії LDAP).
+
+\subsection{PAP (Policy Administration Point)}
+
+Точка адміністрування (PAP) — компонент, що забезпечує створення, зберігання та аудит самих політик безпеки. У вітчизняному стеку для безвідмовного та високошвидкісного збереження правил доступу використовується масштабовна база даних ключ-значення \texttt{KVS}.
+
+\subsection{PDP (Policy Decision Point)}
+
+Точка прийняття рішень (PDP, в рамках \texttt{ABAC.PDP}) — математичне ядро моделі. У цей компонент завантажені всі доступні в організації політики доступу. Коли надходить запит від PEP, PDP агрегує атрибути, обчислює логічні предикати та виносить обґрунтований фінальний вердикт (Permit або Deny) щодо кожної поточної транзакції.

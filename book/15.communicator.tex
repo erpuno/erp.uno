@@ -1,0 +1,144 @@
+\chapter{Безпечний зв'язок та криптографічні протоколи}
+
+\section{Інтеграція та концепція}
+Підсистема «ERP/1: Комунікатор» об'єднує в єдиний захищений контур сервіси асинхронного обміну миттєвими повідомленнями (CHAT v2) та поштового обміну документами (MAIL v3). Вона абсорбує технічні рішення:
+\begin{itemize}
+    \item \textbf{chat.n2o.dev} --- архітектуру WebSocket-брокерів на базі Erlang/OTP;
+    \item \textbf{x509.chat} --- автентифікацію за клієнтськими сертифікатами X.509;
+    \item \textbf{protocol.zencrypted.uk} --- специфікації криптографічного протоколу Buddha (X.422).
+\end{itemize}
+
+\section{Buddha Protocol (Стандарт X.422)}
+Протокол Buddha визначає транспортні та криптографічні правила обміну повідомленнями у ненадійних мережах.
+
+\subsection{X.422.1: Транспортний рівень}
+Обмін даними здійснюється через асинхронні TCP сокети або шифровані UDP-канали. Для локального виявлення пристроїв у LAN-мережах без DNS-серверів підтримується робота через UDP Multicast на виділений порт 4221. Сервер виконує роль асинхронного брокера, що маршрутизує пакети без збереження їх на сервері після доставки отримувачу.
+
+\subsection{X.422.2: Криптографічний конверт CMS}
+Вміст повідомлень та вкладених файлів шифрується на кінцевих пристроях користувачів (End-to-End Encryption) та пакується у CMS-структуру (RFC 5652) у кодуванні ASN.1 DER:
+\begin{itemize}
+    \item \textbf{SignedData} --- містить підпис ДСТУ 4145 або ECDSA та сертифікат відправника;
+    \item \textbf{EnvelopedData} --- містить дані, зашифровані симетричним шифром ДСТУ 7624 (Калина) або AES-GCM-256 на сесійному ключі, який зашифрований на відкритому ключі отримувача за схемою ECDH.
+\end{itemize}
+
+\section{Субкомпоненти контуру безпеки}
+«Комунікатор» складається з 6 Erlang/OTP додатків:
+\begin{enumerate}
+    \item \textbf{CA} --- локальний центр випуску сертифікатів за протоколами EST (RFC 7030), CMP (RFC 4210), OCSP статусів та TSP міток часу.
+    \item \textbf{VPN} --- клієнт-серверне тунелювання WireGuard на базі сертифікатів відкритих ключів.
+    \item \textbf{LDAP} --- ієрархічний довідник користувачів з підтримкою DER-кодування та атрибутики ABAC.
+    \item \textbf{IAS} --- служба автентифікації сесій та перевірки статусів відкликання ключів користувачів.
+    \item \textbf{CHAT} --- асинхронний WebSocket месенджер v2 з підтримкою Double Ratchet.
+    \item \textbf{MAIL} --- сервер асинхронної доставки документів та пошти v3 (SMTP/IMAP over TLS).
+\end{enumerate}
+
+\section{Технічна реалізація}
+
+\subsection{Визначення структур даних (Erlang Records)}
+Основні сутності підсистеми визначені в Erlang-записах:
+\begin{verbatim}
+-record(chat_session, {
+    session_id,                 % UUID сесії (PK)
+    client_id,                  % Серійний номер сертифіката X.509
+    device_id,                  % Ідентифікатор пристрою
+    ip_address,                 % Поточна IP-адреса
+    access_token,               % Токен доступу сесії
+    status = active,            % active | expired | revoked
+    created_at = 0
+}).
+
+-record(ca_certificate, {
+    serial_number,              % Серійний номер X.509 (PK)
+    subject_dn,                 % Відмітне ім'я суб'єкта
+    public_key_der,             % Публічний ключ у DER кодуванні
+    not_before = 0,             % Початок дії
+    not_after = 0,              % Завершення дії
+    status = valid              % valid | revoked | expired
+}).
+\end{verbatim}
+
+\subsection{Процесний рушій BPE}
+Для управління життєвим циклом обробки повідомлень використовується BPMN/FSM опис процесу доставки:
+\begin{verbatim}
+-module(chat_message).
+-include("bpe.hrl").
+-compile(export_all).
+
+def() ->
+    #process{
+        name = 'Buddha Protocol Message Delivery',
+        beginEvent = 'ReceiveEnvelope',
+        endEvent = 'DestroyMessage',
+        tasks = [
+            #beginEvent{name='ReceiveEnvelope'},
+            #serviceTask{name='RouteByProfile', module=?MODULE},
+            #serviceTask{name='StoreTransientQueue', module=?MODULE},
+            #serviceTask{name='DeliverToClient', module=?MODULE},
+            #serviceTask{name='WaitDeliveryReceipt', module=?MODULE},
+            #endEvent{name='DestroyMessage'}
+        ],
+        flows = [
+            #sequenceFlow{name='1', source='ReceiveEnvelope', target='RouteByProfile'},
+            #sequenceFlow{name='2', source='RouteByProfile', target='StoreTransientQueue'},
+            #sequenceFlow{name='3', source='StoreTransientQueue', target='DeliverToClient'},
+            #sequenceFlow{name='4', source='DeliverToClient', target='WaitDeliveryReceipt'},
+            #sequenceFlow{name='5', source='WaitDeliveryReceipt', target='DestroyMessage'}
+        ],
+        roles = [operator, system]
+    }.
+\end{verbatim}
+
+\subsection{C99 NIF розбирач TLV DER пакетів}
+Для швидкого розбору ASN.1 DER об'єктів безпосередньо в Erlang без Cargo/Rust, використовується C99 NIF обгортка:
+\begin{verbatim}
+#include "erl_nif.h"
+#include <string.h>
+
+static ERL_NIF_TERM parse_tlv_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+    ErlNifBinary bin;
+    if (!enif_inspect_binary(env, argv[0], &bin)) {
+        return enif_make_badarg(env);
+    }
+
+    if (bin.size < 2) {
+        return enif_make_tuple2(env, enif_make_atom(env, "error"), 
+                                enif_make_string(env, "too_short", ERL_NIF_LATIN1));
+    }
+
+    unsigned char tag = bin.data[0];
+    unsigned int length = bin.data[1];
+    unsigned int header_len = 2;
+
+    if (length & 0x80) {
+        unsigned int num_bytes = length & 0x7F;
+        if (bin.size < 2 + num_bytes) {
+            return enif_make_tuple2(env, enif_make_atom(env, "error"), 
+                                    enif_make_string(env, "invalid_length", ERL_NIF_LATIN1));
+        }
+        length = 0;
+        for (unsigned int i = 0; i < num_bytes; i++) {
+            length = (length << 8) | bin.data[2 + i];
+        }
+        header_len = 2 + num_bytes;
+    }
+
+    if (bin.size < header_len + length) {
+        return enif_make_tuple2(env, enif_make_atom(env, "error"), 
+                                enif_make_string(env, "payload_mismatch", ERL_NIF_LATIN1));
+    }
+
+    ERL_NIF_TERM type_term = enif_make_uint(env, tag);
+    unsigned char* payload_data;
+    ERL_NIF_TERM payload_term;
+    payload_data = enif_make_new_binary(env, length, &payload_term);
+    memcpy(payload_data, bin.data + header_len, length);
+
+    return enif_make_tuple3(env, enif_make_atom(env, "ok"), type_term, payload_term);
+}
+
+static ErlNifFunc nif_funcs[] = {
+    {"parse_tlv", 1, parse_tlv_nif}
+};
+
+ERL_NIF_INIT(chat_nif, nif_funcs, NULL, NULL, NULL, NULL)
+\end{verbatim}
