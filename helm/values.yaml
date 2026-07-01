@@ -99,7 +99,7 @@ ldap-directory:
   image:
     repository: erpuno/ldap
     tag: 1.0.0
-  port: 8189
+  port: 8202
   instance: "D4252CF20538EC22"
   resources:
     limits:
@@ -116,7 +116,7 @@ ias-auth:
   image:
     repository: zencrypted/ias
     tag: 2.1.0
-  port: 8120
+  port: 8204
   vpnAdminUrl: "http://vpn-wireguard:8080/api/admin/summary"
   vpnNode: "vpn@vpn-wireguard.erp.uno"
   kvs:
@@ -137,7 +137,7 @@ chat-messenger:
   image:
     repository: erpuno/chat
     tag: 3.0.0
-  port: 8430
+  port: 8507
   resources:
     limits:
       cpu: 1000m
@@ -153,7 +153,7 @@ mail-delivery:
   image:
     repository: erpuno/mail
     tag: 1.0.0
-  port: 8443
+  port: 8508
   resources:
     limits:
       cpu: 200m
@@ -169,7 +169,7 @@ rest-bpe:
   image:
     repository: erpuno/rest
     tag: 1.0.0
-  port: 8290
+  port: 8303
   resources:
     limits:
       cpu: 200m
@@ -185,7 +185,7 @@ abac-clearance:
   image:
     repository: zencrypted/clearance
     tag: 1.0.0
-  port: 8185
+  port: 8203
   resources:
     limits:
       cpu: 200m
@@ -201,7 +201,7 @@ mach-ivr:
   image:
     repository: erpuno/mach
     tag: 1.0.0
-  port: 8486
+  port: 8509
   resources:
     limits:
       cpu: 200m
@@ -217,7 +217,7 @@ bpe-engine:
   image:
     repository: erpuno/bpe
     tag: 1.0.0
-  port: 8287
+  port: 8302
   resources:
     limits:
       cpu: 500m
@@ -233,7 +233,7 @@ kvs-database:
   image:
     repository: erpuno/kvs
     tag: 1.0.0
-  port: 8288
+  port: 8301
   resources:
     limits:
       cpu: 1000m
@@ -249,7 +249,7 @@ nitro-portal:
   image:
     repository: erpuno/nitro
     tag: 1.0.0
-  port: 8489
+  port: 8510
   resources:
     limits:
       cpu: 500m
@@ -265,7 +265,7 @@ n2o-server:
   image:
     repository: erpuno/n2o
     tag: 3.0.0
-  port: 8491
+  port: 8511
   resources:
     limits:
       cpu: 1000m
@@ -281,7 +281,7 @@ faiss-search:
   image:
     repository: erpuno/faiss
     tag: 1.0.0
-  port: 8692
+  port: 8602
   resources:
     limits:
       cpu: 1000m
@@ -297,7 +297,7 @@ lms-education:
   image:
     repository: erpuno/lms-education
     tag: 1.0.0
-  port: 8350
+  port: 8506
   resources:
     limits:
       cpu: 500m
@@ -312,7 +312,7 @@ hl7-health:
   image:
     repository: erpuno/hl7-health
     tag: 1.0.0
-  port: 8341
+  port: 8502
   resources:
     limits:
       cpu: 500m
@@ -327,7 +327,7 @@ crm-documents:
   image:
     repository: erpuno/crm-documents
     tag: 1.0.0
-  port: 8351
+  port: 8503
   bpe:
     engine: enabled
   resources:
@@ -344,7 +344,7 @@ acc-accounting:
   image:
     repository: erpuno/acc-accounting
     tag: 1.0.0
-  port: 8342
+  port: 8504
   resources:
     limits:
       cpu: 1000m
@@ -359,7 +359,7 @@ wms-warehouse:
   image:
     repository: erpuno/wms-warehouse
     tag: 1.0.0
-  port: 8343
+  port: 8505
   kvs:
     dba: kvs_rocks
   resources:
@@ -376,7 +376,7 @@ cart-registers:
   image:
     repository: erpuno/cart-registers
     tag: 1.0.0
-  port: 8344
+  port: 8501
   resources:
     limits:
       cpu: 500m
@@ -391,7 +391,7 @@ ai-generation:
   image:
     repository: erpuno/ai-generation
     tag: 1.0.0
-  port: 8650
+  port: 8601
   gpu:
     enabled: true
     resourceName: nvidia.com/gpu
@@ -410,7 +410,7 @@ olap-analytics:
   image:
     repository: erpuno/olap-analytics
     tag: 1.0.0
-  port: 8540
+  port: 8512
   resources:
     limits:
       cpu: 1000m
@@ -425,7 +425,7 @@ pm-projects:
   image:
     repository: erpuno/pm-projects
     tag: 1.0.0
-  port: 8541
+  port: 8514
   resources:
     limits:
       cpu: 500m
@@ -440,7 +440,7 @@ itsm-incidents:
   image:
     repository: erpuno/itsm-incidents
     tag: 1.0.0
-  port: 8553
+  port: 8513
   kvs:
     dba: kvs_rocks
   resources:
@@ -458,7 +458,7 @@ prometheus:
   image:
     repository: prom/prometheus
     tag: v2.53.0
-  port: 8690
+  port: 8401
   resources:
     limits:
       cpu: 500m
@@ -473,7 +473,7 @@ grafana:
   image:
     repository: grafana/grafana
     tag: 11.1.0
-  port: 8630
+  port: 8402
   resources:
     limits:
       cpu: 200m
@@ -488,7 +488,7 @@ loki:
   image:
     repository: grafana/loki
     tag: 3.0.0
-  port: 8610
+  port: 8403
   resources:
     limits:
       cpu: 500m
@@ -504,9 +504,9 @@ otel-collector:
     repository: otel/opentelemetry-collector-contrib
     tag: 0.104.0
   ports:
-    grpc: 8617
-    http: 8618
-    metrics: 8689
+    grpc: 8404
+    http: 8405
+    metrics: 8406
   resources:
     limits:
       cpu: 200m
