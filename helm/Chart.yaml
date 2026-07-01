@@ -1,0 +1,6 @@
+apiVersion: v2
+name: erp-uno
+description: ERP/1 IKS and Infrastructure Services for Alpine Linux.
+type: application
+version: 1.0.0
+appVersion: "0.7.1"

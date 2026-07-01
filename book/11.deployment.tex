@@ -40,7 +40,319 @@ config :libcluster,
 \index{Service Mesh} \index{Istio}
 Для спрощення розгортання розроблені Helm-діаграми (Helm Charts), які містять описи StatefulSet для баз даних (Mnesia) та Deployment для безстатусових серверів сесій. Istio Service Mesh інтегрується для тонкого налаштування трафіку (Traffic Splitting), моніторингу затримок (Telemetry) та взаємної mTLS авторизації між клієнтськими сервісами.
 
----
+\section{Політики інфраструктурного розгортання}
+\index{Deployment Policies} \index{Proxmox} \index{Kubespray} \index{ArgoCD} \index{synrc/ns}
+Для забезпечення високої доступності, передбачуваності та автоматизації оновлень платформи «ERP/1» впроваджено суворі політики розгортання на базі концепції GitOps та підходу «Інфраструктура як код» (IaC). Технологічний стек спроектований за принципом мінімальної кількості рухомих частин та максимальної автономності.
+
+\subsection{Політика віртуалізації (Proxmox VE)}
+Усі обчислювальні ресурси платформи розгортаються на базі гіпервізора Proxmox VE з дотриманням таких вимог:
+\begin{itemize}
+    \item \textbf{Мінімалістичний оверхед}: Віртуальні машини створюються виключно за технологією Thin Provisioning (LVM-Thin або ZFS) для економного споживання дискового простору та підтримки швидких знімків.
+    \item \textbf{Декларативність та шаблони}: Впроваджено використання незмінних шаблонів ОС Ubuntu LTS з підтримкою Cloud-Init для автоматичного налаштування мережі, SSH-ключів та системних параметрів.
+    \item \textbf{Резервування та мережі}: Ноди керування та ноди даних розподіляються по різних фізичних серверах Proxmox (анти-афініті політики). Мережева топологія ізолюється за допомогою віртуальних мостів (Linux Bridges) та VLAN.
+\end{itemize}
+
+\subsection{Політика оркестрації кластера (Kubespray)}
+Створення, конфігурування та оновлення версій Kubernetes-кластерів виконується за допомогою Kubespray:
+\begin{itemize}
+    \item \textbf{Мінімальний набір плагінів}: Виключаються сторонні хмарні інтеграції. Використовуються стандартні компоненти: \texttt{containerd} як контейнерне середовище виконання, інтеграція з \texttt{systemd} та локальні дискові сховища.
+    \item \textbf{Контроль версій}: Конфігураційні інвентарі Ansible (hosts.yaml) та змінні кластера (group\_vars) зберігаються у центральному Git-репозиторії інфраструктури.
+    \item \textbf{Мережеві політики}: Використовується Calico CNI з активованим NetworkPolicies для ізоляції мікросервісів у межах просторів імен Kubernetes.
+\end{itemize}
+
+\subsection{Політика доставки додатків (ArgoCD)}
+Впроваджено модель Pull-based GitOps для управління станом додатків:
+\begin{itemize}
+    \item \textbf{Єдине джерело істини}: Жодна зміна конфігурації чи коду не вноситься в кластер вручну через \texttt{kubectl}. Усі ресурси Kubernetes декларуються в Git.
+    \item \textbf{Дрейф конфігурацій (Configuration Drift)}: ArgoCD здійснює безперервний моніторинг стану кластера. У разі виявлення розбіжностей між Git та кластером автоматично ініціюється процес синхронізації (Self-Healing) або надсилається сповіщення.
+    \item \textbf{Декларативне керування додатками}: Використовується структура ресурсів типу \texttt{Application} для опису зв'язку між Git-репозиторієм та цільовим простором імен.
+\end{itemize}
+
+\subsection{Політика керування Helm-діаграмами}
+Усі компоненти платформи пакуються у Helm-діаграми та зберігаються у приватному репозиторії:
+\begin{itemize}
+    \item \textbf{Календарне версіонування (за принципом N2O)}: Замість класичного SemVer використовується формат версій \texttt{X.Y.Z}, де \texttt{X} — кількість «нових років», які зустрів продукт з моменту створення, \texttt{Y} — номер місяця релізу, а \texttt{Z} — день релізу або порядковий номер збірки в межах цього місяця. Використання тегів \texttt{latest} заборонено.
+    \item \textbf{Локальне сховище}: Helm-діаграми зберігаються у власному захищеному HTTP/OCI-репозиторії, що гарантує автономність доставки у закритих контурах без доступу до глобальної мережі.
+\end{itemize}
+
+\subsection{Політика керування DNS (synrc/ns)}
+Навігація та резолвінг імен всередині інфраструктури виконується за допомогою власного легковагого DNS-сервера \texttt{synrc/ns}:
+\begin{itemize}
+    \item \textbf{Автономність}: DNS-сервер написаний на Erlang/Elixir, інтегрується безпосередньо в мережевий контур та працює з мінімальним використанням RAM (до 20 МБ).
+    \item \textbf{Декларативні зони}: Усі записи доменних зон зберігаються у вигляді JSON-файлів у Git-репозиторії та автоматично оновлюються при зміні IP-адрес чи додаванні нових сервісів.
+\end{itemize}
+
+\subsection{Політика базових образів контейнерів (Alpine Linux)}
+\index{Alpine Linux} \index{Containerization}
+З метою мінімізації вектора атак, економії дискового простору та підвищення швидкості масштабування (cold start) нод у Kubernetes, для побудови Docker-контейнерів BEAM-додатків діє політика використання легковагого базового образу \textbf{Alpine Linux} (версії \texttt{alpine:3.20}):
+\begin{itemize}
+    \item \textbf{Мінімальний обсяг образів}: Використання Alpine Linux замість повноважних дистрибутивів на кшталт Ubuntu Server дозволяє зменшити розмір базового шару образу з $\sim$80 МБ до $\sim$5--8 МБ.
+    \item \textbf{Безпека}: Базовий образ містить мінімальну кількість утиліт та бібліотек, що знижує вразливість системи перед CVE-загрозами. Заборонено встановлення компіляторів чи пакетних менеджерів (наприклад, \texttt{apk}) у фінальних продуктових образах.
+    \item \textbf{Статична лінковка}: Усі NIF-бібліотеки на C/Rust, які завантажуються Erlang-додатками, компилюються під бібліотеку \texttt{musl} C, вбудовану в Alpine.
+\end{itemize}
+
+\section{Покомпонентне розгортання ІКС та Служб ERP/1 через Helm}
+\index{Helm Charts} \index{IKS ERP/1} \index{Services ERP/1}
+Для забезпечення модульності та гнучкості керування інфраструктурою, кожен прикладний продукт екосистеми \textbf{ІКС ERP/1} та кожна складова частина \textbf{Служб безпечного зв'язку (SLUB) ERP/1} поставляються як окремі незалежні Helm-діаграми. Це дозволяє розгортати лише необхідні модулі залежно від призначення конкретного контуру (наприклад, окремо освітній контур чи медичний сервіс).
+
+\subsection{Пакети прикладних продуктів ІКС ERP/1}
+Усі 10 прикладних продуктів ІКС мають власні Helm-діаграми:
+\begin{itemize}
+    \item \texttt{lms-education} (Освіта) --- автоматизоване розгортання LMS-сервісу, сервісів планування занять та інтерфейсів інтеграції з ЄДЕБО.
+    \item \texttt{hl7-health} (Здоров'я) --- МІС-сервіси, що підтримують HL7 FHIR API та адаптери синхронізації з eHealth.
+    \item \texttt{crm-documents} (Документи) --- служба електронного документообігу та сховищ файлів, що тісно взаємодіє з рушієм BPE.
+    \item \texttt{acc-accounting} (Облік) --- сервіси бухгалтерії, розрахунку зарплат та кадрового обліку з підтримкою Mnesia.
+    \item \texttt{wms-warehouse} (Склад) --- служба адресного зберігання ТМЦ та логістичних операцій.
+    \item \texttt{cart-registers} (Реєстри) --- low-code рушій реєстрів, що містить інтерфейси підключення до Трембіти.
+    \item \texttt{ai-generation} (Істотність) --- сервіс семантичного аналізу та інференсу локальних LLM з підтримкою прокидання GPU (NVIDIA CUDA).
+    \item \texttt{olap-analytics} (Аналітика) --- аналітичне DWH-сховище на базі DuckDB/MonetDB.
+    \item \texttt{pm-projects} (Проєкти) --- локальна система управління задачами (Jira-alternative) та Wiki-сервер.
+    \item \texttt{itsm-incidents} (Service Desk) --- диспетчер інцидентів та SLA-контролер.
+\end{itemize}
+
+\subsection{Пакети інфраструктурних служб ERP/1 (SLUB)}
+Служби комунікацій та безпеки (SLUB) забезпечують роботу транспортного та криптографічного контуру платформи:
+\begin{itemize}
+    \item \texttt{ns-dns} --- легковагий локальний DNS-сервер для автономного резолвінгу імен.
+    \item \texttt{ca-pki} --- локальний центр сертифікації для випуску ключів X.509.
+    \item \texttt{vpn-wireguard} --- VPN-шлюз для захисту міжнодових каналів зв'язку.
+    \item \texttt{ldap-directory} --- ієрархічний реєстр користувачів та організацій з підтримкою ABAC.
+    \item \texttt{ias-auth} --- служба ідентифікації, автентифікації та перевірки статусів сертифікатів (OCSP).
+    \item \texttt{chat-messenger} --- високопродуктивний WebSocket брокер реального часу.
+    \item \texttt{mail-delivery} --- поштовий сервер для асинхронного транспорту офіційної кореспонденції.
+    \item \texttt{rest-bpe} --- REST API шлюз для керування бізнес-процесами на базі рушія BPE.
+    \item \texttt{clearance-abac} --- Go-сервер для авторизації, перевірки допусків та збору аудит-логів доступу.
+    \item \texttt{mach-ivr} --- сценарний рушій станів телефонії та автоінформатора (IVR).
+    \item \texttt{bpe-engine} --- BPMN-рушій бізнес-процесів платформи.
+    \item \texttt{kvs-database} --- вбудоване сховище даних на базі СУБД KVS.
+    \item \texttt{nitro-portal} --- веб-портал рендерингу інтерфейсів.
+    \item \texttt{n2o-server} --- WebSocket-сервер додатків.
+    \item \texttt{faiss-search} --- векторний пошуковий рушій для інтелектуальних сервісів штучного інтелекту.
+    \item \texttt{prometheus} --- збір та збереження часових рядів метрик додатків.
+    \item \texttt{grafana} --- візуалізація метрик та побудова оперативних дашбордів моніторингу.
+    \item \texttt{loki} --- збір та горизонтальне зберігання журналів логування (logs) BEAM-вузлів.
+    \item \texttt{otel-collector} --- OpenTelemetry шлюз збору уніфікованих метрик, логів та трасувань.
+\end{itemize}
+
+\subsection{Специфікація інфраструктури та сервісів}
+Для координації мікросервісів приведемо повну специфікацію портів, протоколів та типу збереження стану (statefulness) компонентів платформи (табл. \ref{tab:infrastructure}).
+
+\begin{table}[h!]
+\small
+\begin{adjustwidth}{-2cm}{}
+\begin{tabular}{|l|p{4cm}|l|l|l|}
+\hline
+\textbf{Компонент} & \textbf{Призначення} & \textbf{Протокол} & \textbf{Порт} & \textbf{Тип} \\ \hline
+\texttt{ns-dns} & DNS-сервер & UDP/TCP & 53 & Stateful \\ \hline
+\texttt{ca-pki} & Локальний PKI & TCP & 8045 & Stateful \\ \hline
+\texttt{vpn-wireguard} & VPN-шлюз & UDP & 51820 & Stateful \\ \hline
+\texttt{ldap-directory} & ABAC-директорія & TCP & 389/636 & Stateful \\ \hline
+\texttt{ias-auth} & Авторизація & TCP & 8080 & Stateless \\ \hline
+\texttt{chat-messenger} & WebSocket брокер & TCP & 8830 & Stateless \\ \hline
+\texttt{mail-delivery} & SMTP/IMAP сервер & TCP & 8043 & Stateless \\ \hline
+\texttt{rest-bpe} & BPE REST API & TCP & 8090 & Stateless \\ \hline
+\texttt{clearance-abac} & Мандати та аудит & TCP & 8085 & Stateless \\ \hline
+\texttt{mach-ivr} & Телефонія IVR & TCP & 8086 & Stateless \\ \hline
+\texttt{bpe-engine} & Рушій процесів BPMN & TCP & 8087 & Stateless \\ \hline
+\texttt{kvs-database} & Сховище KVS & TCP & 8088 & Stateful \\ \hline
+\texttt{nitro-portal} & Веб-інтерфейс & TCP & 8089 & Stateless \\ \hline
+\texttt{n2o-server} & WebSocket-сервер додатків & TCP & 8091 & Stateless \\ \hline
+\texttt{faiss-search} & Векторний пошук & TCP & 8092 & Stateless \\ \hline
+\texttt{crm-documents} & Управління документами & TCP & 8050 & Stateless \\ \hline
+\texttt{itsm-incidents} & Диспетчер інцидентів & TCP & 8053 & Stateless \\ \hline
+\texttt{prometheus} & Моніторинг метрик & TCP & 9090 & Stateful \\ \hline
+\texttt{grafana} & Дашборди метрик & TCP & 3000 & Stateless \\ \hline
+\texttt{loki} & Збір логів додатків & TCP & 3100 & Stateful \\ \hline
+\texttt{otel-collector} & OpenTelemetry шлюз & TCP/UDP & 4317/4318 & Stateless \\ \hline
+\end{tabular}
+\end{adjustwidth}
+\caption{Специфікація інфраструктури та типів розгортання компонентів}
+\label{tab:infrastructure}
+\end{table}
+
+\subsection{Аналіз мета-схеми Kubernetes та мінімальний набір об'єктів}
+Для забезпечення життєвого циклу платформи в Kubernetes використовується строго обмежений мінімальний набір об'єктів мета-схеми API. Цей мінімум є оптимальним для ізольованих контурів і складається з:
+
+\begin{itemize}
+    \item \textbf{Namespace} --- ізоляція ресурсів платформи.
+    \item \textbf{ConfigMap та Secret} --- декларативне конфігурування та збереження ключів/сертифікатів.
+    \item \textbf{Service} --- логічна маршрутизація трафіку та внутрішній DNS-резолвінг.
+    \item \textbf{Ingress} --- зовнішній доступ до вебинтерфейсів через Ingress-контролер.
+    \item \textbf{Deployment} --- розгортання stateless-мікросервісів.
+    \item \textbf{StatefulSet (STS)} --- управління stateful-нодами СУБД та систем моніторингу.
+    \item \textbf{PersistentVolumeClaim (PVC)} --- динамічне виділення дискового простору.
+    \item \textbf{HorizontalPodAutoscaler (HPA)} --- динамічне масштабування подів під навантаженням.
+\end{itemize}
+
+\subsubsection{Використання StatefulSet (STS) для Mnesia/KVS}
+Для розподіленої СУБД Mnesia та KVS вкрай важливо зберігати стабільний мережевий ідентифікатор хоста при перезапуску та стабільний зв'язок з його дисковим сховищем. StatefulSet гарантує унікальні імена нод (\texttt{kvs-database-0}, \texttt{kvs-database-1}) та їх послідовний запуск і зупинку, що запобігає виникненню аварійних станів Split-Brain.
+
+\subsubsection{Конфігурація HorizontalPodAutoscaler (HPA)}
+Для амортизації різких стрибків користувацької активності на рівні вебпорталів застосовується HPA. Нижче наведено мінімальний приклад налаштування авто-масштабування для сервісу \texttt{crm-documents} на базі використання CPU:
+
+\begin{lstlisting}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: crm-documents-hpa
+  namespace: erp
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: crm-documents
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 75
+\end{lstlisting}
+
+\subsection{Ієрархія конфігурацій (values.yaml)}
+Для спрощення адміністрування використовується парадигма Umbrella-chart, який об'єднує всі підкомпоненти через залежності. Приклад налаштування файлу \texttt{values.yaml}:
+\begin{lstlisting}
+global:
+  domain: erp.uno
+  environment: production
+  tls:
+    enabled: true
+    secretName: erp-tls-cert
+
+crm-documents:
+  enabled: true
+  replicaCount: 2
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+  bpe:
+    engine: enabled
+
+ca-pki:
+  enabled: true
+  storage:
+    size: 10Gi
+    storageClass: local-path
+\end{lstlisting}
+
+\subsection{Відповідність репозиторіїв GitHub, ArgoCD та Helm}
+\index{ArgoCD} \index{GitHub}
+Для забезпечення прозорості автоматизованої доставки GitOps-процесом ArgoCD, нижче наведено таблицю відповідності вихідних GitHub-репозиторіїв коду додатків та назв відповідних ArgoCD-додатків / Helm-компонентів:
+
+\begin{table}[h!]
+\small
+\begin{tabular}{|l|l|}
+\hline
+\textbf{GitHub репозиторій} & \textbf{Додаток ArgoCD / Helm-компонент} \\ \hline
+\texttt{synrc/ns} & \texttt{ns-dns} \\ \hline
+\texttt{synrc/ca} & \texttt{ca-pki} \\ \hline
+\texttt{zencrypted/vpn} & \texttt{vpn-wireguard} \\ \hline
+\texttt{synrc/ldap} & \texttt{ldap-directory} \\ \hline
+\texttt{zencrypted/ias} & \texttt{ias-auth} \\ \hline
+\texttt{synrc/chat} & \texttt{chat-messenger} \\ \hline
+\texttt{erpuno/mail} & \texttt{mail-delivery} \\ \hline
+\texttt{synrc/rest} & \texttt{rest-bpe} \\ \hline
+\texttt{zencrypted/clearance} & \texttt{clearance-abac} \\ \hline
+\texttt{synrc/mach} & \texttt{mach-ivr} \\ \hline
+\texttt{synrc/bpe} & \texttt{bpe-engine} \\ \hline
+\texttt{synrc/kvs} & \texttt{kvs-database} \\ \hline
+\texttt{synrc/nitro} & \texttt{nitro-portal} \\ \hline
+\texttt{synrc/n2o} & \texttt{n2o-server} \\ \hline
+\texttt{synrc/faiss} & \texttt{faiss-search} \\ \hline
+\texttt{prom/prometheus} & \texttt{prometheus} \\ \hline
+\texttt{grafana/grafana} & \texttt{grafana} \\ \hline
+\texttt{grafana/loki} & \texttt{loki} \\ \hline
+\texttt{otel/otel-collector} & \texttt{otel-collector} \\ \hline
+\texttt{erpuno/edu} & \texttt{lms-education} \\ \hline
+\texttt{erpuno/health} & \texttt{hl7-health} \\ \hline
+\texttt{erpuno/crm} & \texttt{crm-documents} \\ \hline
+\texttt{erpuno/acc} & \texttt{acc-accounting} \\ \hline
+\texttt{erpuno/warehouse} & \texttt{wms-warehouse} \\ \hline
+\texttt{erpuno/cart} & \texttt{cart-registers} \\ \hline
+\texttt{erpuno/ai} & \texttt{ai-generation} \\ \hline
+\texttt{erpuno/olap} & \texttt{olap-analytics} \\ \hline
+\texttt{erpuno/pm} & \texttt{pm-projects} \\ \hline
+\texttt{erpuno/itsm} & \texttt{itsm-incidents} \\ \hline
+\end{tabular}
+\caption{Таблиця відповідності репозиторіїв та компонентів GitOps}
+\end{table}
+
+\section{Модель асинхронного ETL-процесингу черг на базі KVS}
+\index{ETL} \index{KVS} \index{Queue Processing} \index{Cursors}
+У високонавантажених державних системах транзакційна обробка реального часу (OLTP) відокремлена від аналітичної обробки та побудови звітів (OLAP). Для цього в архітектурі ERP/1 реалізовано модель асинхронного ETL (Extract, Transform, Load) процесингу транзакційних логів на базі черг вбудованого сховища KVS.
+
+\subsection{Компоненти черги: Воркери, Курсори та Контексти}
+Процес асинхронної обробки базується на трьох сутностях:
+\begin{itemize}
+    \item \textbf{Асинхронний воркер} --- ізольований BEAM-процес, що виконує циклічну обробку повідомлень у черзі.
+    \item \textbf{Курсор (Cursor)} --- запис у сховищі KVS, який фіксує ідентифікатор останньої успішно обробленої транзакції для конкретного воркера. Це забезпечує семантику доставки «щонайменше один раз» (At-least-once).
+    \item \textbf{Контекст (Context)} --- структура даних воркера, що зберігає параметри з'єднання з цільовою БД, сесійні ключі, ліміти пакетів (batch size) та поточний стан.
+\end{itemize}
+
+\subsection{Специфікація структур даних (Erlang)}
+Модель черг та курсорів описується такими Erlang-записами:
+\begin{lstlisting}
+-record(kvs_cursor, {
+    id,
+    last_read_id,
+    updated_at
+}).
+
+-record(etl_context, {
+    worker_id,
+    stream_id,
+    cursor,
+    batch_size = 100,
+    target_db,
+    transform_fun
+}).
+\end{lstlisting}
+
+\subsection{Алгоритм ETL-циклу воркера}
+Асинхронний вокер працює за таким циклічним алгоритмом:
+\begin{enumerate}
+    \item \textbf{Extract (Вилучення)} --- воркер зчитує чергову порцію записів з KVS-стріму, починаючи з позиції \texttt{last\_read\_id}, збереженої в курсорі.
+    \item \textbf{Transform (Трансформація)} --- отримані сирі бінарні дані розкодовуються з ASN.1 DER, перевіряються на цілісність (підпис КЕП) та приводяться до реляційного або стовпчикового вигляду.
+    \item \textbf{Load (Завантаження)} --- трансформований пакет записується в аналітичне OLAP-сховище (DuckDB) через швидкі NIF-порти. Після успішного запису курсор воркера оновлюється в KVS в межах однієї транзакції.
+\end{enumerate}
+
+Приклад мінімальної реалізації ETL-циклу на Erlang:
+\begin{lstlisting}
+-module(etl_worker).
+-export([process_loop/1]).
+
+process_loop(Context) ->
+    Cursor = Context#etl_context.cursor,
+    LastId = Cursor#kvs_cursor.last_read_id,
+    StreamId = Context#etl_context.stream_id,
+    Limit = Context#etl_context.batch_size,
+    case kvs:get_range(StreamId, LastId, Limit) of
+        [] ->
+            timer:sleep(1000),
+            process_loop(Context);
+        Records ->
+            Transformed = [ (Context#etl_context.transform_fun)(R) || R <- Records ],            
+            case load_to_olap(Context#etl_context.target_db, Transformed) of
+                ok ->
+                    LastRecord = lists:last(Records),
+                    NewLastId = element(2, LastRecord),                    
+                    NewCursor = Cursor#kvs_cursor{
+                        last_read_id = NewLastId,
+                        updated_at = erlang:system_time(second)
+                    },                    
+                    kvs:put(NewCursor),                    
+                    process_loop(Context#etl_context{cursor = NewCursor});
+                {error, Reason} ->
+                    logger:error("ETL Load failed: ~p", [Reason]),
+                    timer:sleep(5000),
+                    process_loop(Context)
+            end
+    end.
+\end{lstlisting}
 
 \section{Практичні кейси та аналіз відмов (Post-Mortem)}
 \index{Post-Mortem}
@@ -59,12 +371,303 @@ config :libcluster,
     \item \textbf{Вирішення}: Налаштовано обробник подій \texttt{mnesia\_down}. Впроваджено скрипт автоматичного злиття гілок (reconciliation) на основі часових міток транзакцій та перепідключення розділених нод з перезапуском реплікації без втрати даних користувачів.
 \end{itemize}
 
----
+\section{Додаток. Інструкція розгортання на Ubuntu 24.04 LTS}
+\label{appendix:deploy}
+У цьому додатку наведено покрокову інструкцію для мінімалістичного розгортання платформи ERP/1 на Ubuntu 24.04 LTS з використанням затвердженого стеку.
+
+\subsection{Крок 1. Конфігурація та запуск DNS-сервера synrc/ns}
+DNS-сервер розгортається як інфраструктурний вузол (IP: \texttt{10.0.0.5}) для забезпечення локального розв'язання імен домену \texttt{erp.uno}.
+
+1. Встановіть середовище виконання Erlang та Elixir:
+\begin{lstlisting}
+sudo apt update
+sudo apt install -y erlang-dev elixir git
+\end{lstlisting}
+
+2. Клонуйте репозиторій та підготуйте проект:
+\begin{lstlisting}
+git clone https://github.com/synrc/ns.git /opt/synrc-ns
+cd /opt/synrc-ns
+mix deps.get
+\end{lstlisting}
+
+3. Створіть конфігураційний файл зони \texttt{priv/erp.zone.config}:
+\begin{lstlisting}
+{ttl, 3600}.
+{soa, "erp.uno", "ns1.erp.uno", "admin.erp.uno", 2026070101, 86400, 7200, 604800, 300}.
+{ns, "erp.uno", "ns1.erp.uno"}.
+{a, "ns1.erp.uno", "10.0.0.5"}.
+{a, "k8s-control.erp.uno", "10.0.0.10"}.
+{a, "k8s-worker1.erp.uno", "10.0.0.11"}.
+{a, "charts.erp.uno", "10.0.0.5"}.
+{a, "argocd.erp.uno", "10.0.0.10"}.
+\end{lstlisting}
+
+4. Відредагуйте \texttt{config/config.exs}, вказавши шлях до файлу зони та налаштувавши прослуховування на стандартному порті DNS:
+\begin{lstlisting}
+import Config
+config :ns,
+  servers: [
+    [{:name, :inet_dns}, {:address, ~c"0.0.0.0"}, {:port, 53}, {:family, :inet}]
+  ],
+  zones: ~c"priv/erp.zone.config"
+\end{lstlisting}
+
+5. Запустіть DNS-сервер в інтерактивній консолі:
+\begin{lstlisting}
+sudo iex -S mix
+\end{lstlisting}
+
+\subsection{Крок 2. Налаштування віртуалізації у Proxmox VE}
+1. Завантажте офіційний образ Ubuntu 24.04 Cloud-Image на хості Proxmox:
+\begin{lstlisting}
+wget https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+\end{lstlisting}
+
+2. Створіть шаблон віртуальної машини (VM ID: 9000):
+\begin{lstlisting}
+qm create 9000 --memory 2048 --cores 2 --name u24-cloud --net0 virtio,bridge=vmbr0
+qm importdisk 9000 noble-server-cloudimg-amd64.img local-lvm
+qm set 9000 --scsihw virtio-scsi --scsi0 local-lvm:vm-9000-disk-0
+qm set 9000 --ide2 local-lvm:cloudinit
+qm set 9000 --boot c --bootdisk scsi0
+qm set 9000 --serial0 socket --vga serial0
+qm template 9000
+\end{lstlisting}
+
+3. Створіть дві ноди кластера шляхом клонування шаблону:
+\begin{lstlisting}
+qm clone 9000 100 --name k8s-control
+qm clone 9000 101 --name k8s-worker1
+\end{lstlisting}
+Через інтегляційне Cloud-Init меню вкажіть IP-адреси нод (\texttt{10.0.0.10/24} та \texttt{10.0.0.11/24}), а як DNS-сервер задайте IP нашого DNS \texttt{10.0.0.5}.
+
+\subsection{Крок 3. Встановлення Kubernetes за допомогою Kubespray}
+1. Встановіть залежності Ansible на машині управління:
+\begin{lstlisting}
+sudo apt install -y python3-pip python3-venv git
+python3 -m venv venv
+source venv/bin/activate
+pip install ansible
+\end{lstlisting}
+
+2. Клонуйте Kubespray та встановіть вимоги:
+\begin{lstlisting}
+git clone https://github.com/kubernetes-sigs/kubespray.git
+cd kubespray
+pip install -r requirements.txt
+\end{lstlisting}
+
+3. Створіть файл інвентарю \texttt{inventory/mycluster/hosts.yaml}:
+\begin{lstlisting}
+all:
+  hosts:
+    k8s-control:
+      ansible_host: 10.0.0.10
+      ip: 10.0.0.10
+      access_ip: 10.0.0.10
+    k8s-worker1:
+      ansible_host: 10.0.0.11
+      ip: 10.0.0.11
+      access_ip: 10.0.0.11
+  children:
+    kube_control_plane:
+      hosts:
+        k8s-control:
+    kube_node:
+      hosts:
+        k8s-control:
+        k8s-worker1:
+    etcd:
+      hosts:
+        k8s-control:
+    k8s_cluster:
+      children:
+        kube_control_plane:
+        kube_node:
+\end{lstlisting}
+
+4. Запустіть встановлення кластера за допомогою Ansible Playbook:
+\begin{lstlisting}
+ansible-playbook -i inventory/mycluster/hosts.yaml --become --become-user=root cluster.yml
+\end{lstlisting}
+
+\subsection{Крок 4. Створення та обслуговування Helm-репозиторію}
+Для збереження автономності розгортаємо мінімалістичний Helm-сервер на базі Nginx на інфраструктурному хості (\texttt{10.0.0.5}):
+
+1. Встановіть Nginx та створіть каталог для діаграм:
+\begin{lstlisting}
+sudo apt install -y nginx
+sudo mkdir -p /var/www/helm
+\end{lstlisting}
+
+2. Налаштуйте віртуальний хост Nginx для домену \texttt{charts.erp.uno} та перезапустіть службу.
+
+3. Увійдіть до каталогу з вашим Helm-чартом додатку ERP/1 та упакуйте його:
+\begin{lstlisting}
+helm package ./erp-backend --destination /var/www/helm/
+\end{lstlisting}
+
+4. Згенеруйте індекс репозиторію:
+\begin{lstlisting}
+helm repo index /var/www/helm/ --url http://charts.erp.uno/
+\end{lstlisting}
+
+\subsection{Крок 5. Налаштування власного Docker Registry}
+Для збереження образів контейнерів на інфраструктурному хості (\texttt{10.0.0.5}) розгортається локальний реєстр образів \texttt{registry.erp.uno}.
+
+1. Встановіть інструментарій \texttt{docker.io} та запустіть сервіс реєстру:
+\begin{lstlisting}
+sudo apt update
+sudo apt install -y docker.io
+sudo docker run -d -p 5000:5000 --restart=always --name registry registry:2
+\end{lstlisting}
+
+2. Налаштуйте Nginx як реверс-проксі для домену \texttt{registry.erp.uno} з SSL-сертифікатами, згенерованими локальним \texttt{ca-pki}:
+\begin{lstlisting}[mathescape=false]
+server {
+    listen 443 ssl;
+    server_name registry.erp.uno;
+
+    ssl_certificate /etc/nginx/certs/registry.crt;
+    ssl_certificate_key /etc/nginx/certs/registry.key;
+
+    location / {
+        proxy_pass http://localhost:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+\end{lstlisting}
+
+3. Зберіть локальний образ додатку на базі Alpine Linux, додайте тег та відправте його до власного реєстру:
+\begin{lstlisting}
+docker build -t registry.erp.uno/erpuno/crm-documents:1.0.0 .
+docker push registry.erp.uno/erpuno/crm-documents:1.0.0
+\end{lstlisting}
+
+\subsection{Крок 5а. Збірка образів додатків на базі Alpine Linux (Dockerfile)}
+Для забезпечення стабільної роботи BEAM-релізів у мінімалістичному оточенні Alpine Linux використовується такий багатоетапний (multi-stage) \texttt{Dockerfile}:
+
+\begin{lstlisting}
+FROM alpine:3.20 AS builder
+
+RUN apk add --no-cache erlang-dev elixir git build-base
+
+WORKDIR /opt/app
+
+RUN mix local.hex --force && \
+    mix local.rebar --force
+
+ENV MIX_ENV=prod
+
+COPY mix.exs mix.lock ./
+COPY config ./config
+RUN mix deps.get --only prod && mix deps.compile
+
+COPY lib ./lib
+RUN mix release
+
+FROM alpine:3.20
+
+RUN apk add --no-cache openssl ncurses-libs libstdc++
+
+WORKDIR /opt/app
+
+COPY --from=builder /opt/app/_build/prod/rel/erp_system ./
+
+ENV PORT=8080
+
+CMD ["./bin/erp_system", "start"]
+\end{lstlisting}
+
+\subsection{Крок 6. Налаштування GitOps доставки через ArgoCD}
+1. Встановіть клієнтський інструментарій \texttt{kubectl} на керуючій ноді та підключіть кластер:
+\begin{lstlisting}
+mkdir -p ~/.kube
+sudo cp /etc/kubernetes/admin.conf ~/.kube/config
+sudo chown $(id -u):$(id -g) ~/.kube/config
+\end{lstlisting}
+
+2. Встановіть ArgoCD:
+\begin{lstlisting}
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+\end{lstlisting}
+
+3. Створіть файл конфігурації додатку GitOps \texttt{erp-app.yaml} для відстеження інфраструктурного репозиторію \texttt{helm/}:
+\begin{lstlisting}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: erp-uno
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'http://git.erp.uno/erpuno/erp.uno.git'
+    path: helm
+    targetRevision: HEAD
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: erp
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    createNamespace: true
+\end{lstlisting}
+
+4. Налаштуйте Ingress-маршрутизацію для доступу до панелі управління ArgoCD за адресою \texttt{argocd.erp.uno} (файл \texttt{argocd-ingress.yaml}):
+\begin{lstlisting}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server-ingress
+  namespace: argocd
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: argocd.erp.uno
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: argocd-server
+            port:
+              number: 443
+  tls:
+  - hosts:
+    - argocd.erp.uno
+    secretName: argocd-server-tls
+\end{lstlisting}
+
+5. Розгорніть додаток та Ingress в ArgoCD:
+\begin{lstlisting}
+kubectl apply -f erp-app.yaml
+kubectl apply -f argocd-ingress.yaml
+\end{lstlisting}
+
+ArgoCD автоматично виявить зміни в Git-репозиторії, оновить ресурси у кластері та розгорне платформу «ERP/1» у просторі імен \texttt{erp}.
 
 \section{Тестові питання та завдання}
 \begin{enumerate}
     \item Які державні інформаційні системи України використовують компоненти ERP/1?
     \item Опишіть механізм побудови Erlang-кластера всередині Kubernetes без фіксованих IP-адрес нод.
+    \item Які переваги дає використання легковагого DNS-сервера \texttt{synrc/ns} у порівнянні з класичним BIND/CoreDNS в закритих контурах?
+    \item Які переваги та структуру мають Helm-діаграми для прикладних продуктів (ІКС) та інфраструктурних служб (SLUB) платформи ERP/1?
+    \item Опишіть модель асинхронного ETL-процесингу черг з використанням курсорів та контекстів на базі сховища KVS.
     \item Які ризики несе явище Split-Brain для розподіленої СУБД Mnesia та як їх мінімізувати?
-    \item \textbf{Практичне завдання}: Опишіть структуру Helm-файлу \texttt{values.yaml} для налаштування реплік бекенду ERP/1 з лімітами на використання оперативної пам'яті та ядер CPU.
+    \item \textbf{Практичне завдання}: Напишіть конфігураційний файл зони \texttt{synrc/ns} у нативному форматі Erlang Terms для обслуговування трьох нод бази даних Mnesia та однієї ноди ArgoCD.
+    \item \textbf{Практичне завдання}: Напишіть на Erlang функцію ініціалізації контексту воркера \texttt{\#etl\_context\{\}} з первинним зчитуванням курсора з KVS.
 \end{enumerate}

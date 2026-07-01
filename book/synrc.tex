@@ -19,6 +19,10 @@
 \usepackage{cite}
 \usepackage{moreverb}
 \usepackage{listings}
+\let\originalfootnotesize\footnotesize
+\let\oldverbatim\verbatim
+\let\oldendverbatim\endverbatim
+\renewenvironment{verbatim}{\originalfootnotesize\oldverbatim}{\oldendverbatim}
 \usepackage{caption}
 \usepackage{newunicodechar}
 \usepackage{makeidx}
