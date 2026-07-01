@@ -1,4 +1,4 @@
-{{- $standardComponents := list "lms-education" "hl7-health" "crm-documents" "acc-accounting" "wms-warehouse" "cart-registers" "olap-analytics" "pm-projects" "itsm-incidents" "ldap-directory" "ias-auth" "chat-messenger" "mail-delivery" "rest-bpe" "clearance-abac" "mach-ivr" "bpe-engine" "kvs-database" "nitro-portal" "n2o-server" "faiss-search" -}}
+{{- $standardComponents := list "lms-education" "hl7-health" "crm-documents" "acc-accounting" "wms-warehouse" "cart-registers" "olap-analytics" "pm-projects" "itsm-incidents" "ldap-directory" "ias-auth" "chat-messenger" "mail-delivery" "rest-bpe" "abac-clearance" "mach-ivr" "bpe-engine" "kvs-database" "nitro-portal" "n2o-server" "faiss-search" -}}
 
 {{- range $component := $standardComponents }}
 {{- $config := index $.Values $component }}

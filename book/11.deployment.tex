@@ -121,7 +121,7 @@ config :libcluster,
     \item \texttt{chat-messenger} --- високопродуктивний WebSocket брокер реального часу.
     \item \texttt{mail-delivery} --- поштовий сервер для асинхронного транспорту офіційної кореспонденції.
     \item \texttt{rest-bpe} --- REST API шлюз для керування бізнес-процесами на базі рушія BPE.
-    \item \texttt{clearance-abac} --- Go-сервер для авторизації, перевірки допусків та збору аудит-логів доступу.
+    \item \texttt{abac-clearance} --- Go-сервер для авторизації, перевірки допусків та збору аудит-логів доступу.
     \item \texttt{mach-ivr} --- сценарний рушій станів телефонії та автоінформатора (IVR).
     \item \texttt{bpe-engine} --- BPMN-рушій бізнес-процесів платформи.
     \item \texttt{kvs-database} --- вбудоване сховище даних на базі СУБД KVS.
@@ -139,31 +139,44 @@ config :libcluster,
 
 \begin{table}[h!]
 \small
-\begin{adjustwidth}{-2cm}{}
-\begin{tabular}{|l|p{4cm}|l|l|l|}
+\begin{adjustwidth}{-3cm}{}
+\begin{tabular}{|l|l|p{5cm}|l|l|}
 \hline
-\textbf{Компонент} & \textbf{Призначення} & \textbf{Протокол} & \textbf{Порт} & \textbf{Тип} \\ \hline
-\texttt{ns-dns} & DNS-сервер & UDP/TCP & 53 & Stateful \\ \hline
-\texttt{ca-pki} & Локальний PKI & TCP & 8045 & Stateful \\ \hline
-\texttt{vpn-wireguard} & VPN-шлюз & UDP & 51820 & Stateful \\ \hline
-\texttt{ldap-directory} & ABAC-директорія & TCP & 389/636 & Stateful \\ \hline
-\texttt{ias-auth} & Авторизація & TCP & 8080 & Stateless \\ \hline
-\texttt{chat-messenger} & WebSocket брокер & TCP & 8830 & Stateless \\ \hline
-\texttt{mail-delivery} & SMTP/IMAP сервер & TCP & 8043 & Stateless \\ \hline
-\texttt{rest-bpe} & BPE REST API & TCP & 8090 & Stateless \\ \hline
-\texttt{clearance-abac} & Мандати та аудит & TCP & 8085 & Stateless \\ \hline
-\texttt{mach-ivr} & Телефонія IVR & TCP & 8086 & Stateless \\ \hline
-\texttt{bpe-engine} & Рушій процесів BPMN & TCP & 8087 & Stateless \\ \hline
-\texttt{kvs-database} & Сховище KVS & TCP & 8088 & Stateful \\ \hline
-\texttt{nitro-portal} & Веб-інтерфейс & TCP & 8089 & Stateless \\ \hline
-\texttt{n2o-server} & WebSocket-сервер додатків & TCP & 8091 & Stateless \\ \hline
-\texttt{faiss-search} & Векторний пошук & TCP & 8092 & Stateless \\ \hline
-\texttt{crm-documents} & Управління документами & TCP & 8050 & Stateless \\ \hline
-\texttt{itsm-incidents} & Диспетчер інцидентів & TCP & 8053 & Stateless \\ \hline
-\texttt{prometheus} & Моніторинг метрик & TCP & 9090 & Stateful \\ \hline
-\texttt{grafana} & Дашборди метрик & TCP & 3000 & Stateless \\ \hline
-\texttt{loki} & Збір логів додатків & TCP & 3100 & Stateful \\ \hline
-\texttt{otel-collector} & OpenTelemetry шлюз & TCP/UDP & 4317/4318 & Stateless \\ \hline
+\textbf{Компонент} & \textbf{Namespace} & \textbf{Призначення} & \textbf{Порт} & \textbf{Тип} \\ \hline
+\multicolumn{5}{|c|}{\textbf{Інфраструктурні служби}} \\ \hline
+\texttt{ns-dns} & \texttt{root-infra} & DNS-сервер дозволу імен & 53:8153 & Stateful \\ \hline
+\texttt{vpn-wireguard} & \texttt{root-infra} & VPN-шлюз міжнодового зв'язку & 51820:8180 & Stateful \\ \hline
+\texttt{ca-pki} & \texttt{security} & Локальний PKI та випуск ключів & 8145 & Stateful \\ \hline
+\texttt{ldap-directory} & \texttt{security} & ABAC-директорія користувачів & 389:8189 & Stateful \\ \hline
+\texttt{abac-clearance} & \texttt{security} & Мандати та аудит логів доступу & 8185 & Stateless \\ \hline
+\texttt{ias-auth} & \texttt{security} & Автентифікація користувачів & 8120 & Stateless \\ \hline
+\texttt{kvs-database} & \texttt{database} & Розподілене сховище KVS & 8288 & Stateful \\ \hline
+\texttt{bpe-engine} & \texttt{database} & Рушій процесів BPMN & 8287 & Stateless \\ \hline
+\texttt{rest-bpe} & \texttt{database} & BPE REST API шлюз & 8290 & Stateless \\ \hline
+\texttt{prometheus} & \texttt{telemetry} & Моніторинг та збір метрик & 8690 & Stateful \\ \hline
+\texttt{grafana} & \texttt{telemetry} & Візуалізація та дашборди метрик & 8630 & Stateless \\ \hline
+\texttt{loki} & \texttt{telemetry} & Збір та зберігання логів BEAM & 8610 & Stateful \\ \hline
+\texttt{otel-collector} & \texttt{telemetry} & OpenTelemetry шлюз збору OTLP & 8617:8618:8689 & Stateless \\ \hline
+\hline
+\multicolumn{5}{|c|}{\textbf{Прикладні інформаційно-комунікаційні системи (ІКС)}} \\ \hline
+\texttt{cart-registers} & \texttt{erp} & Low-code рушій державних реєстрів & 8344 & Stateless \\ \hline
+\texttt{hl7-health} & \texttt{erp} & МІС-сервіси та FHIR API (eHealth) & 8341 & Stateless \\ \hline
+\texttt{crm-documents} & \texttt{erp} & Електронний документообіг & 8351 & Stateless \\ \hline
+\texttt{acc-accounting} & \texttt{erp} & Бухгалтерський та кадровий облік & 8342 & Stateless \\ \hline
+\texttt{wms-warehouse} & \texttt{erp} & Склад адресного зберігання ТМЦ & 8343 & Stateless \\ \hline
+\texttt{lms-education} & \texttt{erp} & LMS-сервіси та інтеграція з ЄДЕБО & 8350 & Stateless \\ \hline
+\texttt{chat-messenger} & \texttt{erp} & WebSocket брокер реального часу & 8430 & Stateless \\ \hline
+\texttt{mail-delivery} & \texttt{erp} & Поштовий сервер транспорту & 8443 & Stateless \\ \hline
+\texttt{mach-ivr} & \texttt{erp} & Телефонія та автоінформатор (IVR) & 8486 & Stateless \\ \hline
+\texttt{nitro-portal} & \texttt{erp} & Веб-інтерфейс рендерингу (nitro) & 8489 & Stateless \\ \hline
+\texttt{n2o-server} & \texttt{erp} & WebSocket-сервер додатків (n2o) & 8491 & Stateless \\ \hline
+\texttt{olap-analytics} & \texttt{erp} & DuckDB/MonetDB сховище & 8540 & Stateless \\ \hline
+\texttt{itsm-incidents} & \texttt{erp} & Диспетчер інцидентів та SLA & 8553 & Stateless \\ \hline
+\texttt{pm-projects} & \texttt{erp} & Управління задачами та Wiki & 8541 & Stateless \\ \hline
+\hline
+\multicolumn{5}{|c|}{\textbf{Сервіси штучного інтелекту (AI \& GPU)}} \\ \hline
+\texttt{ai-generation} & \texttt{ai} &  Інференс LLM & 8650 & Stateless \\ \hline
+\texttt{faiss-search} & \texttt{ai} & Векторний пошук та ШІ-сервіси & 8692 & Stateless \\ \hline
 \end{tabular}
 \end{adjustwidth}
 \caption{Специфікація інфраструктури та типів розгортання компонентів}
@@ -256,7 +269,7 @@ ca-pki:
 \texttt{synrc/chat} & \texttt{chat-messenger} \\ \hline
 \texttt{erpuno/mail} & \texttt{mail-delivery} \\ \hline
 \texttt{synrc/rest} & \texttt{rest-bpe} \\ \hline
-\texttt{zencrypted/clearance} & \texttt{clearance-abac} \\ \hline
+\texttt{zencrypted/clearance} & \texttt{abac-clearance} \\ \hline
 \texttt{synrc/mach} & \texttt{mach-ivr} \\ \hline
 \texttt{synrc/bpe} & \texttt{bpe-engine} \\ \hline
 \texttt{synrc/kvs} & \texttt{kvs-database} \\ \hline
