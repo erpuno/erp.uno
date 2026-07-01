@@ -144,35 +144,35 @@ config :libcluster,
 \hline
 \textbf{Компонент} & \textbf{Namespace} & \textbf{Призначення} & \textbf{Порт} & \textbf{Стан} \\ \hline
 \multicolumn{5}{|c|}{\textbf{Інфраструктурні служби}} \\ \hline
-\texttt{ns-nameserver} & \texttt{root-infra} & DNS-сервер дозволу імен & 53:8101 & Є \\ \hline
-\texttt{vpn-wireguard} & \texttt{root-infra} & VPN-шлюз міжнодового зв'язку & 51820:8102 & Є \\ \hline
-\texttt{ca-authority} & \texttt{security} & Локальний PKI та випуск ключів & 8201 & Є \\ \hline
-\texttt{ldap-directory} & \texttt{security} & ABAC-директорія користувачів & 389:8202 & Є \\ \hline
-\texttt{abac-clearance} & \texttt{security} & Мандати та аудит логів доступу & 8203 & Нема \\ \hline
-\texttt{ias-authorization} & \texttt{security} & Автентифікація користувачів & 8204 & Нема \\ \hline
-\texttt{kvs-database} & \texttt{database} & Розподілене сховище KVS & 8301 & Є \\ \hline
-\texttt{bpe-workflow} & \texttt{database} & Рушій процесів BPMN & 8302 & Нема \\ \hline
-\texttt{rest-openapi} & \texttt{web} & BPE REST API шлюз & 8303 & Нема \\ \hline
-\texttt{mach-ivr} & \texttt{web} & Телефонія та автоінформатор (IVR) & 8509 & Нема \\ \hline
-\texttt{nitro-portal} & \texttt{web} & Веб-інтерфейс рендерингу (nitro) & 8510 & Нема \\ \hline
-\texttt{n2o-server} & \texttt{web} & WebSocket-сервер додатків (n2o) & 8511 & Нема \\ \hline
-\texttt{prometheus} & \texttt{telemetry} & Моніторинг та збір метрик & 8401 & Є \\ \hline
-\texttt{grafana} & \texttt{telemetry} & Візуалізація та дашборди метрик & 8402 & Нема \\ \hline
-\texttt{loki} & \texttt{telemetry} & Збір та зберігання логів BEAM & 8403 & Є \\ \hline
-\texttt{open-telemetry} & \texttt{telemetry} & OpenTelemetry шлюз збору OTLP & 8404:8405:8406 & Нема \\ \hline
+\texttt{ns-nameserver}     & \texttt{core}      & DNS-сервер дозволу імен           & 53:8101 & Є \\ \hline
+\texttt{vpn-wireguard}     & \texttt{core}      & VPN-шлюз міжнодового зв'язку      & 51820:8102 & Є \\ \hline
+\texttt{ca-authority}      & \texttt{security}  & Локальний PKI та випуск ключів    & 8201 & Є \\ \hline
+\texttt{ldap-directory}    & \texttt{security}  & ABAC-директорія користувачів      & 389:8202 & Є \\ \hline
+\texttt{abac-clearance}    & \texttt{security}  & Мандати та аудит логів доступу    & 8203 & Є \\ \hline
+\texttt{ias-authorization} & \texttt{security}  & Автентифікація користувачів       & 8204 & Є \\ \hline
+\texttt{kvs-database}      & \texttt{database}  & Розподілене сховище KVS           & 8301 & Є \\ \hline
+\texttt{bpe-workflow}      & \texttt{database}  & Рушій процесів BPMN               & 8302 & Є \\ \hline
+\texttt{rest-openapi}      & \texttt{web}       & BPE REST API шлюз                 & 8303 & Нема \\ \hline
+\texttt{mach-ivr}          & \texttt{web}       & Телефонія та автоінформатор (IVR) & 8509 & Нема \\ \hline
+\texttt{nitro-portal}      & \texttt{web}       & Веб-інтерфейс рендерингу (nitro)  & 8510 & Нема \\ \hline
+\texttt{n2o-server}        & \texttt{web}       & WebSocket-сервер додатків (n2o)   & 8511 & Нема \\ \hline
+\texttt{prometheus}        & \texttt{telemetry} & Моніторинг та збір метрик         & 8401 & Є \\ \hline
+\texttt{grafana}           & \texttt{telemetry} & Візуалізація та дашборди метрик   & 8402 & Нема \\ \hline
+\texttt{loki}              & \texttt{telemetry} & Збір та зберігання логів BEAM     & 8403 & Є \\ \hline
+\texttt{open-telemetry}    & \texttt{telemetry} & OpenTelemetry шлюз збору OTLP     & 8404:8405:8406 & Нема \\ \hline
 \hline
 \multicolumn{5}{|c|}{\textbf{Прикладні інформаційно-комунікаційні системи (ІКС)}} \\ \hline
-\texttt{cart-registers} & \texttt{erp} & Low-code рушій державних реєстрів & 8501 & Є \\ \hline
-\texttt{hl7-health} & \texttt{erp} & МІС-сервіси та FHIR API (eHealth) & 8502 & Є \\ \hline
-\texttt{crm-documents} & \texttt{erp} & Електронний документообіг & 8503 & Є \\ \hline
-\texttt{acc-accounting} & \texttt{erp} & Бухгалтерський та кадровий облік & 8504 & Є \\ \hline
-\texttt{wms-warehouse} & \texttt{erp} & Склад адресного зберігання ТМЦ & 8505 & Є \\ \hline
-\texttt{lms-education} & \texttt{erp} & LMS-сервіси та інтеграція з ЄДЕБО & 8506 & Є \\ \hline
-\texttt{chat-messenger} & \texttt{erp} & WebSocket брокер реального часу & 8507 & Є \\ \hline
-\texttt{mail-delivery} & \texttt{erp} & Поштовий сервер транспорту & 8508 & Є \\ \hline
-\texttt{olap-analytics} & \texttt{erp} & DuckDB/MonetDB сховище & 8512 & Є \\ \hline
-\texttt{itsm-incidents} & \texttt{erp} & Диспетчер інцидентів та SLA & 8513 & Є \\ \hline
-\texttt{pm-projects} & \texttt{erp} & Управління задачами та Wiki & 8514 & Є \\ \hline
+\texttt{cart-registers}    & \texttt{erp}       & Low-code рушій державних реєстрів & 8501 & Є \\ \hline
+\texttt{hl7-health}        & \texttt{erp}       & МІС-сервіси та FHIR API (eHealth) & 8502 & Є \\ \hline
+\texttt{crm-documents}     & \texttt{erp}       & Електронний документообіг         & 8503 & Є \\ \hline
+\texttt{acc-accounting}    & \texttt{erp}       & Бухгалтерський та кадровий облік  & 8504 & Є \\ \hline
+\texttt{wms-warehouse}     & \texttt{erp}       & Склад адресного зберігання ТМЦ    & 8505 & Є \\ \hline
+\texttt{lms-education}     & \texttt{erp}       & LMS-сервіси та інтеграція з ЄДЕБО & 8506 & Є \\ \hline
+\texttt{chat-messenger}    & \texttt{erp}       & WebSocket брокер реального часу   & 8507 & Є \\ \hline
+\texttt{mail-delivery}     & \texttt{erp}       & Поштовий сервер транспорту        & 8508 & Є \\ \hline
+\texttt{olap-analytics}    & \texttt{erp}       & DuckDB/MonetDB сховище            & 8512 & Є \\ \hline
+\texttt{itsm-incidents}    & \texttt{erp}       & Диспетчер інцидентів та SLA       & 8513 & Є \\ \hline
+\texttt{pm-projects}       & \texttt{erp}       & Управління задачами та листами    & 8514 & Є \\ \hline
 \hline
 \multicolumn{5}{|c|}{\textbf{Сервіси штучного інтелекту (AI \& GPU)}} \\ \hline
 \texttt{ai-generation} & \texttt{ai} &  Інференс LLM & 8601 & Нема \\ \hline
