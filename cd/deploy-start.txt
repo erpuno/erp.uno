@@ -1,0 +1,71 @@
+╔════════════════════════════════════════════════════════╗
+║          ERP.uno Kubernetes Deployment                ║
+╚════════════════════════════════════════════════════════╝
+
+[1/6] Verifying Kubernetes cluster...
+    ✓ Cluster version: 
+    ✓ Nodes:        1
+
+[2/6] Creating namespace...
+namespace/erp-uno unchanged
+    ✓ Namespace 'erp-uno' ready
+
+[3/6] Setting up storage...
+    ✓ Using existing StorageClass: hostpath
+
+[4/6] Deploying Helm chart...
+    Helm version: v4.2.2+gb05881c
+Release "erp-uno" does not exist. Installing it now.
+Error: Chart.yaml file is missing
+    ✓ Helm deployment complete
+
+[5/6] Waiting for critical services (timeout 3m)...
+    Waiting for ns-dns... ⚠ (timeout, check logs)
+    Waiting for kvs-database... ⚠ (timeout, check logs)
+    Waiting for ias-auth... ⚠ (timeout, check logs)
+
+[6/6] Deployment Summary
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    Pod Status:
+    NAME                              READY   STATUS    RESTARTS   AGE   IP           NODE                    NOMINATED NODE   READINESS GATES
+    docker-registry-f96d84c65-nnhkr   1/1     Running   0          21m   10.244.0.6   desktop-control-plane   <none>           <none>
+
+    Service Endpoints:
+    NAME              TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE   SELECTOR
+    docker-registry   ClusterIP   10.96.18.221   <none>        5000/TCP   21m   app=docker-registry
+
+    PVC Status:
+    NAME               STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+    registry-storage   Bound    pvc-e67d50df-c37b-42b1-9384-b1ca2e0e99ce   50Gi       RWO            standard       <unset>                 21m
+
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Deployment started! Next steps:
+
+  1️⃣  Monitor deployment:
+     kubectl get pods -n erp-uno -w
+
+  2️⃣  View logs:
+     kubectl logs -n erp-uno -l service=ns-dns -f
+
+  3️⃣  Port-forward to UI (Nitro Portal):
+     kubectl port-forward -n erp-uno svc/nitro-portal 8510:8510
+     → Open http://localhost:8510
+
+  4️⃣  Access Grafana monitoring:
+     kubectl port-forward -n erp-uno svc/grafana 8402:8402
+     → Open http://localhost:8402 (user: admin, pass: admin)
+
+  5️⃣  Check all resources:
+     kubectl get all -n erp-uno
+
+  6️⃣  Describe deployment:
+     kubectl describe deployment -n erp-uno <service-name>
+
+  📖 Full documentation:
+     cat /tmp/erp.uno/cd/ARCHITECTURE.txt
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Deploy timestamp: 2026-07-03T17:20:41Z
+

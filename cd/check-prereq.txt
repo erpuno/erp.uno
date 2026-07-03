@@ -1,0 +1,55 @@
+╔════════════════════════════════════════════════════════╗
+║        ERP.uno Deployment Prerequisites Check         ║
+╚════════════════════════════════════════════════════════╝
+
+[1] kubectl CLI
+    ✓ kubectl  installed
+
+[2] Helm 3
+    ✓ Helm v4.2.2+gb05881c installed
+
+[3] Kubernetes Cluster
+    ✓ Cluster accessible
+       Version: 
+       Nodes:        1
+       Total CPU: 10m
+       Total Memory: 7GB
+       ⚠ Cluster resources may be tight for 25 services
+          Recommended: ≥4 CPU cores, ≥16GB RAM
+
+[4] Storage
+    ✓ Default StorageClass: standard
+
+[5] Ingress Controller
+    ⚠ No Ingress controller detected
+       (Required for external access to Nitro Portal)
+       Install: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.0/deploy/static/provider/cloud/deploy.yaml
+
+[6] Cluster DNS
+    ✓ CoreDNS available
+
+[7] Namespace Setup
+    ⚠ Namespace 'erp-uno' already exists
+       To redeploy: kubectl delete namespace erp-uno
+
+[8] Image Registry
+    Configured: registry.erp.uno
+    ⚠ Ensure images are accessible from cluster
+       For private registries: set ImagePullSecret
+
+[9] Docker (for local testing with docker-compose)
+    ✓ Docker 29.6.1, installed
+
+╔════════════════════════════════════════════════════════╗
+║                      Next Steps                        ║
+╚════════════════════════════════════════════════════════╝
+
+If all checks pass (or only warnings), run:
+
+  bash deploy-start.sh
+
+Or deploy manually:
+
+  cd helm
+  helm install erp-uno . --namespace erp-uno --create-namespace
+
