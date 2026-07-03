@@ -1,0 +1,313 @@
+---
+# Source: erp-uno/templates/namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: erp-uno
+  labels:
+    helm.sh/chart: erp-uno-2024.6.15
+    app.kubernetes.io/name: erp-uno
+    app.kubernetes.io/instance: erp-uno
+    app.kubernetes.io/version: "2024.6.15"
+    app.kubernetes.io/managed-by: Helm
+
+---
+# Source: erp-uno/templates/rbac.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: erp-uno-sa
+  namespace: erp-uno
+  labels:
+    helm.sh/chart: erp-uno-2024.6.15
+    app.kubernetes.io/name: erp-uno
+    app.kubernetes.io/instance: erp-uno
+    app.kubernetes.io/version: "2024.6.15"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: erp-uno/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: erp-uno-config
+  namespace: erp-uno
+  labels:
+    helm.sh/chart: erp-uno-2024.6.15
+    app.kubernetes.io/name: erp-uno
+    app.kubernetes.io/instance: erp-uno
+    app.kubernetes.io/version: "2024.6.15"
+    app.kubernetes.io/managed-by: Helm
+data:
+  DOMAIN: erp.uno
+  ENVIRONMENT: production
+  REGISTRY: docker.io
+  VERSION: 2024.6.15
+
+---
+# Source: erp-uno/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: erp-uno-role
+  namespace: erp-uno
+  labels:
+    helm.sh/chart: erp-uno-2024.6.15
+    app.kubernetes.io/name: erp-uno
+    app.kubernetes.io/instance: erp-uno
+    app.kubernetes.io/version: "2024.6.15"
+    app.kubernetes.io/managed-by: Helm
+rules:
+- apiGroups: [""]
+  resources: ["pods", "endpoints"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list"]
+---
+# Source: erp-uno/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: erp-uno-rolebinding
+  namespace: erp-uno
+  labels:
+    helm.sh/chart: erp-uno-2024.6.15
+    app.kubernetes.io/name: erp-uno
+    app.kubernetes.io/instance: erp-uno
+    app.kubernetes.io/version: "2024.6.15"
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: erp-uno-role
+subjects:
+- kind: ServiceAccount
+  name: erp-uno-sa
+  namespace: erp-uno
+
+---
+# Source: erp-uno/templates/deployment.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-demo
+  namespace: erp-uno
+spec:
+  ports:
+  - port: 3000
+    targetPort: 3000
+  selector:
+    app: grafana-demo
+
+---
+# Source: erp-uno/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: erp-uno
+  labels:
+    helm.sh/chart: erp-uno-2024.6.15
+    app.kubernetes.io/name: erp-uno
+    app.kubernetes.io/instance: erp-uno
+    app.kubernetes.io/version: "2024.6.15"
+    app.kubernetes.io/managed-by: Helm
+    service: grafana
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: erp-uno
+    app.kubernetes.io/instance: erp-uno
+    service: grafana
+  ports:
+  - name: http
+    port: 8402
+    targetPort: 8402
+    protocol: TCP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+---
+# Source: erp-uno/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: erp-uno
+  labels:
+    helm.sh/chart: erp-uno-2024.6.15
+    app.kubernetes.io/name: erp-uno
+    app.kubernetes.io/instance: erp-uno
+    app.kubernetes.io/version: "2024.6.15"
+    app.kubernetes.io/managed-by: Helm
+    service: prometheus
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: erp-uno
+    app.kubernetes.io/instance: erp-uno
+    service: prometheus
+  ports:
+  - name: http
+    port: 8401
+    targetPort: 8401
+    protocol: TCP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+
+---
+# Source: erp-uno/templates/deployment.yaml
+# Grafana with emptyDir (temporary storage for demo)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-demo
+  namespace: erp-uno
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana-demo
+  template:
+    metadata:
+      labels:
+        app: grafana-demo
+    spec:
+      containers:
+      - name: grafana
+        image: grafana/grafana:11.1.0
+        ports:
+        - containerPort: 3000
+        env:
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          value: admin
+        - name: GF_SECURITY_ADMIN_USER
+          value: admin
+        volumeMounts:
+        - name: storage
+          mountPath: /var/lib/grafana
+      volumes:
+      - name: storage
+        emptyDir: {}
+---
+# Source: erp-uno/templates/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: prometheus
+  namespace: erp-uno
+  labels:
+    helm.sh/chart: erp-uno-2024.6.15
+    app.kubernetes.io/name: erp-uno
+    app.kubernetes.io/instance: erp-uno
+    app.kubernetes.io/version: "2024.6.15"
+    app.kubernetes.io/managed-by: Helm
+    service: prometheus
+spec:
+  serviceName: prometheus
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: erp-uno
+      app.kubernetes.io/instance: erp-uno
+      service: prometheus
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: erp-uno
+        app.kubernetes.io/instance: erp-uno
+        service: prometheus
+    spec:
+      serviceAccountName: erp-uno-sa
+      containers:
+      - name: prometheus
+        image: docker.io/prom/prometheus:v2.53.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8401
+          protocol: TCP
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: POD_ORDINAL
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.annotations['statefulset.kubernetes.io/pod-index']
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        volumeMounts:
+        - name: data
+          mountPath: /prometheus
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: service
+                  operator: In
+                  values:
+                  - prometheus
+              topologyKey: kubernetes.io/hostname
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      labels:
+        helm.sh/chart: erp-uno-2024.6.15
+        app.kubernetes.io/name: erp-uno
+        app.kubernetes.io/instance: erp-uno
+        app.kubernetes.io/version: "2024.6.15"
+        app.kubernetes.io/managed-by: Helm
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: local-path
+      resources:
+        requests:
+          storage: 50Gi
