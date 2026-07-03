@@ -6,7 +6,7 @@ global:
   imagePullPolicy: IfNotPresent
   # Calendar versioning: X.Y.Z = years.months.days
   version: "2024.6.15"
-  
+
   # Resource defaults for stateless services
   defaults:
     stateless:
@@ -23,7 +23,7 @@ global:
       limits:
         cpu: 500m
         memory: 512Mi
-  
+
   # PVC defaults
   storage:
     storageClass: local-path  # or ceph-rbd, longhorn for multi-node

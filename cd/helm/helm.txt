@@ -1,0 +1,39 @@
+╔════════════════════════════════════════════════════════╗
+║         Helm Chart Init & Validation                  ║
+╚════════════════════════════════════════════════════════╝
+
+[1/4] Checking Helm...
+    ✓ Helm v4.2.2
+
+[2/4] Validating chart structure...
+    ✓ Chart.yaml exists
+    ✓ templates/ directory exists
+    ✓ values.yaml exists
+
+[3/4] Checking .helmignore...
+    ⓘ No .helmignore (good)
+
+[4/4] Linting chart...
+    ✓ Lint passed
+
+╔════════════════════════════════════════════════════════╗
+║              Chart Ready to Deploy ✓                  ║
+╚════════════════════════════════════════════════════════╝
+
+📋 Chart Info:
+    name: erp-uno
+    description: "ERP/1: Підприємство"
+    version: 2024.6.15
+      - name: 5HT
+
+🚀 Next Steps:
+
+  1. Render templates:
+     helm template erp-uno /Users/tonpa/depot/erpuno/erp.uno/cd/helm --values /Users/tonpa/depot/erpuno/erp.uno/cd/helm/values.yaml > erp-rendered.yaml
+
+  2. Deploy to Kubernetes:
+     kubectl apply -n erp-uno -f erp-rendered.yaml
+
+  3. Or use Helm directly:
+     helm install erp-uno /Users/tonpa/depot/erpuno/erp.uno/cd/helm --namespace erp-uno --create-namespace
+

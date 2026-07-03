@@ -20,7 +20,6 @@ spec:
         {{- include "erp-uno.serviceSelectorLabels" (merge (dict "service" $name) $) | nindent 8 }}
     spec:
       serviceAccountName: {{ $.Values.namespace }}-sa
-      imagePullPolicy: {{ $.Values.global.imagePullPolicy }}
       containers:
       - name: {{ $name }}
         image: {{ $.Values.global.registry }}/{{ $service.image }}
@@ -55,7 +54,7 @@ spec:
         - name: KVS_BACKEND
           value: {{ $service.backend }}
         {{- end }}
-        {{- if $service.gpu.enabled }}
+        {{- if and $service.gpu $service.gpu.enabled }}
         - name: CUDA_VISIBLE_DEVICES
           value: "0"
         {{- end }}
@@ -78,7 +77,7 @@ spec:
           failureThreshold: 2
         {{- end }}
         {{- include "erp-uno.resources" (merge (dict "type" "stateless" "resources" $service.resources "defaults" $.Values.global.defaults) $) | nindent 8 }}
-        {{- if $service.gpu.enabled }}
+        {{- if and $service.gpu $service.gpu.enabled }}
         resources:
           requests:
             cpu: {{ $service.resources.requests.cpu }}

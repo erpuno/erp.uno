@@ -21,7 +21,6 @@ spec:
         {{- include "erp-uno.serviceSelectorLabels" (merge (dict "service" $name) $) | nindent 8 }}
     spec:
       serviceAccountName: {{ $.Values.namespace }}-sa
-      imagePullPolicy: {{ $.Values.global.imagePullPolicy }}
       containers:
       - name: {{ $name }}
         image: {{ $.Values.global.registry }}/{{ $service.image }}
@@ -79,7 +78,7 @@ spec:
           failureThreshold: 2
         {{- end }}
         {{- include "erp-uno.resources" (merge (dict "type" "stateful" "resources" $service.resources "defaults" $.Values.global.defaults) $) | nindent 8 }}
-        {{- if $service.persistence.enabled }}
+        {{- if and $service.persistence $service.persistence.enabled }}
         volumeMounts:
         - name: data
           mountPath: {{ $service.persistence.mountPath }}
@@ -103,7 +102,7 @@ spec:
                   values:
                   - {{ $name }}
               topologyKey: kubernetes.io/hostname
-  {{- if $service.persistence.enabled }}
+  {{- if and $service.persistence $service.persistence.enabled }}
   volumeClaimTemplates:
   - metadata:
       name: data

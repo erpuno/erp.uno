@@ -1,6 +1,6 @@
 apiVersion: v2
 name: erp-uno
-description: Modular ERP platform with 25 microservices (BEAM + infrastructure)
+description: "ERP/1: Підприємство"
 type: application
 version: 2024.6.15
 appVersion: "2024.6.15"
@@ -10,4 +10,4 @@ keywords:
   - kubernetes
   - gitops
 maintainers:
-  - name: ERP.uno Team
+  - name: 5HT

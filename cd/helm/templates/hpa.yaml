@@ -1,5 +1,5 @@
 {{- range $name, $service := .Values.services }}
-{{- if and $service.enabled $service.hpa.enabled }}
+{{- if and $service.enabled $service.hpa (and $service.hpa $service.hpa.enabled) }}
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
