@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-demo
+  namespace: erp-uno
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus-demo
+  template:
+    metadata:
+      labels:
+        app: prometheus-demo
+    spec:
+      containers:
+      - name: prometheus
+        image: prom/prometheus:v2.53.0
+        ports:
+        - containerPort: 9090
+        volumeMounts:
+        - name: storage
+          mountPath: /prometheus
+      volumes:
+      - name: storage
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-demo
+  namespace: erp-uno
+spec:
+  ports:
+  - port: 9090
+    targetPort: 9090
+  selector:
+    app: prometheus-demo

@@ -1,128 +1,71 @@
 #!/bin/bash
-# Quick Start: Deploy ERP.uno on Kubernetes
+# Deploy ERP.uno Helm Chart
 
-set -eu
+set -e
 
-REPO_DIR="/tmp/erp.uno"
 NAMESPACE="erp-uno"
-DOMAIN="${DOMAIN:-erp.uno}"
-ENVIRONMENT="${ENVIRONMENT:-production}"
-REGISTRY="${REGISTRY:-registry.erp.uno}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CHART_DIR="$SCRIPT_DIR/helm"
 
 echo "╔════════════════════════════════════════════════════════╗"
-echo "║          ERP.uno Kubernetes Deployment                ║"
+echo "║        ERP.uno Helm Chart Deployment                  ║"
 echo "╚════════════════════════════════════════════════════════╝"
 
-# Step 1: Verify Kubernetes cluster
-echo -e "\n[1/6] Verifying Kubernetes cluster..."
-if ! kubectl cluster-info &>/dev/null; then
-  echo "❌ ERROR: Kubernetes cluster not accessible"
-  echo "   Make sure: kubectl is configured and cluster is running"
+# Step 1: Verify prerequisites
+echo -e "\n[1/5] Verifying prerequisites..."
+if ! kubectl get namespace $NAMESPACE &>/dev/null; then
+  echo "❌ Namespace $NAMESPACE not found"
+  echo "   Run: bash $SCRIPT_DIR/init.sh"
   exit 1
 fi
+echo "    ✓ Namespace exists"
 
-K8S_VERSION=$(kubectl version --short 2>/dev/null | grep "Server" | awk '{print $3}')
-NODE_COUNT=$(kubectl get nodes --no-headers | wc -l)
-echo "    ✓ Cluster version: $K8S_VERSION"
-echo "    ✓ Nodes: $NODE_COUNT"
-
-# Step 2: Create namespace
-echo -e "\n[2/6] Creating namespace..."
-kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
-echo "    ✓ Namespace '$NAMESPACE' ready"
-
-# Step 3: Apply StorageClass (local-path for single-node, adjust for multi-node)
-echo -e "\n[3/6] Setting up storage..."
-STORAGE_CLASS=$(kubectl get sc -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "local-path")
-if [ "$STORAGE_CLASS" != "local-path" ]; then
-  echo "    ✓ Using existing StorageClass: $STORAGE_CLASS"
-else
-  echo "    ! StorageClass 'local-path' not found"
-  echo "      Applying default StorageClass (local-path provisioner)..."
-  kubectl apply -f $REPO_DIR/cd/k8s/storage-classes.yaml 2>/dev/null || echo "      (skipped, may require manual setup)"
-fi
-
-# Step 4: Deploy Helm chart
-echo -e "\n[4/6] Deploying Helm chart..."
 if ! command -v helm &> /dev/null; then
-  echo "❌ ERROR: Helm not installed"
-  echo "   Install from: https://helm.sh/docs/intro/install/"
+  echo "❌ Helm not installed"
   exit 1
 fi
+echo "    ✓ Helm installed"
 
-HELM_VERSION=$(helm version --short)
-echo "    Helm version: $HELM_VERSION"
+# Step 2: Apply storage classes
+echo -e "\n[2/5] Applying storage configuration..."
+kubectl apply -f "$SCRIPT_DIR/k8s/storage-class.yaml"
+echo "    ✓ StorageClass ready"
 
-cd $REPO_DIR/cd/helm
+# Step 3: Render Helm chart
+echo -e "\n[3/5] Rendering Helm chart..."
+RENDERED_FILE="/tmp/erp-uno-rendered.yaml"
 
-helm upgrade --install erp-uno . \
+helm template erp-uno "$CHART_DIR" \
   --namespace $NAMESPACE \
-  --values values.yaml \
-  --set global.domain=$DOMAIN \
-  --set global.environment=$ENVIRONMENT \
-  --set global.registry=$REGISTRY \
-  --timeout 5m \
-  --wait 2>&1 | tail -5
+  --values "$CHART_DIR/values.yaml" > "$RENDERED_FILE"
 
-echo "    ✓ Helm deployment complete"
+if [ ! -f "$RENDERED_FILE" ] || [ ! -s "$RENDERED_FILE" ]; then
+  echo "❌ Failed to render Helm chart"
+  exit 1
+fi
+echo "    ✓ Chart rendered: $RENDERED_FILE"
 
-# Step 5: Wait for critical services
-echo -e "\n[5/6] Waiting for critical services (timeout 3m)..."
+# Step 4: Deploy via kubectl
+echo -e "\n[4/5] Deploying ERP.uno..."
+kubectl apply -n $NAMESPACE -f "$RENDERED_FILE"
+echo "    ✓ Deployment applied"
 
-CRITICAL_SERVICES=("ns-dns" "kvs-database" "ias-auth")
-for svc in "${CRITICAL_SERVICES[@]}"; do
-  echo -n "    Waiting for $svc... "
-  if kubectl wait --for=condition=ready pod \
-      -l service=$svc \
-      -n $NAMESPACE \
-      --timeout=180s 2>/dev/null; then
-    echo "✓"
-  else
-    echo "⚠ (timeout, check logs)"
-  fi
-done
+# Step 5: Deploy monitoring stack
+echo -e "\n[5/5] Setting up monitoring..."
+bash "$SCRIPT_DIR/monitoring.sh"
 
-# Step 6: Show deployment summary
-echo -e "\n[6/6] Deployment Summary"
-echo "    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+# Summary
+echo -e "\n╔════════════════════════════════════════════════════════╗"
+echo "║              Deployment Complete ✓                    ║"
+echo "╚════════════════════════════════════════════════════════╝"
 
-echo -e "\n    Pod Status:"
-kubectl get pods -n $NAMESPACE -o wide 2>/dev/null | awk 'NR==1 || NR<=11 {print "    "$0}' || echo "    (pods loading)"
+echo -e "\n📊 Check Status:\n"
+echo "   kubectl get pods -n $NAMESPACE -w"
+echo "   kubectl get svc -n $NAMESPACE"
+echo "   kubectl get pvc -n $NAMESPACE"
 
-echo -e "\n    Service Endpoints:"
-kubectl get svc -n $NAMESPACE -o wide 2>/dev/null | awk 'NR==1 || NR<=6 {print "    "$0}' || echo "    (services loading)"
+echo -e "\n🌐 Access Services:\n"
+echo "   Prometheus: kubectl port-forward -n $NAMESPACE svc/prometheus-demo 9090:9090"
+echo "   Grafana: kubectl port-forward -n $NAMESPACE svc/grafana-demo 3000:3000"
 
-echo -e "\n    PVC Status:"
-kubectl get pvc -n $NAMESPACE 2>/dev/null | awk 'NR==1 || NR<=6 {print "    "$0}' || echo "    (no PVCs yet)"
-
-echo -e "\n    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-# Show next steps
-echo -e "\n✓ Deployment started! Next steps:\n"
-
-echo "  1️⃣  Monitor deployment:"
-echo "     kubectl get pods -n $NAMESPACE -w"
-
-echo -e "\n  2️⃣  View logs:"
-echo "     kubectl logs -n $NAMESPACE -l service=ns-dns -f"
-
-echo -e "\n  3️⃣  Port-forward to UI (Nitro Portal):"
-echo "     kubectl port-forward -n $NAMESPACE svc/nitro-portal 8510:8510"
-echo "     → Open http://localhost:8510"
-
-echo -e "\n  4️⃣  Access Grafana monitoring:"
-echo "     kubectl port-forward -n $NAMESPACE svc/grafana 8402:8402"
-echo "     → Open http://localhost:8402 (user: admin, pass: admin)"
-
-echo -e "\n  5️⃣  Check all resources:"
-echo "     kubectl get all -n $NAMESPACE"
-
-echo -e "\n  6️⃣  Describe deployment:"
-echo "     kubectl describe deployment -n $NAMESPACE <service-name>"
-
-echo -e "\n  📖 Full documentation:"
-echo "     cat $REPO_DIR/cd/ARCHITECTURE.txt"
-
-echo -e "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Deploy timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 echo ""

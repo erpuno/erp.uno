@@ -14,7 +14,7 @@ echo "╚═══════════════════════�
 # Step 1: Deploy Registry to Kubernetes
 echo -e "\n[1/5] Deploying Docker Registry to Kubernetes..."
 
-kubectl apply -f - <<EOF
+kubectl apply -f - <<YAML
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -23,7 +23,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: standard
+  storageClassName: local-path
   resources:
     requests:
       storage: 50Gi
@@ -80,7 +80,7 @@ spec:
     protocol: TCP
   selector:
     app: docker-registry
-EOF
+YAML
 
 echo "    ✓ Registry deployment submitted"
 
@@ -123,16 +123,15 @@ DOCKER_CONFIG="$HOME/.docker/daemon.json"
 if [ ! -f "$DOCKER_CONFIG" ]; then
   echo "    Creating $DOCKER_CONFIG..."
   mkdir -p "$HOME/.docker"
-  cat > "$DOCKER_CONFIG" <<EOF
+  cat > "$DOCKER_CONFIG" <<JSON
 {
   "insecure-registries": [
     "$REGISTRY_HOST:$REGISTRY_PORT",
     "localhost:$REGISTRY_PORT"
   ]
 }
-EOF
+JSON
 else
-  # Check if already configured
   if grep -q "$REGISTRY_HOST" "$DOCKER_CONFIG"; then
     echo "    ⓘ $REGISTRY_HOST already in Docker config"
   else
@@ -147,17 +146,14 @@ echo "    Config: $DOCKER_CONFIG"
 # Step 4: Port-forward
 echo -e "\n[5/5] Setting up port-forward..."
 
-# Kill existing port-forward
 pkill -f "port-forward.*docker-registry" 2>/dev/null || true
 sleep 1
 
-# Start new port-forward
 kubectl port-forward -n $NAMESPACE svc/docker-registry $REGISTRY_PORT:$REGISTRY_PORT &
 PF_PID=$!
 
 sleep 2
 
-# Test connectivity
 echo "    Testing registry connectivity..."
 if curl -s http://localhost:$REGISTRY_PORT/v2/ > /dev/null 2>&1; then
   echo "    ✓ Registry accessible at http://localhost:$REGISTRY_PORT"

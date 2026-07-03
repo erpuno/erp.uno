@@ -14,7 +14,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: registry-ui
-  namespace: $NAMESPACE
+  namespace: erp-uno
   labels:
     app: registry-ui
 spec:
@@ -51,7 +51,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: registry-ui
-  namespace: $NAMESPACE
+  namespace: erp-uno
   labels:
     app: registry-ui
 spec:

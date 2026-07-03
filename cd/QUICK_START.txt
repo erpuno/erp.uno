@@ -16,19 +16,19 @@ Your environment has:
 
 ```bash
 # Step 1: Initialize namespace
-bash /tmp/init.sh
+bash /Users/tonpa/depot/erpuno/erp.uno/cd/init.sh
 
 # Step 2: Setup local Docker Registry
-bash /tmp/setup-registry.sh
+bash /Users/tonpa/depot/erpuno/erp.uno/cd/setup-registry.sh
 
 # Step 3: Deploy ERP.uno
-bash /tmp/deploy-start.sh
+bash /Users/tonpa/depot/erpuno/erp.uno/cd/deploy-start.sh
 ```
 
 Optional:
 ```bash
 # Step 2b: Deploy Registry UI (for browsing images)
-bash /tmp/setup-registry-ui.sh
+bash /Users/tonpa/depot/erpuno/erp.uno/cd/setup-registry-ui.sh
 ```
 
 **Total time**: ~10-15 minutes
@@ -40,7 +40,7 @@ bash /tmp/setup-registry-ui.sh
 ### Option 1: Quick Deploy (Recommended)
 
 ```bash
-bash /tmp/deploy-start.sh
+bash /Users/tonpa/depot/erpuno/erp.uno/cd/deploy-start.sh
 ```
 
 This will:
@@ -58,8 +58,8 @@ This will:
 ### Option 2: Manual Helm Deploy
 
 ```bash
-# Clone repo (already done at /tmp/erp.uno)
-cd /tmp/erp.uno/cd/helm
+# Clone repo (already done at /Users/tonpa/depot/erpuno/erp.uno/cd/erp.uno)
+cd /Users/tonpa/depot/erpuno/erp.uno/cd/erp.uno/cd/helm
 
 # Install chart
 helm install erp-uno . \
@@ -87,7 +87,7 @@ kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 # Apply ERP.uno ArgoCD Application
-kubectl apply -f /tmp/erp.uno/cd/argocd/application.yaml
+kubectl apply -f /Users/tonpa/depot/erpuno/erp.uno/cd/erp.uno/cd/argocd/application.yaml
 
 # Monitor sync
 kubectl get application -n argocd -w
@@ -186,13 +186,13 @@ Browse all images, tags, sizes, and metadata. Delete images via UI.
 
 ```bash
 # Step 1: Initialize
-bash /tmp/init.sh
+bash /Users/tonpa/depot/erpuno/erp.uno/cd/init.sh
 
 # Step 2: Deploy Docker Registry to K8s
-bash /tmp/setup-registry.sh
+bash /Users/tonpa/depot/erpuno/erp.uno/cd/setup-registry.sh
 
 # Step 3: (Optional) Deploy Registry UI
-bash /tmp/setup-registry-ui.sh
+bash /Users/tonpa/depot/erpuno/erp.uno/cd/setup-registry-ui.sh
 ```
 
 This will:
@@ -263,7 +263,7 @@ curl -I http://localhost:5000/v2/erpuno/myservice/manifests/2024.6.15
 
 ### Update Helm Values to Use Local Registry
 
-Edit `/tmp/erp.uno/cd/helm/values.yaml`:
+Edit `/Users/tonpa/depot/erpuno/erp.uno/cd/erp.uno/cd/helm/values.yaml`:
 
 ```yaml
 global:
@@ -337,7 +337,7 @@ Your cluster is tight (~7GB). To reduce footprint:
 kubectl edit cm -n erp-uno erp-uno-config
 
 # Or delete non-critical services
-helm upgrade erp-uno /tmp/erp.uno/cd/helm \
+helm upgrade erp-uno /Users/tonpa/depot/erpuno/erp.uno/cd/erp.uno/cd/helm \
   -n erp-uno \
   --set services.ai-generation.enabled=false \
   --set services.olap-analytics.enabled=false \
@@ -392,7 +392,7 @@ kubectl delete ns erp-uno
 
 ## Scripts Reference
 
-All scripts available at `/tmp/`:
+All scripts available at `/Users/tonpa/depot/erpuno/erp.uno/cd/`:
 
 | Script | Purpose | When |
 |--------|---------|------|
@@ -401,8 +401,8 @@ All scripts available at `/tmp/`:
 | `setup-registry-ui.sh` | Deploy Registry UI | Step 2b (optional) |
 | `deploy-start.sh` | Deploy ERP.uno Helm chart | Step 3 |
 | `check-prereq.sh` | Verify prerequisites | Anytime |
-| `/tmp/erp.uno/cd/scripts/backup-pvc.sh` | Backup PVCs | After deployment |
-| `/tmp/erp.uno/cd/scripts/monitor-erp-uno.sh` | Monitor cluster | After deployment |
+| `/Users/tonpa/depot/erpuno/erp.uno/cd/erp.uno/cd/scripts/backup-pvc.sh` | Backup PVCs | After deployment |
+| `/Users/tonpa/depot/erpuno/erp.uno/cd/erp.uno/cd/scripts/monitor-erp-uno.sh` | Monitor cluster | After deployment |
 
 ---
 
@@ -414,15 +414,15 @@ Customize deployment:
 export DOMAIN="erp.uno"
 export ENVIRONMENT="production"
 export REGISTRY="registry.erp.uno:5000"
-bash /tmp/deploy-start.sh
+bash /Users/tonpa/depot/erpuno/erp.uno/cd/deploy-start.sh
 ```
 
 ---
 
 ## Support
 
-- **Full Architecture Docs**: `/tmp/erp.uno/cd/ARCHITECTURE.txt`
-- **Helm Values**: `/tmp/erp.uno/cd/helm/values.yaml`
-- **K8s Manifests**: `/tmp/erp.uno/cd/k8s/`
-- **Operational Scripts**: `/tmp/erp.uno/cd/scripts/`
+- **Full Architecture Docs**: `/Users/tonpa/depot/erpuno/erp.uno/cd/erp.uno/cd/ARCHITECTURE.txt`
+- **Helm Values**: `/Users/tonpa/depot/erpuno/erp.uno/cd/erp.uno/cd/helm/values.yaml`
+- **K8s Manifests**: `/Users/tonpa/depot/erpuno/erp.uno/cd/erp.uno/cd/k8s/`
+- **Operational Scripts**: `/Users/tonpa/depot/erpuno/erp.uno/cd/erp.uno/cd/scripts/`
 - **GitHub Repo**: `https://github.com/erpuno/erp.uno/tree/master/cd`

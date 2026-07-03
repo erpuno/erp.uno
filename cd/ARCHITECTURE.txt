@@ -107,7 +107,7 @@ Per-service overrides via `values.yaml` → kvs-database: 2Gi, ai-generation: 8G
 
 ### Ingress routing (nginx example)
 ```
-erp.uno/              → nitro-portal:8510    (UI)
+erp.uno/              → nitro-portal:8510   (UI)
 erp.uno/api/bpe       → rest-bpe:8303       (BPE engine)
 erp.uno/api/auth      → ias-auth:8204       (Auth service)
 erp.uno/lms           → lms-education:8506  (Education)
@@ -240,8 +240,7 @@ kubectl logs -n erp-uno <pod>
 ### StatefulSet not forming cluster
 ```bash
 # Check headless service connectivity
-kubectl exec -it -n erp-uno <statefulset-0> -- \
-  getent hosts <statefulset>.erp-uno.svc.cluster.local
+kubectl exec -it -n erp-uno <statefulset-0> -- getent hosts <statefulset>.erp-uno.svc.cluster.local
 ```
 
 ### High memory usage
