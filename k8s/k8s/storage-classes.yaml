@@ -1,0 +1,33 @@
+---
+# StorageClass for single-node clusters (local storage)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-path
+provisioner: rancher.io/local-path
+volumeBindingMode: WaitForFirstConsumer
+---
+# StorageClass for multi-node clusters (Longhorn example)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: longhorn
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+parameters:
+  numberOfReplicas: "2"
+  staleReplicaTimeout: "20"
+volumeBindingMode: WaitForFirstConsumer
+---
+# StorageClass for Ceph (distributed clusters)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ceph-rbd
+provisioner: ceph.rbd.csi.ceph.io
+allowVolumeExpansion: true
+parameters:
+  clusterID: ceph-cluster
+  pool: erp-uno-pool
+  imageFeatures: "layering"
+volumeBindingMode: WaitForFirstConsumer

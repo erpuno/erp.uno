@@ -1,0 +1,38 @@
+{{- range $name, $service := .Values.services }}
+{{- if $service.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+    {{- include "erp-uno.labels" $ | nindent 4 }}
+    service: {{ $name }}
+spec:
+  type: ClusterIP
+  {{- if eq $service.type "stateful" }}
+  clusterIP: None
+  {{- end }}
+  selector:
+    {{- include "erp-uno.serviceSelectorLabels" (merge (dict "service" $name) $) | nindent 4 }}
+  ports:
+  {{- if $service.port }}
+  - name: http
+    port: {{ $service.port }}
+    targetPort: {{ $service.port }}
+    protocol: {{ $service.protocol | default "TCP" }}
+  {{- else if $service.ports }}
+  {{- range $portName, $portNum := $service.ports }}
+  - name: {{ $portName }}
+    port: {{ $portNum }}
+    targetPort: {{ $portNum }}
+    protocol: TCP
+  {{- end }}
+  {{- end }}
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+{{- end }}
+{{- end }}

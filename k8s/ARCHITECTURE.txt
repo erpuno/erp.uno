@@ -1,0 +1,261 @@
+# ERP.uno Kubernetes Architecture - Minimal Robust Scalable Structure
+
+## Overview
+
+This is a production-ready Helm chart for deploying 25 ERP microservices (BEAM-based + infrastructure) on Kubernetes with:
+- **Minimal API primitives**: Namespace, Service, Deployment, StatefulSet, PVC, HPA, NetworkPolicy, Ingress, ConfigMap
+- **Robust health checks**: Readiness + liveness probes for all stateless/stateful services
+- **Auto-scaling**: HPA on CPU (70–75%) + memory (80%) for bursty workloads
+- **Secure networking**: NetworkPolicy (default deny, allow internal + DNS + Ingress)
+- **Persistent state**: PVC + StorageClass abstraction (local-path, Longhorn, Ceph)
+- **GitOps-ready**: ArgoCD Application manifest for declarative deployments
+- **Calendar versioning**: X.Y.Z = years.months.days (e.g., 2024.6.15)
+
+## Chart Structure
+
+```
+helm/
+├── Chart.yaml                 # Chart metadata
+├── values.yaml               # 25 services config (stateless + stateful)
+├── .helmignore
+├── templates/
+│   ├── _helpers.tpl          # Labels, resource defaults
+│   ├── namespace.yaml        # erp-uno namespace
+│   ├── deployment.yaml       # 15 stateless Deployments
+│   ├── statefulset.yaml      # 10 stateful StatefulSets + PVC
+│   ├── service.yaml          # 25 ClusterIP Services
+│   ├── hpa.yaml              # Auto-scaling for 12 services
+│   ├── rbac.yaml             # ServiceAccount + Role + RoleBinding
+│   ├── networkpolicy.yaml    # Deny-all + allow-internal
+│   ├── ingress.yaml          # External routing (Nitro, BPE, Auth, etc.)
+│   └── configmap.yaml        # Global config (domain, env, version)
+```
+
+## Service Classification
+
+### Stateless (Deployments, 15)
+- Infrastructure: ca-pki, vpn-wireguard, ldap-directory, rest-bpe, abac-clearance, mach-ivr, bpe-engine, mail-delivery
+- Applications: lms-education, hl7-health, cart-registers, chat-messenger, n2o-server, nitro-portal, faiss-search
+- Telemetry: grafana, otel-collector
+
+### Stateful (StatefulSets, 10)
+- Infrastructure: ns-dns, ias-auth, kvs-database
+- Applications: crm-documents, acc-accounting, wms-warehouse, olap-analytics, itsm-incidents, pm-projects
+- Telemetry: prometheus, loki
+
+## Resource Defaults
+
+```yaml
+stateless:
+  requests: cpu=50m, memory=128Mi
+  limits:   cpu=200m, memory=256Mi
+
+stateful:
+  requests: cpu=100m, memory=256Mi
+  limits:   cpu=500m, memory=512Mi
+```
+
+Per-service overrides via `values.yaml` → kvs-database: 2Gi, ai-generation: 8Gi, olap-analytics: 4Gi, etc.
+
+## Scaling Strategy
+
+### Horizontal Pod Autoscaler (HPA) for 12 services:
+- **chat-messenger**: min=2, max=10, target=70% CPU (WebSocket broker, bursty)
+- **n2o-server**: min=2, max=8, target=70% CPU (WebSocket app server)
+- **nitro-portal**: min=2, max=6, target=75% CPU (Web rendering)
+- **ias-auth**: min=2, max=5, target=75% CPU (Auth bottleneck)
+- **lms-education, hl7-health, crm-documents, cart-registers, acc-accounting, wms-warehouse, itsm-incidents, pm-projects**: min=2, max=4–6, target=75% CPU
+
+### Manual scaling via shell script:
+```bash
+./scripts/scale-services.sh
+```
+
+## Health Checks
+
+- **Readiness probe**: Path=/health, initialDelaySeconds=5–10
+- **Liveness probe**: Path=/health, initialDelaySeconds=10–30
+- **Failure threshold**: 2–3 retries before pod restart
+- **Services without HTTP**: ns-dns, (rely on Kubernetes native restarts)
+
+## Persistence
+
+### PVC Provisioning
+- **StorageClass**: local-path (single-node), longhorn (multi-node), ceph-rbd (distributed)
+- **Volumes**:
+  - kvs-database: 20Gi (BEAM KVS state)
+  - acc-accounting: 15Gi (Mnesia ledgers)
+  - wms-warehouse: 30Gi (RocksDB inventory)
+  - itsm-incidents: 20Gi (RocksDB tickets)
+  - crm-documents: 50Gi (file storage)
+  - olap-analytics: 100Gi (DuckDB/MonetDB warehouse)
+  - prometheus: 50Gi (metrics retention)
+  - loki: 100Gi (log retention)
+
+**Total**: ~385 GB default (adjust per cluster capacity)
+
+### Backup strategy:
+```bash
+./scripts/backup-pvc.sh  # Tar + gzip PVCs
+```
+
+## Networking
+
+### NetworkPolicy (deny-all + allow-internal)
+- **Ingress**: Allow from same namespace + Ingress controller
+- **Egress**: Allow to same namespace + DNS (UDP:53) + external HTTPS (TCP:443)
+
+### Ingress routing (nginx example)
+```
+erp.uno/              → nitro-portal:8510    (UI)
+erp.uno/api/bpe       → rest-bpe:8303       (BPE engine)
+erp.uno/api/auth      → ias-auth:8204       (Auth service)
+erp.uno/lms           → lms-education:8506  (Education)
+erp.uno/health        → hl7-health:8502     (Healthcare)
+erp.uno/documents     → crm-documents:8503  (Document management)
+```
+
+### Service discovery (internal DNS)
+- Pod internal FQDN: `<pod>.<service>.<namespace>.svc.cluster.local`
+- Environment variables injected: NAMESPACE, POD_NAME, POD_IP, POD_ORDINAL (StatefulSet only)
+
+## GPU Support
+
+**ai-generation** service:
+```yaml
+gpu:
+  enabled: true
+  resourceName: nvidia.com/gpu
+  limit: 1
+resources:
+  requests: cpu=500m, memory=2Gi
+  limits: cpu=2000m, memory=8Gi
+```
+
+Requires: NVIDIA Kubernetes device plugin + CUDA-capable node.
+
+## Deployment
+
+### Via Helm CLI:
+```bash
+helm install erp-uno ./helm \
+  --namespace erp-uno \
+  --create-namespace \
+  --values helm/values.yaml \
+  --set global.domain=erp.uno \
+  --set global.environment=production
+```
+
+### Via ArgoCD (GitOps):
+```bash
+kubectl apply -f argocd/application.yaml
+```
+
+ArgoCD will auto-sync on Git push, prune deleted resources, and self-heal on drift.
+
+### Via script:
+```bash
+./scripts/deploy-erp-uno.sh
+```
+
+## Monitoring & Observability
+
+- **Prometheus** (metrics): scrapes all /metrics endpoints via ServiceMonitor
+- **Grafana** (dashboards): visualizes CPU, memory, request rate, latency
+- **Loki** (logs): aggregates pod logs via Promtail or direct shipping
+- **OTEL Collector** (traces): optional distributed tracing endpoint
+
+### Alert rules (k8s/monitoring.yaml):
+- Pod crash loops
+- Pod not healthy
+- StatefulSet replica mismatch
+- PVC pending
+- High memory usage (>90%)
+
+## Operational Commands
+
+```bash
+# Monitor cluster state
+./scripts/monitor-erp-uno.sh
+
+# Scale services
+./scripts/scale-services.sh
+
+# Backup PVCs
+./scripts/backup-pvc.sh
+
+# View logs
+kubectl logs -n erp-uno -l service=<name> -f
+
+# Port-forward to local
+kubectl port-forward -n erp-uno svc/nitro-portal 8510:8510
+
+# Describe service state
+kubectl describe pod -n erp-uno <pod-name>
+
+# Check HPA status
+kubectl get hpa -n erp-uno -w
+```
+
+## Air-Gapped Deployment
+
+For closed-network clusters:
+
+1. **Pre-load images** into private registry:
+   ```bash
+   docker tag registry.erp.uno/erpuno/ns:10.7.1 <private-registry>/erpuno/ns:10.7.1
+   docker push <private-registry>/erpuno/ns:10.7.1
+   ```
+
+2. **Update values.yaml** registry pointer:
+   ```yaml
+   global:
+     registry: <private-registry>
+   ```
+
+3. **Configure ImagePullSecret** (if auth required):
+   ```bash
+   kubectl create secret docker-registry regcred \
+     --docker-server=<private-registry> \
+     --docker-username=<user> \
+     --docker-password=<pass> \
+     -n erp-uno
+   ```
+   Then add to chart: `imagePullSecrets: [{ name: regcred }]`
+
+## Troubleshooting
+
+### Pod stuck in Pending
+```bash
+kubectl describe pod -n erp-uno <pod>
+# Check PVC, node resources, or affinity rules
+```
+
+### Pod CrashLoopBackOff
+```bash
+kubectl logs -n erp-uno <pod>
+# Check readiness probe timeout or application startup error
+```
+
+### StatefulSet not forming cluster
+```bash
+# Check headless service connectivity
+kubectl exec -it -n erp-uno <statefulset-0> -- \
+  getent hosts <statefulset>.erp-uno.svc.cluster.local
+```
+
+### High memory usage
+```bash
+kubectl top pods -n erp-uno --sort-by=memory
+# Scale up or adjust limits in values.yaml
+```
+
+## Next Steps
+
+1. **Customize values.yaml** per environment (dev, staging, prod)
+2. **Set up persistent volumes** (choose StorageClass)
+3. **Configure GitOps** (push chart to Git, deploy via ArgoCD)
+4. **Enable mTLS** (add cert-manager + Istio or native NGINX)
+5. **Set up monitoring** (deploy kube-prometheus-stack or Grafana Loki agent)
+6. **Test failover** (kill pods, verify auto-restart + rescheduling)
+7. **Load test** (benchmark HPA scaling behavior)

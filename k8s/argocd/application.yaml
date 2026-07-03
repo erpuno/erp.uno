@@ -1,0 +1,36 @@
+---
+# ArgoCD Application for GitOps deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: erp-uno
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://git.erp.uno/erpuno/erp-uno.git
+    targetRevision: main
+    path: helm
+    helm:
+      releaseName: erp-uno
+      values: |
+        global:
+          domain: erp.uno
+          environment: production
+          registry: registry.erp.uno
+          version: "2024.6.15"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: erp-uno
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

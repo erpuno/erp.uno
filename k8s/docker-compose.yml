@@ -1,0 +1,226 @@
+version: '3.9'
+
+services:
+  # Infrastructure services
+  ns-dns:
+    image: registry.erp.uno/erpuno/ns:10.7.1
+    container_name: erp-ns-dns
+    ports:
+      - "53:53/udp"
+    environment:
+      DOMAIN: erp.uno
+    networks:
+      - erp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nc", "-zu", "127.0.0.1", "53"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  ca-pki:
+    image: registry.erp.uno/erpuno/ca:10.7.1
+    container_name: erp-ca-pki
+    ports:
+      - "8107:8107"
+      - "8020:8020"
+      - "8021:8021"
+    environment:
+      NAMESPACE: default
+    depends_on:
+      - ns-dns
+    networks:
+      - erp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8107/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  kvs-database:
+    image: registry.erp.uno/erpuno/kvs:1.0.0
+    container_name: erp-kvs-database
+    ports:
+      - "8301:8301"
+    environment:
+      NAMESPACE: default
+      KVS_BACKEND: disc_copies
+    volumes:
+      - kvs-data:/var/lib/kvs
+    depends_on:
+      - ns-dns
+    networks:
+      - erp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8301/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  ias-auth:
+    image: registry.erp.uno/zencrypted/ias:2.1.0
+    container_name: erp-ias-auth
+    ports:
+      - "8204:8204"
+    environment:
+      NAMESPACE: default
+      KVS_BACKEND: kvs_mnesia
+    depends_on:
+      - kvs-database
+      - ca-pki
+    networks:
+      - erp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8204/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Application services
+  bpe-engine:
+    image: registry.erp.uno/erpuno/bpe:1.0.0
+    container_name: erp-bpe-engine
+    ports:
+      - "8302:8302"
+    environment:
+      NAMESPACE: default
+    depends_on:
+      - kvs-database
+    networks:
+      - erp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8302/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  rest-bpe:
+    image: registry.erp.uno/erpuno/rest:1.0.0
+    container_name: erp-rest-bpe
+    ports:
+      - "8303:8303"
+    environment:
+      NAMESPACE: default
+    depends_on:
+      - bpe-engine
+      - ias-auth
+    networks:
+      - erp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8303/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  n2o-server:
+    image: registry.erp.uno/erpuno/n2o:3.0.0
+    container_name: erp-n2o-server
+    ports:
+      - "8511:8511"
+    environment:
+      NAMESPACE: default
+    depends_on:
+      - ias-auth
+    networks:
+      - erp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8511/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  nitro-portal:
+    image: registry.erp.uno/erpuno/nitro:1.0.0
+    container_name: erp-nitro-portal
+    ports:
+      - "8510:8510"
+    environment:
+      NAMESPACE: default
+    depends_on:
+      - n2o-server
+      - ias-auth
+    networks:
+      - erp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8510/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Telemetry
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: erp-prometheus
+    ports:
+      - "8401:8401"
+    volumes:
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - erp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8401/-/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: erp-grafana
+    ports:
+      - "8402:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - erp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: erp-loki
+    ports:
+      - "8403:3100"
+    volumes:
+      - loki-data:/loki
+    networks:
+      - erp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3100/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  erp-network:
+    driver: bridge
+
+volumes:
+  kvs-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  loki-data:
+    driver: local

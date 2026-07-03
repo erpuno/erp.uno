@@ -1,0 +1,74 @@
+---
+# Prometheus ServiceMonitor for BEAM apps (if using kube-prometheus-stack)
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: erp-uno-apps
+  namespace: erp-uno
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: erp-uno
+  endpoints:
+  - port: http
+    interval: 30s
+    path: /metrics
+---
+# PrometheusRule for alerting
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: erp-uno-alerts
+  namespace: erp-uno
+spec:
+  groups:
+  - name: erp-uno.rules
+    interval: 30s
+    rules:
+    - alert: PodCrashLooping
+      expr: rate(kube_pod_container_status_restarts_total{namespace="erp-uno"}[15m]) > 0.1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Pod {{ $labels.pod }} crashing"
+    
+    - alert: PodNotHealthy
+      expr: |
+        min_by(pod) (kube_pod_status_phase{namespace="erp-uno",phase=~"Pending|Unknown|Failed"}) == 1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Pod {{ $labels.pod }} not healthy"
+    
+    - alert: StatefulSetReplicasMismatch
+      expr: |
+        kube_statefulset_status_replicas_ready{namespace="erp-uno"}
+        !=
+        kube_statefulset_status_replicas{namespace="erp-uno"}
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "StatefulSet {{ $labels.statefulset }} replica mismatch"
+    
+    - alert: PVCPending
+      expr: kube_persistentvolumeclaim_status_phase{namespace="erp-uno",phase="Pending"} == 1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "PVC {{ $labels.persistentvolumeclaim }} pending"
+    
+    - alert: HighMemoryUsage
+      expr: |
+        (sum(container_memory_usage_bytes{namespace="erp-uno"}) by (pod)
+        / sum(container_spec_memory_limit_bytes{namespace="erp-uno"}) by (pod)) > 0.9
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Pod {{ $labels.pod }} memory usage > 90%"
