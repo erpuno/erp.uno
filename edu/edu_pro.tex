@@ -2,13 +2,13 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage{helvet}
-\usepackage{geometry}
+%\usepackage{geometry}
 \usepackage{xcolor}
 \usepackage{eso-pic}
 \usepackage{fancyhdr}
 \usepackage{parskip}
 \usepackage{microtype}
-\usepackage[english, ukrainian]{babel}
+\usepackage[english,ukrainian]{babel}
 \usepackage{url}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -21,20 +21,22 @@
 \definecolor{nato}{HTML}{293757}
 \definecolor{footergray}{gray}{0.65}
 
-\geometry{a4paper,left=3cm,right=3cm,top=3cm,bottom=3cm}
+%\geometry{a4paper,left=3cm,right=3cm,top=3cm,bottom=3cm}
 \renewcommand{\familydefault}{\sfdefault}
 \setcounter{secnumdepth}{3}
 
-\titleformat{\section}
-  {\color{nato}\Huge\bfseries}{\thesection.}{1em}{}
+% Font shapes for T2A/Helvetica (mapping to cmss for Cyrillic support)
+\DeclareFontFamily{T2A}{phv}{}
+\DeclareFontShape{T2A}{phv}{m}{n}{<->ssub * cmss/m/n}{}
+\DeclareFontShape{T2A}{phv}{bx}{n}{<->ssub * cmss/bx/n}{}
+\DeclareFontShape{T2A}{phv}{m}{it}{<->ssub * cmss/m/it}{}
+\DeclareFontShape{T2A}{phv}{bx}{it}{<->ssub * cmss/bx/it}{}
+
+\titleformat{\section} {\color{nato}\Huge\bfseries}{\thesection.}{1em}{}
 \titlespacing*{\section}{0pt}{30pt}{12pt}
-
-\titleformat{\subsection}
-  {\color{nato}\LARGE\bfseries}{\thesubsection.}{1em}{}
+\titleformat{\subsection} {\color{nato}\LARGE\bfseries}{\thesubsection.}{1em}{}
 \titlespacing*{\subsection}{0pt}{20pt}{8pt}
-
-\titleformat{\subsubsection}
-  {\color{nato}\Large\bfseries}{\thesubsubsection.}{1em}{}
+\titleformat{\subsubsection} {\color{nato}\Large\bfseries}{\thesubsubsection.}{1em}{}
 \titlespacing*{\subsubsection}{0pt}{10pt}{6pt}
 
 \fancyhf{}
@@ -43,7 +45,6 @@
 \fancyfoot[R]{\small\color{footergray}\thepage}
 
 \newcommand\HUGE[1]{\fontsize{40}{40}\selectfont #1}
-
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0.4pt}
 \renewcommand{\footrule}{\color{footergray}\hrule width \textwidth height 0.4pt}

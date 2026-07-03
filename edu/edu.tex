@@ -1,15 +1,15 @@
 \documentclass{article}
 
 \usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
+%\usepackage[T2A]{fontenc}
 \usepackage{helvet}
-\usepackage{geometry}
+%\usepackage{geometry}
 \usepackage{xcolor}
 \usepackage{eso-pic}
 \usepackage{fancyhdr}
 \usepackage{parskip}
 \usepackage{microtype}
-\usepackage[english, ukrainian]{babel}
+\usepackage[english,ukrainian]{babel}
 \usepackage{url}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -22,9 +22,16 @@
 \definecolor{nato}{HTML}{293757}
 \definecolor{footergray}{gray}{0.65}
 
-\geometry{a4paper,left=3cm,right=3cm,top=3cm,bottom=3cm}
+%\geometry{a4paper,left=3cm,right=3cm,top=3cm,bottom=3cm}
 \renewcommand{\familydefault}{\sfdefault}
 \setcounter{secnumdepth}{3}
+
+% Font shapes for T2A/Helvetica (mapping to cmss for Cyrillic support)
+\DeclareFontFamily{T2A}{phv}{}
+\DeclareFontShape{T2A}{phv}{m}{n}{<->ssub * cmss/m/n}{}
+\DeclareFontShape{T2A}{phv}{bx}{n}{<->ssub * cmss/bx/n}{}
+\DeclareFontShape{T2A}{phv}{m}{it}{<->ssub * cmss/m/it}{}
+\DeclareFontShape{T2A}{phv}{bx}{it}{<->ssub * cmss/bx/it}{}
 
 \titleformat{\section}
   {\color{nato}\Huge\bfseries}{\thesection.}{1em}{}

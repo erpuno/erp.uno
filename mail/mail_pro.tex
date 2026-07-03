@@ -26,6 +26,17 @@
 \renewcommand{\familydefault}{\sfdefault}
 \setcounter{secnumdepth}{3}
 
+\DeclareFontFamily{T2A}{phv}{}
+\DeclareFontShape{T2A}{phv}{m}{n}{<->ssub * cmss/m/n}{}
+\DeclareFontShape{T2A}{phv}{bx}{n}{<->ssub * cmss/bx/n}{}
+\DeclareFontShape{T2A}{phv}{m}{it}{<->ssub * cmss/m/it}{}
+\DeclareFontShape{T2A}{phv}{bx}{it}{<->ssub * cmss/bx/it}{}
+
+\let\originalfootnotesize\footnotesize
+\let\oldverbatim\verbatim
+\let\oldendverbatim\endverbatim
+\renewenvironment{verbatim}{\originalfootnotesize\oldverbatim}{\oldendverbatim}
+
 \titleformat{\section}
   {\color{nato}\Huge\bfseries}{\thesection.}{1em}{}
 \titlespacing*{\section}{0pt}{30pt}{12pt}

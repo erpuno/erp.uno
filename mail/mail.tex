@@ -26,6 +26,17 @@
 \renewcommand{\familydefault}{\sfdefault}
 \setcounter{secnumdepth}{3}
 
+\DeclareFontFamily{T2A}{phv}{}
+\DeclareFontShape{T2A}{phv}{m}{n}{<->ssub * cmss/m/n}{}
+\DeclareFontShape{T2A}{phv}{bx}{n}{<->ssub * cmss/bx/n}{}
+\DeclareFontShape{T2A}{phv}{m}{it}{<->ssub * cmss/m/it}{}
+\DeclareFontShape{T2A}{phv}{bx}{it}{<->ssub * cmss/bx/it}{}
+
+\let\originalfootnotesize\footnotesize
+\let\oldverbatim\verbatim
+\let\oldendverbatim\endverbatim
+\renewenvironment{verbatim}{\originalfootnotesize\oldverbatim}{\oldendverbatim}
+
 \titleformat{\section}
   {\color{nato}\Huge\bfseries}{\thesection.}{1em}{}
 \titlespacing*{\section}{0pt}{30pt}{12pt}
@@ -320,59 +331,5 @@ X.422.3 & Протокол телекомунікаційного обміну �
 \texttt{status} & Enum & Так & Стан (waiting, active, completed, cancelled). \\
 \bottomrule
 \end{longtable}
-
-\section{Технічні деталі реалізації процесів та валідацій}
-
-\subsection{Erlang Records для СЕД}
-Базові записи збереження даних документообігу:
-\begin{verbatim}
--record(document_rmk, {
-    id,
-    doc_number,
-    doc_date,
-    doc_type,
-    correspondent_id,
-    subject,
-    author_id,
-    files = [],
-    status = draft
-}).
-
--record(document_task, {
-    id,
-    parent_id,
-    rmk_id,
-    author_id,
-    executors = [],
-    chief_executor,
-    description,
-    due_date,
-    status = waiting
-}).
-\end{verbatim}
-
-\subsection{Модуль валідації електронних підписів kep\_validator.erl}
-Код Erlang-модуля для перевірки довіри до КЕП:
-\begin{verbatim}
--module(kep_validator).
--export([validate_signature/2, verify_time_stamp/1]).
-
-validate_signature(FileHash, SignatureBytes) ->
-    case ca_client:verify_signature(FileHash, SignatureBytes) of
-        {ok, SignerCert} ->
-            case ca_client:check_cert_status(SignerCert) of
-                valid -> ok;
-                expired -> {error, cert_expired};
-                revoked -> {error, cert_revoked}
-            end;
-        Error -> Error
-    end.
-
-verify_time_stamp(TimeStampToken) ->
-    case ca_client:verify_tsp(TimeStampToken) of
-        true -> ok;
-        false -> {error, invalid_tsp}
-    end.
-\end{verbatim}
 
 \end{document}

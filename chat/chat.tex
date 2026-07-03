@@ -1,6 +1,6 @@
 \documentclass{article}
+
 \usepackage[utf8]{inputenc}
-\usepackage[T2A]{fontenc}
 \usepackage{helvet}
 \usepackage{geometry}
 \usepackage{xcolor}
@@ -8,7 +8,7 @@
 \usepackage{fancyhdr}
 \usepackage{parskip}
 \usepackage{microtype}
-\usepackage[english, ukrainian]{babel}
+\usepackage[english,ukrainian]{babel}
 \usepackage{url}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -23,6 +23,7 @@
 \definecolor{primary}{HTML}{293757}
 \definecolor{footergray}{gray}{0.65}
 
+% Define Paper Geometry
 \geometry{a4paper,left=3cm,right=3cm,top=3cm,bottom=3cm}
 \renewcommand{\familydefault}{\sfdefault}
 \setcounter{secnumdepth}{3}
@@ -34,14 +35,11 @@
 \DeclareFontShape{T2A}{phv}{m}{it}{<->ssub * cmss/m/it}{}
 \DeclareFontShape{T2A}{phv}{bx}{it}{<->ssub * cmss/bx/it}{}
 
-\titleformat{\section}
-  {\color{primary}\Huge\bfseries}{\thesection.}{1em}{}
+\titleformat{\section} {\color{primary}\Huge\bfseries}{\thesection.}{1em}{}
 \titlespacing*{\section}{0pt}{30pt}{12pt}
-\titleformat{\subsection}
-  {\color{primary}\LARGE\bfseries}{\thesubsection.}{1em}{}
+\titleformat{\subsection} {\color{primary}\LARGE\bfseries}{\thesubsection.}{1em}{}
 \titlespacing*{\subsection}{0pt}{20pt}{8pt}
-\titleformat{\subsubsection}
-  {\color{primary}\Large\bfseries}{\thesubsubsection.}{1em}{}
+\titleformat{\subsubsection} {\color{primary}\Large\bfseries}{\thesubsubsection.}{1em}{}
 \titlespacing*{\subsubsection}{0pt}{10pt}{6pt}
 
 \fancyhf{}
