@@ -50,7 +50,7 @@
 
 \fancyhf{}
 \fancyhead[R]{\small\color{footergray} 29 червня 2026}
-\fancyfoot[L]{\small\color{footergray} Техноробочий проект ERP/1. Модуль Аналітика}
+\fancyfoot[L]{\small\color{footergray} Техноробочий проект ERP.1. Модуль Аналітика}
 \fancyfoot[R]{\small\color{footergray}\thepage}
 
 \newcommand\HUGE[1]{\fontsize{38}{38}\selectfont #1}
@@ -64,7 +64,7 @@
 \begin{titlepage}
 \AddToShipoutPictureBG*{\AtPageLowerLeft{\color{primary}\rule{\paperwidth}{\paperheight}}}
 \color{white}\thispagestyle{empty}\vspace*{3cm}\centering
-  {\Huge \textbf{ERP/1: Аналітика} \par} \vspace{1.5cm}
+  {\Huge \textbf{ERP.1: Аналітика} \par} \vspace{1.5cm}
   {\HUGE \textbf{Техноробочий проект} \par} \vspace{1.5cm}
   {\LARGE \textbf{на створення та впровадження \\ локальної DWH-інфраструктури \\ для аналізу та обробки великих даних} \par} \vspace{1.5cm}
   {\large Згідно з Постановою КМУ № 205 від 21.02.2025 \par}
@@ -84,7 +84,7 @@
 \section{Загальні відомості про засіб інформатизації}
 
 \subsection{Найменування та підстави для розробки}
-\textbf{Найменування засобу інформатизації:} Модуль «Аналітика» (локальна DWH-інфраструктура) у складі інформаційної системи управління підприємством ERP/1.
+\textbf{Найменування засобу інформатизації:} Модуль «Аналітика» (локальна DWH-інфраструктура) у складі інформаційної системи управління підприємством ERP.1.
 
 \textbf{Підстави для виконання робіт:}
 \begin{itemize}
@@ -398,7 +398,7 @@ ERL_NIF_INIT(dwh_nif, nif_funcs, load, NULL, NULL, NULL)
 \subsection{Вимоги до продуктивності та надійності}
 \begin{itemize}
     \item Максимальний час виконання регламентної синхронізації (ETL) за годину не повинен перевищувати 3 хвилин.
-    \item Помилка виконання SQL на периферійному вузлі не повинна впливати на транзакційну працездатність ERP/1.
+    \item Помилка виконання SQL на периферійному вузлі не повинна впливати на транзакційну працездатність ERP.1.
 \end{itemize}
 
 \end{document}

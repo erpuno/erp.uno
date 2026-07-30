@@ -1,5 +1,5 @@
 BPMN-процес «Генерація розкладу»
-(ERP/1: Освіта, BPE Erlang DSL)
+(ERP.1: Освіта, BPE Erlang DSL)
 1. Загальна характеристика процесу
 
 Назва: Schedule Generation
