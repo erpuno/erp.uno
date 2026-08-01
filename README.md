@@ -1,6 +1,9 @@
 ERP.1: Підприємство
 ===================
 
+Наказ 001
+---------
+
 Уніфікована система для Erlang віртуалізації на базі ЄІС МВС, ЕСОЗ МОЗ і ЄСІКС Судової Системи України.
 
 ІКС
@@ -31,7 +34,7 @@ ERP.1: Підприємство
 * [Фреймворк](https://github.com/synrc/nitro/)
 * [Сховище](https://github.com/synrc/kvs/)
 * [Імена](https://github.com/synrc/ns/)
-* [Контроль](https://github.com/erouno/abac/)
+* [Контроль](https://github.com/erpuno/abac/)
 * [Сертифікати](https://github.com/synrc/ca/)
 * [Тунелі](https://github.com/zencrypted/vpn/)
 * [Авторизація](https://github.com/zencrypted/ias/)
@@ -53,7 +56,7 @@ ERP.1: Підприємство
 * [Регламент взаємодії](https://protocol.zencrypted.uk/)
 * [Фреймворк підприємства](https://n2o.dev/)
 * [Керівництво виконавця ERP.1](https://erp.uno/man/ua/1.htm)
-* [Процеси і Сховище](https://erp.uno/bpmn/bpmn-keynote.pdf)
+* [Процеси і cховище](https://erp.uno/bpmn/bpmn-keynote.pdf)
 * [Політики і модель безпеки](https://ca.n2o.dev/priv/security-policy.pdf)
 * [Операційна система](https://bitedits.github.io/wm/priv/beam-os.pdf)
 
