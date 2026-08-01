@@ -27,7 +27,7 @@ ERP.1: Підприємство
 
 * [Комунікатор](https://github.com/synrc/chat/)
 * [Потоки](https://github.com/erpuno/turn/)
-* [Конференцзв'язок](https://github.com/zencrupted/rtp/)
+* [Конференцзв'язок](https://github.com/zencrypted/rtp/)
 * [Брокер](https://github.com/erpuno/mqtt/)
 * [Процеси](https://github.com/synrc/bpmn/)
 * [Форми](https://github.com/synrc/form/)
